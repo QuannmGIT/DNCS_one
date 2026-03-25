@@ -6,27 +6,20 @@ import javax.swing.*;
 import java.awt.*;
 
 public class ManageFrame extends JFrame {
-    
-    private String loggedInUser; 
+    private String loggedInUser;
     private JPanel bodyPanel;    
-
 
     public ManageFrame(String username){
         this.loggedInUser = username; 
-
-
         this.setTitle("Hanabi Cafe - Xin chào " + username);
         this.setSize(1200, 600);
         
-
         ImageIcon icon = new ImageIcon(getClass().getResource("/ImageFile/HanabiIcon.png"));
         this.setIconImage(icon.getImage());
 
-        
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setResizable(false);
         this.setLocationRelativeTo(null);
-
 
         JPanel mainContainer = new JPanel(new BorderLayout());
 
@@ -46,8 +39,6 @@ public class ManageFrame extends JFrame {
         return this.loggedInUser;
     }
 
-
-
     public void showSignInPanel() {
         bodyPanel.removeAll();
         
@@ -57,7 +48,6 @@ public class ManageFrame extends JFrame {
         bodyPanel.revalidate(); 
         bodyPanel.repaint();
     }
-
 
     public void showPersonPanel() {
         bodyPanel.removeAll(); 
