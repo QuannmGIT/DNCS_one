@@ -17,8 +17,8 @@ public class MainFrame extends JFrame {
         setTitle("Hanabi Cafe");
         setSize(1000, 600);
         try {
-            //FlatSVGIcon ic = new FlatSVGIcon("ImageFile/HanabiIcon.svg");
-            ImageIcon icon = new ImageIcon(getClass().getResource("/ImageFile/HanabiIcon.png"));
+            FlatSVGIcon icon = new FlatSVGIcon("/assets/img/HanabiIcon.svg");
+//            ImageIcon icon = new ImageIcon(getClass().getResource("/assets/img/HanabiIcon.png")); deprecated icon
            setIconImage(icon.getImage());
         } catch (Exception e) {
             e.printStackTrace();
@@ -46,9 +46,8 @@ public class MainFrame extends JFrame {
     }
 
     public void showSignInPanel() {
-        CardLayout cl = (CardLayout) rightContainer.getLayout();
-        cl.show(rightContainer, "SIGNIN");
+        CardLayout cardLayoutConfig = (CardLayout) rightContainer.getLayout();
+        cardLayoutConfig.show(rightContainer, "SIGNIN");
     }
-
 
 }

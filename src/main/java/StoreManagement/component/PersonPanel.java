@@ -45,7 +45,7 @@ public class PersonPanel extends JPanel {
         lblAvatar.setBounds(30, 30, 100, 100);
         lblAvatar.setHorizontalAlignment(SwingConstants.CENTER);
 
-        ImageIcon icon = new ImageIcon(getClass().getResource("/ImageFile/PersonIcon.png"));
+        ImageIcon icon = new ImageIcon(getClass().getResource("/assets/img/PersonIcon.png"));
         Image img = icon.getImage().getScaledInstance(80, 80, Image.SCALE_SMOOTH);
         lblAvatar.setIcon(new ImageIcon(img));
 

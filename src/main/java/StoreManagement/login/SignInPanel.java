@@ -36,7 +36,7 @@ public class SignInPanel extends JPanel {
         lblIcon.setHorizontalAlignment(SwingConstants.CENTER);
 
 
-        ImageIcon icon = new ImageIcon(getClass().getResource("/ImageFile/PersonIcon.png")); // Dùng lại icon person hoặc icon khác
+        ImageIcon icon = new ImageIcon(getClass().getResource("/assets/img/PersonIcon.png")); // Dùng lại icon person hoặc icon khác
         Image img = icon.getImage().getScaledInstance(80, 80, Image.SCALE_SMOOTH);
         lblIcon.setIcon(new ImageIcon(img));
 

@@ -33,7 +33,7 @@ public class Latte extends JPanel {
         // Load ảnh (Xử lý an toàn nếu thiếu ảnh)
         try {
             // Đảm bảo bạn đã có file Latte.png trong thư mục ImageFile
-            ImageIcon originalIcon = new ImageIcon(getClass().getResource("/ImageFile/Latte.png"));
+            ImageIcon originalIcon = new ImageIcon(getClass().getResource("/assets/Latte.png"));
             Image img = originalIcon.getImage().getScaledInstance(250, 250, Image.SCALE_SMOOTH);
             lblImage.setIcon(new ImageIcon(img));
         } catch (Exception e) {
@@ -63,7 +63,7 @@ public class Latte extends JPanel {
         txtDesc.setFocusable(false);     // Không nhận focus chuột
         txtDesc.setBackground(Color.WHITE);
         txtDesc.setAlignmentX(Component.LEFT_ALIGNMENT);
-        
+
         // Giá tiền
         JLabel lblPrice = new JLabel("Giá : 65,000 VNĐ");
         lblPrice.setFont(new Font("Segoe UI", Font.BOLD, 20));

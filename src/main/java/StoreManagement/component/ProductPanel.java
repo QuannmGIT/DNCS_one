@@ -158,19 +158,19 @@ public class ProductPanel extends JPanel {
 
 
     private ImageIcon getImageByProductName(String name) {
-        String imagePath = "/ImageFile/default.png"; 
+        String imagePath = "/assets/default.png";
 
         if (name.contains("Cafe Đen")) {
-            imagePath = "/ImageFile/cafe_den.png"; 
+            imagePath = "/assets/img/cafe_den.png";
         } 
         else if (name.contains("Cafe Sữa")) {
-            imagePath = "/ImageFile/cafe_sua.png";
+            imagePath = "/assets/img/cafe_sua.png";
         }
         else if (name.contains("Bạc Xỉu")) {
-            imagePath = "/ImageFile/bac_xiu.png";
+            imagePath = "/assets/img/bac_xiu.png";
         }
         else if (name.contains("Trà Đào")) {
-            imagePath = "/ImageFile/tra_dao.png";
+            imagePath = "/assets/img/tra_dao.png";
         }
 
         ImageIcon icon = new ImageIcon(getClass().getResource(imagePath));

@@ -14,7 +14,7 @@ public class ManageFrame extends JFrame {
         this.setTitle("Hanabi Cafe - Xin chào " + username);
         this.setSize(1200, 600);
         
-        ImageIcon icon = new ImageIcon(getClass().getResource("/ImageFile/HanabiIcon.png"));
+        ImageIcon icon = new ImageIcon(getClass().getResource("/assets/img/HanabiIcon.png"));
         this.setIconImage(icon.getImage());
 
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);

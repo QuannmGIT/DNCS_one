@@ -1,7 +1,5 @@
 package StoreManagement.model;
 
-import com.formdev.flatlaf.extras.FlatSVGIcon;
-
 import javax.swing.*;
 import java.util.ArrayList;
 
@@ -10,7 +8,7 @@ public class Product {
     private double price;
     private String name;
     private String description;
-    private FlatSVGIcon image;
+    private ImageIcon image;
     private String category;
     private ArrayList<Object> add_more_taste;
 
@@ -28,7 +26,7 @@ public class Product {
                    double price,
                    String name,
                    String description,
-                   FlatSVGIcon image,
+                   ImageIcon image,
                    String category,
                    ArrayList<Object> add_more_taste
     ) {
@@ -73,11 +71,11 @@ public class Product {
         this.description = description;
     }
 
-    public FlatSVGIcon getImage() {
+    public ImageIcon getImage() {
         return image;
     }
 
-    public void setImage(FlatSVGIcon image) {
+    public void setImage(ImageIcon image) {
         this.image = image;
     }
 

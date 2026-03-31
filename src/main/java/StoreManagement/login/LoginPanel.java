@@ -18,7 +18,7 @@ public class LoginPanel extends JPanel {
         this.setBackground(Color.WHITE);
         this.setLayout(null);
 
-        ImageIcon loginIcon = new ImageIcon(getClass().getResource("/ImageFile/LoginIcon.png"));
+        ImageIcon loginIcon = new ImageIcon(getClass().getResource("/assets/img/LoginIcon.png"));
         Image loginImage = loginIcon.getImage();
         Image newLoginImage = loginImage.getScaledInstance(70, 60, java.awt.Image.SCALE_SMOOTH);
         ImageIcon scaledLoginIcon = new ImageIcon(newLoginImage);
@@ -117,14 +117,14 @@ public class LoginPanel extends JPanel {
         this.add(CheckBox);
 
 
-        ImageIcon checkIcon = new ImageIcon(getClass().getResource("/ImageFile/CheckIcon.png"));
+        ImageIcon checkIcon = new ImageIcon(getClass().getResource("/assets/img/CheckIcon.png"));
         Image checkImage = checkIcon.getImage();
         Image newCheckImage = checkImage.getScaledInstance(20, 20, java.awt.Image.SCALE_SMOOTH);
         ImageIcon scaledCheckIcon = new ImageIcon(newCheckImage);
         CheckBox.setIcon(scaledCheckIcon);
 
         
-        ImageIcon checkedIcon = new ImageIcon(getClass().getResource("/ImageFile/CheckedIcon.png"));
+        ImageIcon checkedIcon = new ImageIcon(getClass().getResource("/assets/img/CheckedIcon.png"));
         Image checkedImage = checkedIcon.getImage();
         Image newCheckedImage = checkedImage.getScaledInstance(20, 20, java.awt.Image.SCALE_SMOOTH);
         ImageIcon scaledCheckedIcon = new ImageIcon(newCheckedImage);
