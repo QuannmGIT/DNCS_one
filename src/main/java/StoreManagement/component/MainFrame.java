@@ -1,6 +1,7 @@
 package StoreManagement.component;
 
 import StoreManagement.login.LoginPanel;
+import com.formdev.flatlaf.extras.FlatSVGIcon;
 
 import javax.swing.*;
 import java.awt.*;
@@ -13,16 +14,21 @@ public class MainFrame extends JFrame {
 
     }
     public MainFrame() {
-        this.setTitle("Hanabi Cafe");
-        this.setSize(1000, 600);
-        ImageIcon icon = new ImageIcon(getClass().getResource("/ImageFile/HanabiIcon.png"));
-        this.setIconImage(icon.getImage());
-        this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        this.setResizable(false);
-        this.setLocationRelativeTo(null);
+        setTitle("Hanabi Cafe");
+        setSize(1000, 600);
+        try {
+            //FlatSVGIcon ic = new FlatSVGIcon("ImageFile/HanabiIcon.svg");
+            ImageIcon icon = new ImageIcon(getClass().getResource("/ImageFile/HanabiIcon.png"));
+           setIconImage(icon.getImage());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setResizable(false);
+        setLocationRelativeTo(null);
 
         JPanel allJPanel = new JPanel();
-        this.add(allJPanel);
+        add(allJPanel);
         allJPanel.setLayout(new BorderLayout());
         allJPanel.setBackground(Color.WHITE);
 
@@ -37,16 +43,12 @@ public class MainFrame extends JFrame {
         rightContainer.add(loginPanel, "LOGIN");
 
         allJPanel.add(rightContainer, BorderLayout.CENTER);
-
     }
-
 
     public void showSignInPanel() {
         CardLayout cl = (CardLayout) rightContainer.getLayout();
         cl.show(rightContainer, "SIGNIN");
     }
-
-    // vao menu
 
 
 }
