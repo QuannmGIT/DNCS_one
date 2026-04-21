@@ -1,6 +1,6 @@
 package StoreManagement.component;
 
-import StoreManagement.Utility.dbConnect;
+import StoreManagement.page.MainPage;
 
 import javax.swing.*;
 import javax.swing.border.LineBorder;
@@ -20,8 +20,7 @@ public class PersonPanel extends JPanel {
 
     private ManageFrame manageFrame;
 
-    public PersonPanel(ManageFrame frame, String username) {
-        this.manageFrame = frame;
+    public PersonPanel(String username) {
         this.currentUsername = username;
 
         this.setLayout(null);
@@ -45,7 +44,7 @@ public class PersonPanel extends JPanel {
         lblAvatar.setBounds(30, 30, 100, 100);
         lblAvatar.setHorizontalAlignment(SwingConstants.CENTER);
 
-        ImageIcon icon = new ImageIcon(getClass().getResource("/assets/img/PersonIcon.png"));
+        ImageIcon icon = new ImageIcon(getClass().getResource("/StoreManagement/assets/img/PersonIcon.png"));
         Image img = icon.getImage().getScaledInstance(80, 80, Image.SCALE_SMOOTH);
         lblAvatar.setIcon(new ImageIcon(img));
 
@@ -93,7 +92,7 @@ public class PersonPanel extends JPanel {
         this.add(btnChangePass);
 
         btnChangePass.addActionListener(e -> {
-        this.manageFrame.showChangePasswordPanel();
+        MainPage.getInstance().showChangePasswordPanel();
         });
 
 
@@ -107,7 +106,7 @@ public class PersonPanel extends JPanel {
 
 
         btnCreateAcc.addActionListener(e -> {
-            this.manageFrame.showSignInPanel(); 
+            MainPage.getInstance().showSignInPanel();
         });
 
 
@@ -152,8 +151,8 @@ public class PersonPanel extends JPanel {
     }
 
     private void updateStaffStatus(String username, int status) {
-        dbConnect db = new dbConnect();
-        try (Connection conn = db.getConnection()) {
+//        DATABBASE db = new DATABBASE();
+        try (Connection conn = null) {
         if (conn == null) return;
 
 
@@ -177,8 +176,8 @@ public class PersonPanel extends JPanel {
     }
 
     private void loadDataFromDatabase() {
-        dbConnect db = new dbConnect();
-        try (Connection conn = db.getConnection()) {
+//        DATABBASE db = new DATABBASE();
+        try (Connection conn = null) {
             if (conn == null) return;
 
             String sql = "SELECT u.full_name, u.email, u.username, u.role, " + 

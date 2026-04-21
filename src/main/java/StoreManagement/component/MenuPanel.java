@@ -1,6 +1,7 @@
 package StoreManagement.component;
 
-import StoreManagement.Utility.dbConnect;
+import StoreManagement.App;
+import StoreManagement.page.MainPage;
 
 import javax.swing.*;
 import java.awt.*;
@@ -13,8 +14,8 @@ public class MenuPanel extends JPanel {
     private JButton btnSale; 
     private String currentUsername;
 
-    public MenuPanel(ManageFrame frame) {
-        this.currentUsername = frame.getLoggedInUser();
+    public MenuPanel() {
+        this.currentUsername = "";
         this.setPreferredSize(new Dimension(200, 600)); 
         this.setBackground(new Color(230, 230, 230)); 
         this.setLayout(null); 
@@ -61,25 +62,20 @@ public class MenuPanel extends JPanel {
         
 
         btnProducts.addActionListener(e -> {
-            frame.showProductPanel();
+            MainPage.getInstance().showProductPanel();
         });
 
         btnAccount.addActionListener(e -> {
-            frame.showPersonPanel();
+            MainPage.getInstance().showPersonPanel();
         });
 
         btnSale.addActionListener(e -> {
-            frame.showSalePanel();
+//            MainPage.getInstance().showSalePanel();
         });
 
         btnLogout.addActionListener(e -> {
-            Window currentWindow = SwingUtilities.getWindowAncestor(this);
-            if (currentWindow != null) {
-                currentWindow.dispose();
-            }
-
             try {
-                new MainFrame().setVisible(true); 
+                App.getInstance().logout();
             } catch (Exception ex) {
                 ex.printStackTrace();
             }
@@ -88,8 +84,8 @@ public class MenuPanel extends JPanel {
         loadDataFromDatabase();
     }
     private void loadDataFromDatabase() {
-        dbConnect db = new dbConnect();
-        try (Connection conn = db.getConnection()) {
+//        DATABBASE db = new DATABBASE();
+        try (Connection conn = null) {
             if (conn == null) return;            
 
             String sql = "SELECT role FROM users WHERE username = ?";

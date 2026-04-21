@@ -1,42 +1,55 @@
 package StoreManagement.model;
 
-import javax.swing.*;
+import javax.swing.ImageIcon;
 import java.util.ArrayList;
+import java.util.List;
 
 public class Product {
+    private int id;
     private int amount;
     private double price;
     private String name;
     private String description;
-    private ImageIcon image;
+    private String imagePath;
     private String category;
-    private ArrayList<Object> add_more_taste;
+    private List<String> addMoreTaste;
+    private boolean available;
 
     public Product() {
-        amount = 0;
-        price = 0.0;
-        name = "";
-        description = "";
-        image = null;
-        category = "";
-        add_more_taste = new ArrayList<>();
+        this.id = 0;
+        this.amount = 0;
+        this.price = 0.0;
+        this.name = "";
+        this.description = "";
+        this.imagePath = "";
+        this.category = "";
+        this.addMoreTaste = new ArrayList<>();
+        this.available = true;
     }
 
-    public Product(int amount,
-                   double price,
-                   String name,
-                   String description,
-                   ImageIcon image,
-                   String category,
-                   ArrayList<Object> add_more_taste
-    ) {
+    public Product(int id, int amount, double price, String name, String description, 
+                   String imagePath, String category, List<String> addMoreTaste) {
+        this.id = id;
         this.amount = amount;
         this.price = price;
         this.name = name;
         this.description = description;
-        this.image = image;
+        this.imagePath = imagePath;
         this.category = category;
-        this.add_more_taste = add_more_taste;
+        this.addMoreTaste = addMoreTaste != null ? addMoreTaste : new ArrayList<>();
+        this.available = true;
+    }
+
+    public Product(String name, double price, String description, String imagePath) {
+        this(0, 0, price, name, description, imagePath, "Coffee", new ArrayList<>());
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 
     public int getAmount() {
@@ -71,12 +84,12 @@ public class Product {
         this.description = description;
     }
 
-    public ImageIcon getImage() {
-        return image;
+    public String getImagePath() {
+        return imagePath;
     }
 
-    public void setImage(ImageIcon image) {
-        this.image = image;
+    public void setImagePath(String imagePath) {
+        this.imagePath = imagePath;
     }
 
     public String getCategory() {
@@ -87,11 +100,47 @@ public class Product {
         this.category = category;
     }
 
-    public ArrayList<Object> getAdd_more_taste() {
-        return add_more_taste;
+    public List<String> getAddMoreTaste() {
+        return addMoreTaste;
     }
 
-    public void setAdd_more_taste(ArrayList<Object> add_more_taste) {
-        this.add_more_taste = add_more_taste;
+    public void setAddMoreTaste(List<String> addMoreTaste) {
+        this.addMoreTaste = addMoreTaste;
+    }
+
+    public boolean isAvailable() {
+        return available;
+    }
+
+    public void setAvailable(boolean available) {
+        this.available = available;
+    }
+
+    public String getFormattedPrice() {
+        return String.format("%,.0f VNĐ", price);
+    }
+
+    public void addTaste(String taste) {
+        if (addMoreTaste == null) {
+            addMoreTaste = new ArrayList<>();
+        }
+        addMoreTaste.add(taste);
+    }
+
+    public void removeTaste(String taste) {
+        if (addMoreTaste != null) {
+            addMoreTaste.remove(taste);
+        }
+    }
+
+    @Override
+    public String toString() {
+        return "Product{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", price=" + price +
+                ", category='" + category + '\'' +
+                ", available=" + available +
+                '}';
     }
 }

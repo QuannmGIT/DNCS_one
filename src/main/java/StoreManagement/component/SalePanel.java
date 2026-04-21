@@ -1,6 +1,6 @@
 package StoreManagement.component;
 
-import StoreManagement.Utility.dbConnect;
+import StoreManagement.Utility.DATABBASE;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -23,8 +23,7 @@ public class SalePanel extends JPanel {
     private BarChartPanel chartPanel;
     private DefaultListModel<String> topProductModel;
 
-    public SalePanel(ManageFrame frame) {
-        this.frame = frame; 
+    public SalePanel() {
         this.setLayout(new BorderLayout(20, 20));
         this.setBackground(Color.WHITE);
         this.setBorder(new EmptyBorder(20, 20, 20, 20));
@@ -110,8 +109,8 @@ public class SalePanel extends JPanel {
     }
 
     private void loadDashboardData() {
-        dbConnect db = new dbConnect();
-        try (Connection conn = db.getConnection()) {
+//        DATABBASE db = new DATABBASE();
+        try (Connection conn = null) {
             if (conn == null) return;
 
       
@@ -258,7 +257,8 @@ public class SalePanel extends JPanel {
         private JTable table;
 
         public MonthlyOrderListDialog() {
-            super(SalePanel.this.frame, "Danh Sách Hóa Đơn Trong Tháng", true);
+//            super(SalePanel, "Danh Sách Hóa Đơn Trong Tháng", true);
+//            SalePanel.getInstance().
             
             JPanel main = new JPanel(new BorderLayout());
             main.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
@@ -286,14 +286,14 @@ public class SalePanel extends JPanel {
         }
 
         private void loadOrderData() {
-            dbConnect db = new dbConnect();
+//            DATABBASE db = new DATABBASE();
             String sql = "SELECT o.order_id, o.order_date, u.username, o.total_amount " +
                          "FROM Orders o JOIN users u ON o.user_id = u.user_id " +
                          "WHERE MONTH(o.order_date) = MONTH(CURRENT_DATE()) " +
                          "AND YEAR(o.order_date) = YEAR(CURRENT_DATE()) " +
                          "ORDER BY o.order_date DESC";
 
-            try (Connection conn = db.getConnection();
+            try (Connection conn = null;
                  Statement stmt = conn.createStatement();
                  ResultSet rs = stmt.executeQuery(sql)) {
 

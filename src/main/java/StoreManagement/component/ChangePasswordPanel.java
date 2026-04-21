@@ -7,15 +7,15 @@ import javax.swing.border.LineBorder;
 import java.awt.*;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
-import StoreManagement.Utility.dbConnect;
+import StoreManagement.Utility.DATABBASE;
+import StoreManagement.page.MainPage;
 
 public class ChangePasswordPanel extends JPanel {
 
     private ManageFrame frame;
     private String username; 
 
-    public ChangePasswordPanel(ManageFrame frame, String username) {
-        this.frame = frame;
+    public ChangePasswordPanel(String username) {
         this.username = username;
         
         this.setLayout(null);
@@ -92,7 +92,7 @@ public class ChangePasswordPanel extends JPanel {
         this.add(btnBack);
 
 
-        btnBack.addActionListener(e -> frame.showPersonPanel());
+        btnBack.addActionListener(e -> MainPage.getInstance().showPersonPanel());
 
         btnConfirm.addActionListener(e -> {
             String oldPass = new String(txtOldPass.getPassword()).trim();
@@ -121,15 +121,16 @@ public class ChangePasswordPanel extends JPanel {
     }
 
     private void changePassword(String oldPass, String newPass) {
-        dbConnect db = new dbConnect();
-        try (Connection conn = db.getConnection()) {
+//        DATABBASE db = new DATABBASE();
+        try (Connection conn = null;)
+         {
             if (conn == null) {
                 JOptionPane.showMessageDialog(this, "Lỗi kết nối CSDL!");
                 return;
             }
 
 
-            String checkSql = "SELECT password FROM users WHERE username = ? AND password = ?";
+            String checkSql = "";
             try (PreparedStatement psCheck = conn.prepareStatement(checkSql)) {
                 psCheck.setString(1, this.username);
                 psCheck.setString(2, oldPass);
@@ -149,7 +150,7 @@ public class ChangePasswordPanel extends JPanel {
                 int row = psUpdate.executeUpdate();
                 if (row > 0) {
                     JOptionPane.showMessageDialog(this, "Đổi mật khẩu thành công!");
-                    frame.showPersonPanel(); 
+                    MainPage.getInstance().showPersonPanel();
                 }
             }
 

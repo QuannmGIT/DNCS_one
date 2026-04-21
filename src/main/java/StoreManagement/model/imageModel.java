@@ -1,7 +1,6 @@
 package StoreManagement.model;
 
 import StoreManagement.Utility.ImageUtil;
-
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;

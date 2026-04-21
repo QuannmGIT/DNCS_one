@@ -1,7 +1,5 @@
 package StoreManagement.component;
 
-import StoreManagement.Utility.dbConnect;
-
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
@@ -18,8 +16,8 @@ import java.util.Map;
 
 public class ProductPanel extends JPanel {
 
-    private ManageFrame frame;
-    private JPanel gridPanel; 
+//    private ManageFrame frame;
+    private JPanel gridPanel;
     private JPanel cartPanel; 
     private JLabel lblTotalMoney; 
 
@@ -35,9 +33,8 @@ public class ProductPanel extends JPanel {
     private final Color PRIMARY_COLOR = new Color(32, 178, 170); 
     private final Color PRICE_COLOR = new Color(220, 20, 60);    
 
-    public ProductPanel(ManageFrame frame) {
-        this.frame = frame;
-        this.setLayout(new BorderLayout(15, 15)); 
+    public ProductPanel() {
+        this.setLayout(new BorderLayout(15, 15));
         this.setBackground(new Color(245, 245, 245)); 
         this.setBorder(new EmptyBorder(15, 15, 15, 15)); 
 
@@ -135,22 +132,22 @@ public class ProductPanel extends JPanel {
 
     private void loadProductsFromDB(String keyword) {
         gridPanel.removeAll(); 
-        dbConnect db = new dbConnect();
-        try (Connection conn = db.getConnection()) {
+//        DATABBASE db = new DATABBASE();
+        try (Connection conn = null) {
             if (conn == null) return;
             
             String sql = "SELECT * FROM Products WHERE product_name LIKE ?"; 
-            try (PreparedStatement ps = conn.prepareStatement(sql)) {
-                ps.setString(1, "%" + keyword + "%"); 
-                ResultSet rs = ps.executeQuery();
-                while (rs.next()) {
-                    gridPanel.add(new ProductCard(
-                        rs.getInt("product_id"), 
-                        rs.getString("product_name"), 
-                        rs.getDouble("price")
-                    ));
-                }
-            }
+//            try (PreparedStatement ps = conn.prepareStatement(sql)) {
+//                ps.setString(1, "%" + keyword + "%");
+//                ResultSet rs = ps.executeQuery();
+//                while (rs.next()) {
+//                    gridPanel.add(new ProductCard(
+//                        rs.getInt("product_id"),
+//                        rs.getString("product_name"),
+//                        rs.getDouble("price")
+//                    ));
+//                }
+//            }
             gridPanel.revalidate(); 
             gridPanel.repaint();
         } catch (Exception e) { e.printStackTrace(); }
@@ -158,19 +155,19 @@ public class ProductPanel extends JPanel {
 
 
     private ImageIcon getImageByProductName(String name) {
-        String imagePath = "/assets/default.png";
+        String imagePath = "/StoreManagement/assets/default.png";
 
         if (name.contains("Cafe Đen")) {
-            imagePath = "/assets/img/cafe_den.png";
+            imagePath = "/StoreManagement/assets/img/cafe_den.png";
         } 
         else if (name.contains("Cafe Sữa")) {
-            imagePath = "/assets/img/cafe_sua.png";
+            imagePath = "/StoreManagement/assets/img/cafe_sua.png";
         }
         else if (name.contains("Bạc Xỉu")) {
-            imagePath = "/assets/img/bac_xiu.png";
+            imagePath = "/StoreManagement/assets/img/bac_xiu.png";
         }
         else if (name.contains("Trà Đào")) {
-            imagePath = "/assets/img/tra_dao.png";
+            imagePath = "/StoreManagement/assets/img/tra_dao.png";
         }
 
         ImageIcon icon = new ImageIcon(getClass().getResource(imagePath));
@@ -265,38 +262,38 @@ public class ProductPanel extends JPanel {
         for (CartItemPanel item : cartMap.values()) totalAmount += item.getTotalPrice();
         
 
-        dbConnect db = new dbConnect();
-        try (Connection conn = db.getConnection()) {
+//        DATABBASE db = new DATABBASE();
+        try (Connection conn = null) {
             if (conn != null) {
                 conn.setAutoCommit(false);
                 String userSql = "SELECT user_id FROM users WHERE username = ?";
                 int userId = 1; 
-                try(PreparedStatement psUser = conn.prepareStatement(userSql)){
-                     psUser.setString(1, frame.getLoggedInUser()); 
-                     ResultSet rs = psUser.executeQuery();
-                     if(rs.next()) userId = rs.getInt(1);
-                }
-                String orderSql = "INSERT INTO Orders (user_id, total_amount) VALUES (?, ?)";
-                PreparedStatement psOrder = conn.prepareStatement(orderSql, Statement.RETURN_GENERATED_KEYS);
-                psOrder.setInt(1, userId);
-                psOrder.setDouble(2, totalAmount); 
-                psOrder.executeUpdate();
-                int orderId = 0;
-                ResultSet rsKeys = psOrder.getGeneratedKeys();
-                if (rsKeys.next()) 
-                    orderId = rsKeys.getInt(1);
-
-                String detailSql = "INSERT INTO OrderDetails (order_id, product_id, quantity) VALUES (?, ?, ?)";
-                PreparedStatement psDetail = conn.prepareStatement(detailSql);
-                for (CartItemPanel item : cartMap.values()) {
-                    psDetail.setInt(1, orderId);
-                    psDetail.setInt(2, item.getProductId());
-                    psDetail.setInt(3, item.getQuantity());
-                    psDetail.addBatch(); 
-                }
-                psDetail.executeBatch();
+//                try(PreparedStatement psUser = conn.prepareStatement(userSql)){
+//                     psUser.setString(1, frame.getLoggedInUser());
+//                     ResultSet rs = psUser.executeQuery();
+//                     if(rs.next()) userId = rs.getInt(1);
+//                }
+//                String orderSql = "INSERT INTO Orders (user_id, total_amount) VALUES (?, ?)";
+//                PreparedStatement psOrder = conn.prepareStatement(orderSql, Statement.RETURN_GENERATED_KEYS);
+//                psOrder.setInt(1, userId);
+//                psOrder.setDouble(2, totalAmount);
+//                psOrder.executeUpdate();
+//                int orderId = 0;
+//                ResultSet rsKeys = psOrder.getGeneratedKeys();
+//                if (rsKeys.next())
+//                    orderId = rsKeys.getInt(1);
+//
+//                String detailSql = "INSERT INTO OrderDetails (order_id, product_id, quantity) VALUES (?, ?, ?)";
+//                PreparedStatement psDetail = conn.prepareStatement(detailSql);
+//                for (CartItemPanel item : cartMap.values()) {
+//                    psDetail.setInt(1, orderId);
+//                    psDetail.setInt(2, item.getProductId());
+//                    psDetail.setInt(3, item.getQuantity());
+//                    psDetail.addBatch();
+//                }
+//                psDetail.executeBatch();
                 conn.commit();
-                openVietQRLink((int)totalAmount, "DonHang" + orderId);
+//                openVietQRLink((int)totalAmount, "DonHang" + orderId);
             }
         } catch (Exception e) { e.printStackTrace(); }
         
@@ -385,5 +382,11 @@ public class ProductPanel extends JPanel {
         public int getProductId() { return productId; }
         public int getQuantity() { return quantity; }
         public double getTotalPrice() { return price * quantity; }
+    }
+
+    static void main() {
+//        JFrame n = new JFrame();
+//        n.add(new ProductPanel(n));
+//        n.setVisible(true);
     }
 }
