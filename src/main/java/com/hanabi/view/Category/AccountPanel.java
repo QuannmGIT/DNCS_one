@@ -6,6 +6,9 @@ import com.hanabi.util.FontLoader;
 import java.awt.*;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.JTableHeader;
 
 public class AccountPanel extends JPanel {
 
@@ -44,7 +47,7 @@ public class AccountPanel extends JPanel {
     private void initComponents() {
         setBackground(Color.WHITE);
         setPreferredSize(new Dimension(PANEL_WIDTH, PANEL_HEIGHT));
-        setBorder(new EmptyBorder(25, 30, 25, 30));
+        setBorder(new EmptyBorder(18, 30, 20, 30));
         setLayout(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
 
@@ -70,6 +73,16 @@ public class AccountPanel extends JPanel {
         title.setFont(new Font("Segoe UI", Font.BOLD, 28));
         title.setForeground(DARK_BROWN);
 
+        JPanel titleUnderline = new JPanel();
+        titleUnderline.setBackground(DARK_BROWN);
+        titleUnderline.setPreferredSize(new Dimension(180, 3));
+        titleUnderline.setMaximumSize(new Dimension(180, 3));
+
+        JPanel titleWrapper = new JPanel(new BorderLayout(0, 6));
+        titleWrapper.setOpaque(false);
+        titleWrapper.add(title, BorderLayout.NORTH);
+        titleWrapper.add(titleUnderline, BorderLayout.SOUTH);
+
         // ─── INFO CARD ──────────────────────────────────────────
         JPanel infoCard = new JPanel(new GridBagLayout());
         infoCard.setBackground(INFO_CARD_BG);
@@ -85,39 +98,62 @@ public class AccountPanel extends JPanel {
             new FlatSVGIcon("com/hanabi/resources/StoreManagement/assets/icon/AccountIconLight.svg", 70, 70));
         avatar.add(avatarIcon);
 
-        labelUsername = new JLabel("Username...");
-        labelUsername.setFont(new Font("Segoe UI", Font.PLAIN, 20));
-        labelUsername.setForeground(TEXT_MENU);
+        Font labelFont = new Font("Segoe UI", Font.BOLD, 14);
+        Font valueFont = new Font("Segoe UI", Font.PLAIN, 18);
+        Color labelColor = new Color(120, 95, 82);
 
-        labelFullname = new JLabel("Fullname...");
-        labelFullname.setFont(new Font("Segoe UI", Font.PLAIN, 20));
-        labelFullname.setForeground(TEXT_MENU);
+        JLabel lblUser = new JLabel("Username:");
+        lblUser.setFont(labelFont); lblUser.setForeground(labelColor);
+        labelUsername = new JLabel("username...");
+        labelUsername.setFont(valueFont); labelUsername.setForeground(TEXT_MENU);
 
-        labelEmail = new JLabel("Email...");
-        labelEmail.setFont(new Font("Segoe UI", Font.PLAIN, 20));
-        labelEmail.setForeground(TEXT_MENU);
+        JLabel lblFull = new JLabel("Fullname:");
+        lblFull.setFont(labelFont); lblFull.setForeground(labelColor);
+        labelFullname = new JLabel("fullname...");
+        labelFullname.setFont(valueFont); labelFullname.setForeground(TEXT_MENU);
+
+        JLabel lblEmail = new JLabel("Email:");
+        lblEmail.setFont(labelFont); lblEmail.setForeground(labelColor);
+        labelEmail = new JLabel("email...");
+        labelEmail.setFont(valueFont); labelEmail.setForeground(TEXT_MENU);
+
+        JPanel textPanel = new JPanel(new GridBagLayout());
+        textPanel.setOpaque(false);
+        GridBagConstraints tp = new GridBagConstraints();
+        tp.gridx = 0; tp.gridy = 0;
+        tp.anchor = GridBagConstraints.WEST;
+        tp.insets = new Insets(0, 0, 10, 0);
+        JPanel row0 = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 0));
+        row0.setOpaque(false);
+        row0.add(lblUser); row0.add(labelUsername);
+        textPanel.add(row0, tp);
+        tp.gridy = 1;
+        tp.insets = new Insets(0, 0, 10, 0);
+        JPanel row1 = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 0));
+        row1.setOpaque(false);
+        row1.add(lblFull); row1.add(labelFullname);
+        textPanel.add(row1, tp);
+        tp.gridy = 2;
+        tp.insets = new Insets(0, 0, 0, 0);
+        JPanel row2 = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 0));
+        row2.setOpaque(false);
+        row2.add(lblEmail); row2.add(labelEmail);
+        textPanel.add(row2, tp);
 
         GridBagConstraints cg = new GridBagConstraints();
-        cg.gridx = 0; cg.gridy = 0; cg.gridheight = 3;
-        cg.insets = new Insets(24, 24, 24, 18);
+        cg.gridx = 0; cg.gridy = 0; cg.gridheight = 1;
+        cg.insets = new Insets(20, 18, 20, 10);
         cg.anchor = GridBagConstraints.CENTER;
         infoCard.add(avatar, cg);
 
-        cg.gridx = 1; cg.gridy = 0; cg.gridheight = 1;
-        cg.insets = new Insets(28, 5, 6, 36);
+        cg.gridx = 1; cg.gridy = 0;
+        cg.insets = new Insets(20, 0, 20, 24);
         cg.anchor = GridBagConstraints.WEST;
-        infoCard.add(labelUsername, cg);
-
-        cg.gridy = 1;
-        cg.insets = new Insets(6, 5, 6, 36);
-        infoCard.add(labelFullname, cg);
-
-        cg.gridy = 2;
-        cg.insets = new Insets(6, 5, 28, 36);
-        infoCard.add(labelEmail, cg);
+        cg.fill = GridBagConstraints.NONE;
+        infoCard.add(textPanel, cg);
 
         // ─── BUTTONS ────────────────────────────────────────────
-        JButton btnChangePwd = createBtn("Change Password");
+        JButton btnChangePass = createBtn("Change Password");
         JButton btnAddUser = createBtn("Add User");
         JButton btnTerminate = createBtn("Terminate");
 
@@ -147,8 +183,9 @@ public class AccountPanel extends JPanel {
         GridBagConstraints bg = new GridBagConstraints();
         bg.gridx = 0; bg.gridy = 0;
         bg.fill = GridBagConstraints.HORIZONTAL;
-        bg.insets = new Insets(0, 0, 14, 0);
-        btnPanel.add(btnChangePwd, bg);
+        bg.weightx = 1.0;
+        bg.insets = new Insets(0, 0, 10, 0);
+        btnPanel.add(btnChangePass, bg);
         bg.gridy = 1;
         btnPanel.add(btnAddUser, bg);
         bg.gridy = 2;
@@ -182,38 +219,59 @@ public class AccountPanel extends JPanel {
         gbc.gridy = 1;
         gbc.insets = new Insets(0, 12, 18, 0);
         gbc.anchor = GridBagConstraints.WEST;
-        add(title, gbc);
+        add(titleWrapper, gbc);
+
+        // --- WRAPPER: INFO CARD + BUTTONS ---
+        JPanel topWrapper = new JPanel(new GridBagLayout());
+        topWrapper.setOpaque(false);
+        GridBagConstraints tw = new GridBagConstraints();
+        tw.gridx = 0; tw.gridy = 0;
+        tw.anchor = GridBagConstraints.WEST;
+        tw.insets = new Insets(0, 0, 0, 30);
+        topWrapper.add(infoCard, tw);
+        tw.gridx = 1;
+        tw.insets = new Insets(0, 0, 0, 0);
+        tw.fill = GridBagConstraints.VERTICAL;
+        tw.weighty = 1.0;
+        topWrapper.add(btnPanel, tw);
 
         gbc.gridy = 2;
-        gbc.gridwidth = 1;
-        gbc.insets = new Insets(0, 12, 20, 18);
-        gbc.anchor = GridBagConstraints.NORTHWEST;
-        add(infoCard, gbc);
-
-        gbc.gridx = 1; gbc.gridy = 2;
-        gbc.insets = new Insets(0, 0, 20, 12);
-        gbc.anchor = GridBagConstraints.NORTH;
-        add(btnPanel, gbc);
+        gbc.gridwidth = 2;
+        gbc.weightx = 1.0;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.insets = new Insets(0, 12, 20, 0);
+        gbc.anchor = GridBagConstraints.WEST;
+        add(topWrapper, gbc);
 
         gbc.gridx = 0; gbc.gridy = 3;
         gbc.gridwidth = 2;
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.insets = new Insets(8, 12, 20, 12);
+        gbc.insets = new Insets(8, 12, 12, 12);
         gbc.anchor = GridBagConstraints.CENTER;
         add(statsPanel, gbc);
+
+        JPanel salaryPanel = createSalaryTable();
+        gbc.gridx = 0; gbc.gridy = 4;
+        gbc.gridwidth = 2;
+        gbc.weightx = 1.0;
+        gbc.weighty = 1.0;
+        gbc.fill = GridBagConstraints.BOTH;
+        gbc.insets = new Insets(0, 12, 8, 12);
+        gbc.anchor = GridBagConstraints.CENTER;
+        add(salaryPanel, gbc);
     }
 
     private JButton createBtn(String text) {
         JButton btn = new JButton(text);
-        btn.setPreferredSize(new Dimension(170, 48));
         btn.setFont(new Font("Segoe UI", Font.BOLD, 16));
-        btn.setBackground(INFO_CARD_BG);
-        btn.setForeground(TEXT_MENU);
+        btn.setBackground(DARK_BROWN);
+        btn.setForeground(Color.WHITE);
         btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btn.setHorizontalAlignment(SwingConstants.CENTER);
         btn.putClientProperty(FlatClientProperties.STYLE,
-            "arc:16; borderWidth:0; focusWidth:0; innerFocusWidth:0;" +
-            "pressedBackground:#A88A68");
-        btn.putClientProperty("JButton.hoverBackground", new Color(191, 161, 127));
+            "arc:10; borderWidth:0; focusWidth:0; innerFocusWidth:0;" +
+            "pressedBackground:#5C3D2E");
+        btn.putClientProperty("JButton.hoverBackground", new Color(110, 85, 75));
         return btn;
     }
 
@@ -227,24 +285,154 @@ public class AccountPanel extends JPanel {
         titleRow.setOpaque(false);
         JLabel iconLbl = new JLabel(icon);
         JLabel titleLbl = new JLabel(title);
-        titleLbl.setFont(new Font("Segoe UI", Font.BOLD, 20));
-        titleLbl.setForeground(DARK_BROWN);
+        titleLbl.setFont(new Font("Segoe UI", Font.BOLD, 18));
+        titleLbl.setForeground(new Color(120, 95, 82));
         titleRow.add(iconLbl);
         titleRow.add(titleLbl);
 
-        valueLabel.setFont(new Font("Segoe UI", Font.BOLD, 48));
+        valueLabel.setFont(new Font("Segoe UI", Font.BOLD, 46));
         valueLabel.setForeground(DARK_BROWN);
         valueLabel.setHorizontalAlignment(SwingConstants.CENTER);
 
         GridBagConstraints g = new GridBagConstraints();
         g.gridx = 0; g.gridy = 0;
-        g.insets = new Insets(22, 10, 8, 10);
+        g.insets = new Insets(18, 10, 6, 10);
         g.anchor = GridBagConstraints.CENTER;
         panel.add(titleRow, g);
 
         g.gridy = 1;
-        g.insets = new Insets(8, 10, 26, 10);
+        g.insets = new Insets(6, 10, 22, 10);
         panel.add(valueLabel, g);
+
+        return panel;
+    }
+
+    private JPanel createSalaryTable() {
+        JPanel panel = new JPanel(new BorderLayout(0, 10));
+        panel.setOpaque(false);
+
+        // Title
+        JLabel title = new JLabel("Bảng lương nhân viên");
+        title.setFont(new Font("Segoe UI", Font.BOLD, 20));
+        title.setForeground(DARK_BROWN);
+
+        JPanel titleRow = new JPanel(new BorderLayout());
+        titleRow.setOpaque(false);
+        titleRow.add(title, BorderLayout.WEST);
+        JLabel countLabel = new JLabel("6 nhân viên");
+        countLabel.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        countLabel.setForeground(new Color(160, 140, 125));
+        titleRow.add(countLabel, BorderLayout.EAST);
+
+        // Data
+        String[] cols = {"STT", "Họ tên", "Chức vụ", "Lương cơ bản", "Phụ cấp", "Tổng lương"};
+        Object[][] data = {
+            {1, "Nguyễn Văn An",   "Barista",   "8.000.000đ", "1.200.000đ", "9.200.000đ"},
+            {2, "Trần Thị Bình",   "Phục vụ",   "6.500.000đ", "800.000đ",   "7.300.000đ"},
+            {3, "Lê Hoàng Cường", "Đầu bếp",    "10.000.000đ","1.500.000đ", "11.500.000đ"},
+            {4, "Phạm Minh Đức",   "Quản lý",   "12.000.000đ","2.000.000đ", "14.000.000đ"},
+            {5, "Hoàng Thị Em",    "Phục vụ",   "6.500.000đ", "800.000đ",   "7.300.000đ"},
+            {6, "Võ Văn Phúc",    "Barista",   "8.000.000đ", "1.200.000đ", "9.200.000đ"},
+        };
+
+        DefaultTableModel model = new DefaultTableModel(data, cols) {
+            @Override public boolean isCellEditable(int row, int col) { return false; }
+        };
+
+        JTable table = new JTable(model);
+        table.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        table.setRowHeight(34);
+        table.setGridColor(new Color(230, 220, 210));
+        table.setBackground(Color.WHITE);
+        table.setForeground(TEXT_MENU);
+        table.setSelectionBackground(new Color(191, 161, 127));
+        table.setSelectionForeground(Color.WHITE);
+        table.setShowHorizontalLines(true);
+        table.setShowVerticalLines(false);
+        table.setIntercellSpacing(new Dimension(0, 0));
+
+        // Header styling
+        JTableHeader header = table.getTableHeader();
+        header.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        header.setForeground(Color.WHITE);
+        header.setBackground(DARK_BROWN);
+        header.setPreferredSize(new Dimension(0, 40));
+        header.setResizingAllowed(false);
+        ((DefaultTableCellRenderer) header.getDefaultRenderer())
+            .setHorizontalAlignment(SwingConstants.CENTER);
+
+        // Center-align all cells
+        DefaultTableCellRenderer center = new DefaultTableCellRenderer();
+        center.setHorizontalAlignment(SwingConstants.CENTER);
+
+        // Right-align currency columns (index 3,4,5)
+        DefaultTableCellRenderer right = new DefaultTableCellRenderer();
+        right.setHorizontalAlignment(SwingConstants.RIGHT);
+
+        for (int i = 0; i < table.getColumnCount(); i++) {
+            if (i >= 3) {
+                table.getColumnModel().getColumn(i).setCellRenderer(right);
+            } else {
+                table.getColumnModel().getColumn(i).setCellRenderer(center);
+            }
+        }
+
+        // Alternating row colors
+        DefaultTableCellRenderer stripe = new DefaultTableCellRenderer() {
+            @Override
+            public Component getTableCellRendererComponent(JTable t, Object v,
+                    boolean sel, boolean focus, int row, int col) {
+                Component c = super.getTableCellRendererComponent(t, v, sel, focus, row, col);
+                if (!sel) {
+                    c.setBackground(row % 2 == 0 ? Color.WHITE : new Color(252, 250, 248));
+                }
+                return c;
+            }
+        };
+        stripe.setHorizontalAlignment(SwingConstants.CENTER);
+        for (int i = 0; i < 3; i++) {
+            table.getColumnModel().getColumn(i).setCellRenderer(stripe);
+        }
+        DefaultTableCellRenderer stripeRight = new DefaultTableCellRenderer() {
+            @Override
+            public Component getTableCellRendererComponent(JTable t, Object v,
+                    boolean sel, boolean focus, int row, int col) {
+                Component c = super.getTableCellRendererComponent(t, v, sel, focus, row, col);
+                if (!sel) {
+                    c.setBackground(row % 2 == 0 ? Color.WHITE : new Color(252, 250, 248));
+                }
+                return c;
+            }
+        };
+        stripeRight.setHorizontalAlignment(SwingConstants.RIGHT);
+        for (int i = 3; i < table.getColumnCount(); i++) {
+            table.getColumnModel().getColumn(i).setCellRenderer(stripeRight);
+        }
+
+        // Column widths
+        table.getColumnModel().getColumn(0).setPreferredWidth(50);
+        table.getColumnModel().getColumn(0).setMaxWidth(60);
+        table.getColumnModel().getColumn(1).setPreferredWidth(180);
+        table.getColumnModel().getColumn(2).setPreferredWidth(100);
+        table.getColumnModel().getColumn(3).setPreferredWidth(130);
+        table.getColumnModel().getColumn(4).setPreferredWidth(110);
+        table.getColumnModel().getColumn(5).setPreferredWidth(130);
+
+        // Scroll pane
+        JScrollPane scroll = new JScrollPane(table);
+        scroll.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(new Color(210, 195, 180), 1),
+            BorderFactory.createEmptyBorder(2, 0, 2, 0)
+        ));
+        scroll.getViewport().setBackground(Color.WHITE);
+        scroll.setOpaque(false);
+        scroll.setCorner(JScrollPane.UPPER_RIGHT_CORNER, new JPanel() {{
+            setBackground(DARK_BROWN);
+        }});
+        scroll.getVerticalScrollBar().setUnitIncrement(12);
+
+        panel.add(titleRow, BorderLayout.NORTH);
+        panel.add(scroll, BorderLayout.CENTER);
 
         return panel;
     }
