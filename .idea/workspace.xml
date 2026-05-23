@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="3d5648a3-1e53-49e9-ba8a-213884e64097" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/App.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/hanabi/dao/UserDAO.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/hanabi/model/User.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/hanabi/resources/StoreManagement/assets/Fonts/AmaticSC-Regular.ttf" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/hanabi/resources/StoreManagement/assets/Fonts/DancingScript-Regular.ttf" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/hanabi/resources/StoreManagement/assets/Fonts/fms_metadata.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/hanabi/resources/StoreManagement/assets/icon/AccountIcon.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/hanabi/resources/StoreManagement/assets/icon/AccountIconLight.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/hanabi/resources/StoreManagement/assets/icon/Allicon.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/hanabi/resources/StoreManagement/assets/icon/AlliconLight.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/hanabi/resources/StoreManagement/assets/icon/BakeryIcon.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/hanabi/resources/StoreManagement/assets/icon/BakeryIconLight.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/hanabi/resources/StoreManagement/assets/icon/CheckIcon.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/hanabi/resources/StoreManagement/assets/icon/CheckedIcon.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/hanabi/resources/StoreManagement/assets/icon/HanabiCafe.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/hanabi/resources/StoreManagement/assets/icon/HanabiCafe.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/hanabi/resources/StoreManagement/assets/icon/HanabiIcon.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/hanabi/resources/StoreManagement/assets/icon/HanabiIcon__.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/hanabi/resources/StoreManagement/assets/icon/IceIcon.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/hanabi/resources/StoreManagement/assets/icon/IceIconLight.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/hanabi/resources/StoreManagement/assets/icon/Login.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/hanabi/resources/StoreManagement/assets/icon/MenuIcon.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/hanabi/resources/StoreManagement/assets/icon/MenuIconLight.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/hanabi/resources/StoreManagement/assets/icon/Orders.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/hanabi/resources/StoreManagement/assets/icon/PointIcon.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/hanabi/resources/StoreManagement/assets/icon/Rating.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/hanabi/resources/StoreManagement/assets/icon/RevenueIcon.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/hanabi/resources/StoreManagement/assets/icon/RevenueIconLight.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/hanabi/resources/StoreManagement/assets/icon/Today.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/hanabi/resources/StoreManagement/assets/icon/TotalOrderIcon.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/hanabi/resources/StoreManagement/assets/icon/user.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/hanabi/resources/StoreManagement/assets/img/1.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/hanabi/resources/StoreManagement/assets/img/10.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/hanabi/resources/StoreManagement/assets/img/11.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/hanabi/resources/StoreManagement/assets/img/12.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/hanabi/resources/StoreManagement/assets/img/13.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/hanabi/resources/StoreManagement/assets/img/14.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/hanabi/resources/StoreManagement/assets/img/15.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/hanabi/resources/StoreManagement/assets/img/16.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/hanabi/resources/StoreManagement/assets/img/17.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/hanabi/resources/StoreManagement/assets/img/18.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/hanabi/resources/StoreManagement/assets/img/19.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/hanabi/resources/StoreManagement/assets/img/2.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/hanabi/resources/StoreManagement/assets/img/20.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/hanabi/resources/StoreManagement/assets/img/21.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/hanabi/resources/StoreManagement/assets/img/22.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/hanabi/resources/StoreManagement/assets/img/23.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/hanabi/resources/StoreManagement/assets/img/24.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/hanabi/resources/StoreManagement/assets/img/3.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/hanabi/resources/StoreManagement/assets/img/4.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/hanabi/resources/StoreManagement/assets/img/5.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/hanabi/resources/StoreManagement/assets/img/6.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/hanabi/resources/StoreManagement/assets/img/7.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/hanabi/resources/StoreManagement/assets/img/8.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/hanabi/resources/StoreManagement/assets/img/9.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/hanabi/resources/StoreManagement/assets/img/CuaHangImage2.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/hanabi/resources/StoreManagement/themes/FlatDarkLaf.properties" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/hanabi/resources/StoreManagement/themes/FlatLaf.properties" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/hanabi/resources/StoreManagement/themes/FlatLightLaf.properties" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/hanabi/resources/StoreManagement/themes/PersonIcon.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/hanabi/resources/backend/hibernate.cfg.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/hanabi/util/DatabaseConnection.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/hanabi/util/FontLoader.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/hanabi/util/UIUtils.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/hanabi/view/Category/AccountPanel.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/hanabi/view/Category/CategoryPanel.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/hanabi/view/Category/DashboardView.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/hanabi/view/Category/MenuItemsPanel.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/hanabi/view/Category/RevenuePanel.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/hanabi/view/Field/LoginView.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/hanabi/view/Login/Banner.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/hanabi/view/Login/LoginPanel.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/hanabi/view/form/AccountPanel.form" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/hanabi/view/form/Banner.form" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/hanabi/view/form/LoginPanel.form" beforeDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="GitHubPullRequestSearchHistory"><![CDATA[{
+  "lastFilter": {
+    "state": "OPEN",
+    "assignee": "MinhCreator"
+  }
+}]]></component>
+  <component name="GithubPullRequestsUISettings"><![CDATA[{
+  "selectedUrlAndAccountId": {
+    "url": "https://github.com/QuannmGIT/DNCS_one.git",
+    "accountId": "9b7444e6-faec-42cd-9bde-dd1b40304ac7"
+  }
+}]]></component>
+  <component name="ProjectColorInfo"><![CDATA[{
+  "associatedIndex": 1
+}]]></component>
+  <component name="ProjectId" id="3E55GZYA8pjc3GNOWB68xTvWI9M" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Application.App.executor": "Run",
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "git-widget-placeholder": "Remake-DACS",
+    "last_opened_file_path": "C:/Users/Administrator/Desktop/DNCS_one",
+    "settings.editor.selected.configurable": "preferences.sourceCode.JAVA"
+  }
+}]]></component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-jdk-30f59d01ecdd-26cb7f24e5b0-intellij.indexing.shared.core-IU-253.29346.138" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="3d5648a3-1e53-49e9-ba8a-213884e64097" name="Changes" comment="" />
+      <created>1779455494872</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1779455494872</updated>
+    </task>
+    <servers />
+  </component>
+</project>
