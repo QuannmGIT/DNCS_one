@@ -35,7 +35,10 @@ import javax.swing.border.EmptyBorder;
 import com.formdev.flatlaf.FlatClientProperties;
 import com.formdev.flatlaf.extras.FlatSVGIcon;
 
+import hanabi.model.Product;
+import hanabi.service.MenuService;
 import hanabi.util.FontLoader;
+import hanabi.view.Field.AddProductForm;
 
 public class MenuItemsPanel extends JPanel {
 
@@ -48,38 +51,16 @@ public class MenuItemsPanel extends JPanel {
     private static final Color LINE_COLOR = new Color(230, 220, 210);
 
     private Font amaticFont;
+    private final MenuService menuService = new MenuService();
 
-    private final String[][] itemData = {
-        {"Matcha Ice\nBlended", "35.000đ", "1", "Iced"},
-        {"Americano", "28.000đ", "2", "Hot"},
-        {"croissants", "25.000đ", "3", "Bakery"},
-        {"Ice Latte", "25.000đ", "4", "Iced"},
-        {"Ice Black\nCoffee", "35.000đ", "5", "Iced"},
-        {"Caramel\nMachito", "40.000đ", "6", "Hot"},
-        {"Tiramisu", "45.000đ", "7", "Bakery"},
-        {"Lemon\nTea", "19.000đ", "8", "Iced"},
-        {"Orange", "23.000đ", "9", "Iced"},
-        {"Espresso", "20.000đ", "10", "Hot"},
-        {"Hot\nChocolate", "35.000đ", "11", "Hot"},
-        {"Cappuccino", "32.000đ", "12", "Hot"},
-        {"Blueberry\nMuffin", "25.000đ", "24", "Bakery"},
-        {"Iced\nMocha", "38.000đ", "15", "Iced"},
-        {"Hot Matcha\nLatte", "35.000đ", "13", "Hot"},
-        {"Red Velvet", "45.000đ", "22", "Bakery"},
-        {"Peach\nTea", "25.000đ", "16", "Iced"},
-        {"Earl Grey\nTea", "25.000đ", "14", "Hot"},
-        {"Cheesecake", "40.000đ", "20", "Bakery"},
-        {"Cold Brew", "35.000đ", "17", "Iced"},
-        {"Macaron\n(Set 3)", "30.000đ", "23", "Bakery"},
-        {"Mango\nSmoothie", "40.000đ", "18", "Iced"},
-        {"Choco\nCookie", "15.000đ", "21", "Bakery"},
-        {"Strawberry\nMacchiato", "42.000đ", "19", "Iced"}
-    };
+    private String[][] itemData = new String[0][4];
+    private List<Product> productList;
 
     private static class CatInfo {
         final String name;
         final String activeIcon;
         final String inactiveIcon;
+
         CatInfo(String name, String activeIcon, String inactiveIcon) {
             this.name = name;
             this.activeIcon = activeIcon;
@@ -88,10 +69,10 @@ public class MenuItemsPanel extends JPanel {
     }
 
     private final CatInfo[] categories = {
-        new CatInfo("All", "AlliconLight.svg", "Allicon.svg"),
-        new CatInfo("Hot", "MenuIconLight.svg", "MenuIcon.svg"),
-        new CatInfo("Iced", "IceIconLight.svg", "IceIcon.svg"),
-        new CatInfo("Bakery", "BakeryIconLight.svg", "BakeryIcon.svg")
+            new CatInfo("All", "AlliconLight.svg", "Allicon.svg"),
+            new CatInfo("Hot", "MenuIconLight.svg", "MenuIcon.svg"),
+            new CatInfo("Iced", "IceIconLight.svg", "IceIcon.svg"),
+            new CatInfo("Bakery", "BakeryIconLight.svg", "BakeryIcon.svg")
     };
 
     private final Map<String, int[]> cartMap = new LinkedHashMap<>();
@@ -110,7 +91,7 @@ public class MenuItemsPanel extends JPanel {
     private void loadFont() {
         try {
             amaticFont = FontLoader.load(
-                "/hanabi/assets/Fonts/AmaticSC-Regular.ttf", 48f);
+                    "/hanabi/assets/Fonts/AmaticSC-Regular.ttf", 48f);
         } catch (Exception e) {
             amaticFont = new Font("Segoe UI", Font.BOLD, 42);
         }
@@ -162,22 +143,36 @@ public class MenuItemsPanel extends JPanel {
         title.setFont(new Font("Segoe UI", Font.BOLD, 36));
         title.setForeground(DARK_BROWN);
 
-        JPanel brand = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
-        brand.setOpaque(false);
+        JPanel rightPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
+        rightPanel.setOpaque(false);
+
+        JButton addBtn = new JButton("+ Add Product");
+        addBtn.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        addBtn.setBackground(new Color(80, 160, 80));
+        addBtn.setForeground(Color.WHITE);
+        addBtn.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        addBtn.putClientProperty(FlatClientProperties.STYLE,
+                "arc:12; borderWidth:0; focusWidth:0; innerFocusWidth:0; margin:6,14,6,14;");
+        addBtn.addActionListener(e -> {
+            AddProductForm.init(this::loadMenuItems);
+        });
+        rightPanel.add(addBtn);
+
         JLabel name = new JLabel("HANABI CAFE");
         name.setFont(amaticFont);
         name.setForeground(DARK_BROWN);
         JLabel icon = new JLabel();
         try {
             ImageIcon img = new ImageIcon(MenuItemsPanel.class.getResource(
-                "/hanabi/assets/icon/HanabiCafe.png"));
+                    "/hanabi/assets/icon/HanabiCafe.png"));
             icon.setIcon(new ImageIcon(img.getImage().getScaledInstance(48, 38, Image.SCALE_SMOOTH)));
-        } catch (Exception ignored) {}
-        brand.add(name);
-        brand.add(icon);
+        } catch (Exception ignored) {
+        }
+        rightPanel.add(name);
+        rightPanel.add(icon);
 
         p.add(title, BorderLayout.WEST);
-        p.add(brand, BorderLayout.EAST);
+        p.add(rightPanel, BorderLayout.EAST);
         return p;
     }
 
@@ -212,13 +207,14 @@ public class MenuItemsPanel extends JPanel {
 
         try {
             btn.setIcon(new FlatSVGIcon(path + iconName, 20, 20));
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+        }
 
         btn.setFont(new Font("Segoe UI", Font.BOLD, 15));
         btn.setIconTextGap(8);
         btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btn.putClientProperty(FlatClientProperties.STYLE,
-            "arc:40; borderWidth:0; focusWidth:0; innerFocusWidth:0; margin:6,16,6,16;");
+                "arc:40; borderWidth:0; focusWidth:0; innerFocusWidth:0; margin:6,16,6,16;");
 
         updateCatBtnStyle(btn, active);
         btn.addActionListener(e -> onCatClick(info.name));
@@ -236,15 +232,17 @@ public class MenuItemsPanel extends JPanel {
     }
 
     private void switchCatIcon(JButton btn, CatInfo info, boolean active) {
-        String path = "/hanabi/assets/icon/";
+        String path = "hanabi/assets/icon/";
         String iconName = active ? info.activeIcon : info.inactiveIcon;
         try {
             btn.setIcon(new FlatSVGIcon(path + iconName, 20, 20));
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+        }
     }
 
     private void onCatClick(String cat) {
-        if (cat.equals(activeCat)) return;
+        if (cat.equals(activeCat))
+            return;
         activeCat = cat;
 
         for (int i = 0; i < categories.length; i++) {
@@ -270,7 +268,7 @@ public class MenuItemsPanel extends JPanel {
             idx++;
         }
         if (gridContainer.getComponentCount() == 0) {
-            JLabel empty = new JLabel("Không có món nào trong danh mục này", SwingConstants.CENTER);
+            JLabel empty = new JLabel("There are no items in this category", SwingConstants.CENTER);
             empty.setFont(new Font("Segoe UI", Font.ITALIC, 16));
             empty.setForeground(new Color(180, 170, 160));
             gridContainer.add(empty);
@@ -279,34 +277,84 @@ public class MenuItemsPanel extends JPanel {
         gridContainer.repaint();
     }
 
+    private JLabel loadProductImage(String imgIdx) {
+        if (imgIdx == null || imgIdx.isBlank())
+            return null;
+        String base = "hanabi/assets/img/";
+        String absBase = "/" + base;
+
+        String[] exts = { ".svg", ".png", ".jpg", ".jpeg" };
+        for (String ext : exts) {
+            java.net.URL url = getClass().getResource(absBase + imgIdx + ext);
+            if (url != null) {
+                if (ext.equals(".svg")) {
+                    try {
+                        return new JLabel(new FlatSVGIcon(base + imgIdx + ".svg", 65, 65));
+                    } catch (Exception ignored) {
+                    }
+                } else {
+                    try {
+                        ImageIcon icon = new ImageIcon(url);
+                        Image scaled = icon.getImage().getScaledInstance(65, 65, Image.SCALE_SMOOTH);
+                        return new JLabel(new ImageIcon(scaled));
+                    } catch (Exception ignored) {
+                    }
+                }
+            }
+        }
+
+        // Fallback for newly added files in development environment
+        String fsBase = System.getProperty("user.dir") + "/src/main/resources/" + base;
+        for (String ext : exts) {
+            java.io.File f = new java.io.File(fsBase + imgIdx + ext);
+            if (f.exists()) {
+                if (ext.equals(".svg")) {
+                    try {
+                        return new JLabel(new FlatSVGIcon(f));
+                    } catch (Exception ignored) {
+                    }
+                } else {
+                    try {
+                        ImageIcon icon = new ImageIcon(f.getAbsolutePath());
+                        Image scaled = icon.getImage().getScaledInstance(65, 65, Image.SCALE_SMOOTH);
+                        return new JLabel(new ImageIcon(scaled));
+                    } catch (Exception ignored) {
+                    }
+                }
+            }
+        }
+
+        return null;
+    }
+
     private JPanel createItemCard(String name, String price, String imgIdx) {
         JPanel card = new JPanel(new GridBagLayout());
         card.setBackground(CARD_BG);
         card.setPreferredSize(new Dimension(0, 145));
         card.setMinimumSize(new Dimension(160, 145));
         card.putClientProperty(FlatClientProperties.STYLE,
-            "arc:20; border: 1,1,1,1, #5A463D");
+                "arc:20; border: 1,1,1,1, #5A463D");
 
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(8, 8, 8, 8);
 
-        JLabel img = new JLabel();
-        img.setPreferredSize(new Dimension(65, 65));
-        try {
-            img.setIcon(new FlatSVGIcon(
-                "hanabi/assets/img/" + imgIdx + ".svg", 65, 65));
-        } catch (Exception e) {
+        JLabel img = loadProductImage(imgIdx);
+        if (img == null) {
+            img = new JLabel();
+            img.setPreferredSize(new Dimension(65, 65));
             img.setOpaque(true);
             img.setBackground(new Color(240, 235, 230));
         }
-        gbc.gridx = 0; gbc.gridy = 0;
+        gbc.gridx = 0;
+        gbc.gridy = 0;
         gbc.anchor = GridBagConstraints.NORTHWEST;
         card.add(img, gbc);
 
         JLabel nameLbl = new JLabel("<html>" + name.replace("\n", "<br>") + "</html>");
         nameLbl.setFont(new Font("Segoe UI", Font.BOLD, 15));
         nameLbl.setForeground(TEXT_MENU);
-        gbc.gridx = 1; gbc.gridy = 0;
+        gbc.gridx = 1;
+        gbc.gridy = 0;
         gbc.weightx = 1.0;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         card.add(nameLbl, gbc);
@@ -314,7 +362,8 @@ public class MenuItemsPanel extends JPanel {
         JLabel priceLbl = new JLabel(price);
         priceLbl.setFont(new Font("Segoe UI", Font.BOLD, 18));
         priceLbl.setForeground(DARK_BROWN);
-        gbc.gridx = 0; gbc.gridy = 1;
+        gbc.gridx = 0;
+        gbc.gridy = 1;
         gbc.weightx = 0;
         gbc.fill = GridBagConstraints.NONE;
         gbc.anchor = GridBagConstraints.SOUTHWEST;
@@ -326,14 +375,15 @@ public class MenuItemsPanel extends JPanel {
         btnAdd.setForeground(Color.WHITE);
         btnAdd.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btnAdd.putClientProperty(FlatClientProperties.STYLE,
-            "arc:12; borderWidth:0; focusWidth:0; margin:0,0,4,0;");
+                "arc:12; borderWidth:0; focusWidth:0; margin:0,0,4,0;");
         btnAdd.setPreferredSize(new Dimension(35, 35));
 
         String finalName = name;
         String finalPrice = price;
         btnAdd.addActionListener(e -> addToCart(finalName, finalPrice));
 
-        gbc.gridx = 1; gbc.gridy = 1;
+        gbc.gridx = 1;
+        gbc.gridy = 1;
         gbc.anchor = GridBagConstraints.SOUTHEAST;
         card.add(btnAdd, gbc);
 
@@ -348,9 +398,9 @@ public class MenuItemsPanel extends JPanel {
         cart.setPreferredSize(new Dimension(360, 0));
         cart.putClientProperty(FlatClientProperties.STYLE,
                 "arc:20; border: 2,2,2,2, #5A463D;");
-            // padding: 18,14,14,14
+        // padding: 18,14,14,14
         cart.setBorder(new EmptyBorder(18, 14, 14, 14));
-        JLabel title = new JLabel("Đơn hàng hiện tại", SwingConstants.CENTER);
+        JLabel title = new JLabel("Order", SwingConstants.CENTER);
         title.setFont(new Font("Segoe UI", Font.BOLD, 22));
         title.setForeground(DARK_BROWN);
         title.setBorder(new EmptyBorder(6, 0, 12, 0));
@@ -362,14 +412,14 @@ public class MenuItemsPanel extends JPanel {
         JPanel header = new JPanel(new BorderLayout());
         header.setOpaque(false);
         header.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createMatteBorder(0, 0, 2, 0, DARK_BROWN),
-            new EmptyBorder(0, 4, 8, 4)));
+                BorderFactory.createMatteBorder(0, 0, 2, 0, DARK_BROWN),
+                new EmptyBorder(0, 4, 8, 4)));
 
         Font hf = new Font("Segoe UI", Font.BOLD, 13);
         JLabel hItem = new JLabel("Món");
         JLabel hQty = new JLabel("SL", SwingConstants.CENTER);
         JLabel hPrice = new JLabel("Thành tiền", SwingConstants.RIGHT);
-        for (JLabel l : new JLabel[]{hItem, hQty, hPrice}) {
+        for (JLabel l : new JLabel[] { hItem, hQty, hPrice }) {
             l.setFont(hf);
             l.setForeground(DARK_BROWN);
         }
@@ -400,8 +450,8 @@ public class MenuItemsPanel extends JPanel {
         JPanel totalRow = new JPanel(new BorderLayout());
         totalRow.setOpaque(false);
         totalRow.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createMatteBorder(2, 0, 0, 0, DARK_BROWN),
-            new EmptyBorder(10, 0, 4, 0)));
+                BorderFactory.createMatteBorder(2, 0, 0, 0, DARK_BROWN),
+                new EmptyBorder(10, 0, 4, 0)));
 
         JLabel totalPrefix = new JLabel("Tổng cộng:");
         totalPrefix.setFont(new Font("Segoe UI", Font.BOLD, 15));
@@ -419,7 +469,7 @@ public class MenuItemsPanel extends JPanel {
         payBtn.setForeground(Color.WHITE);
         payBtn.setPreferredSize(new Dimension(0, 52));
         payBtn.putClientProperty(FlatClientProperties.STYLE,
-            "arc:18; borderWidth:0; focusWidth:0;");
+                "arc:18; borderWidth:0; focusWidth:0;");
         payBtn.setCursor(new Cursor(Cursor.HAND_CURSOR));
         bottom.add(payBtn, BorderLayout.SOUTH);
 
@@ -442,7 +492,7 @@ public class MenuItemsPanel extends JPanel {
         int unitPrice = parsePrice(priceStr);
         int[] entry = cartMap.get(name);
         if (entry == null) {
-            cartMap.put(name, new int[]{1, unitPrice});
+            cartMap.put(name, new int[] { 1, unitPrice });
         } else {
             entry[0]++;
         }
@@ -451,7 +501,8 @@ public class MenuItemsPanel extends JPanel {
 
     private void changeQty(String name, int delta) {
         int[] entry = cartMap.get(name);
-        if (entry == null) return;
+        if (entry == null)
+            return;
         entry[0] += delta;
         if (entry[0] <= 0) {
             cartMap.remove(name);
@@ -485,12 +536,12 @@ public class MenuItemsPanel extends JPanel {
     }
 
     private JPanel makeCartRow(String name, int qty, int unitPrice,
-                                int lineTotal, boolean even) {
+            int lineTotal, boolean even) {
         JPanel row = new JPanel(new BorderLayout());
         row.setBackground(even ? ROW_EVEN : ROW_ODD);
         row.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createMatteBorder(0, 0, 1, 0, LINE_COLOR),
-            new EmptyBorder(10, 4, 10, 4)));
+                BorderFactory.createMatteBorder(0, 0, 1, 0, LINE_COLOR),
+                new EmptyBorder(10, 4, 10, 4)));
 
         JLabel nameLbl = new JLabel("<html>" + name.replace("\n", "<br>") + "</html>");
         nameLbl.setFont(new Font("Segoe UI", Font.BOLD, 13));
@@ -507,7 +558,9 @@ public class MenuItemsPanel extends JPanel {
         roundLabel(minus, 18);
         String fn = name;
         minus.addMouseListener(new MouseAdapter() {
-            public void mouseClicked(MouseEvent evt) { changeQty(fn, -1); }
+            public void mouseClicked(MouseEvent evt) {
+                changeQty(fn, -1);
+            }
         });
 
         JLabel count = new JLabel(String.valueOf(qty));
@@ -522,7 +575,9 @@ public class MenuItemsPanel extends JPanel {
         plus.setCursor(new Cursor(Cursor.HAND_CURSOR));
         roundLabel(plus, 18);
         plus.addMouseListener(new MouseAdapter() {
-            public void mouseClicked(MouseEvent evt) { changeQty(fn, 1); }
+            public void mouseClicked(MouseEvent evt) {
+                changeQty(fn, 1);
+            }
         });
 
         qtyPanel.add(minus);
@@ -548,12 +603,31 @@ public class MenuItemsPanel extends JPanel {
         lbl.putClientProperty(FlatClientProperties.STYLE, "arc:" + size);
     }
 
+    // ─── DB LOAD ────────────────────────────────────────────
+
+    public void loadMenuItems() {
+        productList = menuService.getAvailableProducts();
+        List<String[]> filtered = new ArrayList<>();
+        for (Product p : productList) {
+            String img = p.getImage();
+            if (img == null || img.isBlank())
+                continue;
+            String name = p.getProductName();
+            String price = fmtPrice(p.getPrice() != null ? p.getPrice().intValue() : 0);
+            String cat = p.getCategory() != null ? p.getCategory() : "";
+            filtered.add(new String[] { name, price, img, cat });
+        }
+        itemData = filtered.toArray(new String[0][4]);
+        rebuildGrid();
+    }
+
     // ─── MAIN ─────────────────────────────────────────────────
 
     public static void main(String[] args) {
         try {
             UIManager.setLookAndFeel(new com.formdev.flatlaf.FlatLightLaf());
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+        }
 
         SwingUtilities.invokeLater(() -> {
             JFrame frame = new JFrame("Place Order View - HANABI CAFE");

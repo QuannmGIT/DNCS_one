@@ -15,6 +15,12 @@
         <property name="show_sql">true</property>
         <property name="hbm2ddl.auto">update</property>
 
-        <!-- Mapping Files or Annotated Classes -->
+        <mapping class="hanabi.model.Staff"/>
+        <mapping class="hanabi.model.Product"/>
+        <mapping class="hanabi.model.Order"/>
+        <mapping class="hanabi.model.Invoice"/>
+        <mapping class="hanabi.model.OrderDetail"/>
+        <mapping class="hanabi.model.Average"/>
+        <mapping class="hanabi.model.Salary"/>
     </session-factory>
 </hibernate-configuration>

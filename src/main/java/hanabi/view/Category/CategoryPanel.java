@@ -30,6 +30,7 @@ public class CategoryPanel extends JPanel {
     public static final int PAGE_MENU_ITEMS = 0;
     public static final int PAGE_ACCOUNTS = 1;
     public static final int PAGE_REVENUE = 2;
+    // public static final int PAGE_SALARY = 3;
 
     private static final Color SIDEBAR_BG = new Color(211, 181, 147);
     private static final Color DARK_BROWN = new Color(90, 70, 61);
@@ -38,6 +39,7 @@ public class CategoryPanel extends JPanel {
     private JButton buttonMenuItems;
     private JButton buttonAccounts;
     private JButton buttonRevenue;
+    // private JButton buttonSalary;
     private JButton buttonLogOut;
 
     private Icon menuIcon, menuIconLight;
@@ -56,7 +58,7 @@ public class CategoryPanel extends JPanel {
     }
 
     public void setActivePage(int page) {
-        JButton[] buttons = { buttonMenuItems, buttonAccounts, buttonRevenue };
+        JButton[] buttons = { buttonMenuItems, buttonAccounts, buttonRevenue};
         for (int i = 0; i < buttons.length; i++) {
             applyButtonAppearance(buttons[i], i == page);
         }
@@ -86,10 +88,12 @@ public class CategoryPanel extends JPanel {
         buttonMenuItems = createNavBtn("Menu Items");
         buttonAccounts = createNavBtn("Accounts");
         buttonRevenue = createNavBtn("Revenue");
+        // buttonSalary = createNavBtn("Salary");
 
         buttonMenuItems.addActionListener(this::onMenuItems);
         buttonAccounts.addActionListener(this::onAccounts);
         buttonRevenue.addActionListener(this::onRevenue);
+        // buttonSalary.addActionListener(this::onSalary);
 
         setActivePage(PAGE_MENU_ITEMS);
 
@@ -133,8 +137,10 @@ public class CategoryPanel extends JPanel {
         add(buttonAccounts, gbc);
         gbc.gridy = 4;
         add(buttonRevenue, gbc);
-
         gbc.gridy = 5;
+        // add(buttonSalary, gbc);
+
+        gbc.gridy = 6;
         gbc.weighty = 1.0;
         gbc.anchor = GridBagConstraints.SOUTH;
         gbc.insets = new Insets(10, 20, 30, 20);
@@ -195,15 +201,21 @@ public class CategoryPanel extends JPanel {
             onNavigate.accept(PAGE_REVENUE);
     }
 
+    // private void onSalary(ActionEvent evt) {
+    //     setActivePage(PAGE_SALARY);
+    //     if (onNavigate != null)
+    //         onNavigate.accept(PAGE_SALARY);
+    // }
+
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> {
-            JFrame frame = new JFrame("Category Panel Demo");
-            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-            frame.setSize(300, 600);
-            frame.setLocationRelativeTo(null);
-            frame.setLayout(new BorderLayout());
-            frame.add(new CategoryPanel(), BorderLayout.WEST);
-            frame.setVisible(true);
-        });
+        // SwingUtilities.invokeLater(() -> {
+        //     JFrame frame = new JFrame("Category Panel Demo");
+        //     frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        //     frame.setSize(300, 600);
+        //     frame.setLocationRelativeTo(null);
+        //     frame.setLayout(new BorderLayout());
+        //     frame.add(new CategoryPanel(), BorderLayout.WEST);
+        //     frame.setVisible(true);
+        // });
     }
 }

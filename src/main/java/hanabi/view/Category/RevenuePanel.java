@@ -35,7 +35,16 @@ import javax.swing.border.EmptyBorder;
 import com.formdev.flatlaf.FlatClientProperties;
 import com.formdev.flatlaf.extras.FlatSVGIcon;
 
+import hanabi.model.Invoice;
+import hanabi.model.Order;
+import hanabi.model.Product;
+import hanabi.service.RevenueService;
 import hanabi.util.FontLoader;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.Map;
+import javax.swing.Box;
 
 public class RevenuePanel extends JPanel {
 
@@ -45,6 +54,14 @@ public class RevenuePanel extends JPanel {
     private static final Color BORDER_COLOR = new Color(90, 70, 61);
 
     private Font amaticFont;
+    private final RevenueService revenueService = new RevenueService();
+
+    private JLabel todayValue;
+    private JLabel ordersValue;
+    private JLabel productValue;
+    private JLabel ratingValue;
+    private JPanel bottomSection;
+    private JPanel chartSection;
 
     public RevenuePanel() {
         loadFont();
@@ -91,7 +108,8 @@ public class RevenuePanel extends JPanel {
         gbc.gridy = 2;
         gbc.weighty = 0.4;
         gbc.insets = new Insets(0, 0, 0, 0);
-        contentWrapper.add(createBottomSection(), gbc);
+        bottomSection = createBottomSection();
+        contentWrapper.add(bottomSection, gbc);
 
         add(contentWrapper, BorderLayout.CENTER);
     }
@@ -123,15 +141,19 @@ public class RevenuePanel extends JPanel {
         JPanel statsPanel = new JPanel(new GridLayout(1, 4, 15, 0));
         statsPanel.setOpaque(false);
 
-        statsPanel.add(createStatCard("Today", "1,500,000đ", "Total Revenue", "Today.svg"));
-        statsPanel.add(createStatCard("Orders", "32", "Total Orders", "Orders.svg"));
-        statsPanel.add(createStatCard("Product", "Matcha Ice Blended", "Best Seller", "MenuIcon.svg"));
-        statsPanel.add(createStatCard("Rating", "4.5", "Average Rating", "Rating.svg"));
+        todayValue = new JLabel("...");
+        ordersValue = new JLabel("...");
+        productValue = new JLabel("...");
+        ratingValue = new JLabel("...");
+        statsPanel.add(createStatCard("Today", todayValue, "Total Revenue", "Today.svg"));
+        statsPanel.add(createStatCard("Orders", ordersValue, "Total Orders", "Orders.svg"));
+        statsPanel.add(createStatCard("Product", productValue, "Best Seller", "MenuIcon.svg"));
+        statsPanel.add(createStatCard("Rating", ratingValue, "Average Rating", "Rating.svg"));
 
         return statsPanel;
     }
 
-    private JPanel createStatCard(String title, String value, String subtitle, String iconPath) {
+    private JPanel createStatCard(String title, JLabel valueLbl, String subtitle, String iconPath) {
         JPanel card = new JPanel(new GridBagLayout());
         card.setBackground(BG_COLOR);
         card.putClientProperty(FlatClientProperties.STYLE, "arc:20; border: 1,1,1,1, #5A463D");
@@ -158,9 +180,9 @@ public class RevenuePanel extends JPanel {
         card.add(titlePanel, gbc);
 
         // Value Row
-        JLabel valueLbl = new JLabel(value, SwingConstants.CENTER);
         valueLbl.setFont(new Font("Segoe UI", Font.BOLD, 20));
         valueLbl.setForeground(DARK_BROWN);
+        valueLbl.setHorizontalAlignment(SwingConstants.CENTER);
         gbc.gridy = 1;
         gbc.insets = new Insets(5, 15, 5, 15);
         card.add(valueLbl, gbc);
@@ -515,19 +537,161 @@ public class RevenuePanel extends JPanel {
         }
     }
 
+    private String fmtRevenue(long v) {
+        if (v >= 1_000_000) {
+            return String.format("%,.0fđ", v / 1_000_000.0).replace(",", ".") + "M";
+        }
+        return String.format("%,d", v).replace(",", ".") + "đ";
+    }
+
+    public void loadData() {
+        long todayRev = revenueService.getTodayRevenue();
+        todayValue.setText(fmtRevenue(todayRev));
+
+        long totalOrders = revenueService.getTotalOrders();
+        ordersValue.setText(String.valueOf(totalOrders));
+
+        String best = revenueService.getBestSeller();
+        productValue.setText(best.isEmpty() ? "..." : best);
+
+        double avg = revenueService.getAverageRating();
+        ratingValue.setText(String.format("%.1f", avg));
+
+        if (bottomSection != null) {
+            bottomSection.removeAll();
+            bottomSection.setLayout(new GridLayout(1, 2, 15, 0));
+            bottomSection.add(createRecentOrdersPanel());
+            bottomSection.add(createTopSellingPanel());
+            bottomSection.revalidate();
+            bottomSection.repaint();
+        }
+    }
+
+    private JPanel createRecentOrdersPanel() {
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.setBackground(BG_COLOR);
+        panel.putClientProperty(FlatClientProperties.STYLE, "arc:20; border: 1,1,1,1, #5A463D");
+        panel.setBorder(new EmptyBorder(15, 20, 15, 20));
+
+        JLabel recentTitle = new JLabel("Recent Orders");
+        recentTitle.setFont(new Font("Segoe UI", Font.BOLD, 18));
+        recentTitle.setForeground(DARK_BROWN);
+        panel.add(recentTitle, BorderLayout.NORTH);
+
+        JPanel tablePanel = new JPanel();
+        tablePanel.setLayout(new BoxLayout(tablePanel, BoxLayout.Y_AXIS));
+        tablePanel.setOpaque(false);
+        tablePanel.setBorder(new EmptyBorder(10, 0, 0, 0));
+
+        JPanel headerRow = new JPanel(new GridLayout(1, 4, 0, 0));
+        headerRow.setOpaque(false);
+        headerRow.add(createTableLabel("Order ID"));
+        headerRow.add(createTableLabel("Time"));
+        headerRow.add(createTableLabel("Day"));
+        headerRow.add(createTableLabel("Total"));
+        tablePanel.add(headerRow);
+
+        JPanel sep = new JPanel();
+        sep.setBackground(new Color(211, 181, 147));
+        sep.setMaximumSize(new Dimension(Integer.MAX_VALUE, 1));
+        sep.setPreferredSize(new Dimension(Integer.MAX_VALUE, 1));
+        tablePanel.add(Box.createVerticalStrut(6));
+        tablePanel.add(sep);
+        tablePanel.add(Box.createVerticalStrut(4));
+
+        List<Order> orders = revenueService.getRecentOrders(4);
+        for (int i = 0; i < orders.size(); i++) {
+            Order o = orders.get(i);
+            JPanel row = new JPanel(new GridLayout(1, 4, 0, 0));
+            row.setBackground(i % 2 == 0 ? Color.WHITE : new Color(250, 247, 244));
+            row.setBorder(new EmptyBorder(6, 0, 6, 0));
+            row.add(new JLabel("#" + o.getOrderId().toString().substring(0, 8)));
+            row.add(new JLabel(o.getOrderDate() != null ? o.getOrderDate().format(DateTimeFormatter.ofPattern("HH:mm")) : ""));
+            row.add(new JLabel(o.getOrderDate() != null ? o.getOrderDate().format(DateTimeFormatter.ofPattern("EEE")) : ""));
+            row.add(new JLabel(o.getTotal() != null ? fmtRevenue(o.getTotal()) : "0đ"));
+            for (java.awt.Component c : row.getComponents()) {
+                ((JLabel) c).setFont(new Font("Segoe UI", Font.PLAIN, 13));
+                ((JLabel) c).setForeground(DARK_BROWN);
+            }
+            tablePanel.add(row);
+        }
+        panel.add(tablePanel, BorderLayout.CENTER);
+        return panel;
+    }
+
+    private JPanel createTopSellingPanel() {
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.setBackground(BG_COLOR);
+        panel.putClientProperty(FlatClientProperties.STYLE, "arc:20; border: 1,1,1,1, #5A463D");
+        panel.setBorder(new EmptyBorder(15, 20, 15, 20));
+
+        JLabel topTitle = new JLabel("Top Selling Products");
+        topTitle.setFont(new Font("Segoe UI", Font.BOLD, 18));
+        topTitle.setForeground(DARK_BROWN);
+        panel.add(topTitle, BorderLayout.NORTH);
+
+        JPanel listPanel = new JPanel();
+        listPanel.setLayout(new BoxLayout(listPanel, BoxLayout.Y_AXIS));
+        listPanel.setOpaque(false);
+        listPanel.setBorder(new EmptyBorder(10, 0, 0, 0));
+
+        JPanel sep2 = new JPanel();
+        sep2.setBackground(new Color(211, 181, 147));
+        sep2.setMaximumSize(new Dimension(Integer.MAX_VALUE, 1));
+        sep2.setPreferredSize(new Dimension(Integer.MAX_VALUE, 1));
+        listPanel.add(sep2);
+        listPanel.add(Box.createVerticalStrut(4));
+
+        Color[] rankColors = {
+            new Color(212, 175, 55),
+            new Color(176, 176, 176),
+            new Color(166, 124, 82),
+            DARK_BROWN
+        };
+
+        List<Object[]> topProducts = revenueService.getTopSellingProducts(4);
+        for (int i = 0; i < topProducts.size(); i++) {
+            JPanel row = new JPanel(new BorderLayout(10, 0));
+            row.setBackground(i % 2 == 0 ? Color.WHITE : new Color(250, 247, 244));
+            row.setBorder(new EmptyBorder(6, 8, 6, 8));
+
+            JLabel rankLbl = new JLabel(String.valueOf(i + 1));
+            rankLbl.setFont(new Font("Segoe UI", Font.BOLD, 14));
+            rankLbl.setForeground(i < 3 ? rankColors[i] : DARK_BROWN);
+            rankLbl.setPreferredSize(new Dimension(20, 20));
+            row.add(rankLbl, BorderLayout.WEST);
+
+            String name = topProducts.get(i)[0] != null ? (String) topProducts.get(i)[0] : "";
+            JLabel nameLbl = new JLabel(name);
+            nameLbl.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+            nameLbl.setForeground(DARK_BROWN);
+            row.add(nameLbl, BorderLayout.CENTER);
+
+            String qty = topProducts.get(i)[1] != null ? topProducts.get(i)[1].toString() : "0";
+            JLabel qtyLbl = new JLabel(qty + " sold");
+            qtyLbl.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+            qtyLbl.setForeground(TEXT_MENU);
+            row.add(qtyLbl, BorderLayout.EAST);
+
+            listPanel.add(row);
+        }
+        panel.add(listPanel, BorderLayout.CENTER);
+        return panel;
+    }
+
     // Demo Run
     public static void main(String[] args) {
-        try {
-            UIManager.setLookAndFeel(new com.formdev.flatlaf.FlatLightLaf());
-        } catch (Exception ignored) {}
+    //     try {
+    //         UIManager.setLookAndFeel(new com.formdev.flatlaf.FlatLightLaf());
+    //     } catch (Exception ignored) {}
 
-        SwingUtilities.invokeLater(() -> {
-            JFrame frame = new JFrame("Revenue Panel - HANABI CAFE");
-            frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-            frame.getContentPane().add(new RevenuePanel());
-            frame.setSize(1000, 700);
-            frame.setLocationRelativeTo(null);
-            frame.setVisible(true);
-        });
+    //     SwingUtilities.invokeLater(() -> {
+    //         JFrame frame = new JFrame("Revenue Panel - HANABI CAFE");
+    //         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+    //         frame.getContentPane().add(new RevenuePanel());
+    //         frame.setSize(1000, 700);
+    //         frame.setLocationRelativeTo(null);
+    //         frame.setVisible(true);
+    //     });
     }
 }

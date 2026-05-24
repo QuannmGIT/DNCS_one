@@ -18,7 +18,8 @@ import com.formdev.flatlaf.FlatClientProperties;
 
 public class UIUtils {
 
-    private UIUtils() {}
+    private UIUtils() {
+    }
 
     public static void setRounded(JComponent comp, int arc) {
         comp.putClientProperty(FlatClientProperties.STYLE,
@@ -32,7 +33,7 @@ public class UIUtils {
         btn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         btn.putClientProperty(FlatClientProperties.STYLE,
                 "arc:" + arc + ";borderWidth:0;focusWidth:0;innerFocusWidth:0;" +
-                "pressedBackground:#" + pressedHex);
+                        "pressedBackground:#" + pressedHex);
         btn.putClientProperty("JButton.hoverBackground", hoverBg);
     }
 
@@ -55,9 +56,17 @@ public class UIUtils {
             this.arc = arc;
         }
 
-        public Color getColor() { return color; }
-        public int getThickness() { return thickness; }
-        public int getArc() { return arc; }
+        public Color getColor() {
+            return color;
+        }
+
+        public int getThickness() {
+            return thickness;
+        }
+
+        public int getArc() {
+            return arc;
+        }
 
         @Override
         public void paintBorder(Component c, Graphics g, int x, int y, int width, int height) {
@@ -66,11 +75,11 @@ public class UIUtils {
             g2.setColor(color);
             g2.setStroke(new BasicStroke(thickness));
             g2.drawRoundRect(
-                x + thickness / 2,
-                y + thickness / 2,
-                width - thickness,
-                height - thickness,
-                arc, arc);
+                    x + thickness / 2,
+                    y + thickness / 2,
+                    width - thickness,
+                    height - thickness,
+                    arc, arc);
             g2.dispose();
         }
 

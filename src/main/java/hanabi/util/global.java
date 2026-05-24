@@ -2,6 +2,10 @@ package hanabi.util;
 
 public class global {
     public static String assetsPath = "hanabi/";
+    public static final String DB_URL = "jdbc:mysql://localhost:3306/StoreManagement";
+    public static final String DB_NAME = "StoreManagement";
+    public static final String USER = "root";
+    public static final String PASSWORD = "";
 
     public static String getAssetsPath() {
         return assetsPath;

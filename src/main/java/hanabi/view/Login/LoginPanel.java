@@ -24,6 +24,9 @@ import com.formdev.flatlaf.extras.FlatSVGIcon;
 
 import hanabi.Main;
 import hanabi.components.PopUp;
+import hanabi.model.User;
+import hanabi.service.AuthService;
+import java.util.Optional;
 import net.miginfocom.swing.MigLayout;
 import raven.toast.Notifications;
 
@@ -233,10 +236,10 @@ public class LoginPanel extends JPanel {
         }
 
         private void LoginButtActionPerformed(java.awt.event.ActionEvent evt) {
-                String user = accountTextField.getText().trim();
+                String username = accountTextField.getText().trim();
                 String pass = new String(passwordTextField.getPassword()).trim();
 
-                if (user.isEmpty() || pass.isEmpty()) {
+                if (username.isEmpty() || pass.isEmpty()) {
                         Notifications.getInstance().show(Notifications.Type.ERROR, Notifications.Location.TOP_CENTER , "Please fill all fields!");                                        
                         return;
                 }
@@ -244,20 +247,17 @@ public class LoginPanel extends JPanel {
                 if (!UACCheckBox.isSelected()) {
                         Notifications.getInstance().show(Notifications.Type.ERROR, Notifications.Location.TOP_CENTER,
                                         "Please agree to the terms!");
-
                         return;
                 }
 
-                JOptionPane.showMessageDialog(this,
-                                "Login successful! Welcome " + user + "!",
-                                "Success", JOptionPane.INFORMATION_MESSAGE);
-
-                // if (loginFrame != null) {
-                //         loginFrame.dispose();
-                // }
-
-                // java.awt.EventQueue.invokeLater(() -> hanabi.view.Category.DashboardView.main(new String[0]));
-                Main.login();
+                AuthService auth = Main.authService;
+                Optional<User> result = auth.login(username, pass);
+                if (result.isPresent()) {
+                        Main.login();
+                } else {
+                        Notifications.getInstance().show(Notifications.Type.ERROR, Notifications.Location.TOP_CENTER,
+                                        "Invalid username or password!");
+                }
         }
 
         private JFrame loginFrame;

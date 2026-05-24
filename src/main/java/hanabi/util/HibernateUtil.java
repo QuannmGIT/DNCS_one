@@ -1,0 +1,46 @@
+package hanabi.util;
+
+import hanabi.model.Average;
+import hanabi.model.Invoice;
+import hanabi.model.Order;
+import hanabi.model.OrderDetail;
+import hanabi.model.Product;
+import hanabi.model.Salary;
+import hanabi.model.Staff;
+import org.hibernate.SessionFactory;
+import org.hibernate.cfg.Configuration;
+
+public class HibernateUtil {
+    private static final SessionFactory sessionFactory = buildSessionFactory();
+
+    private static SessionFactory buildSessionFactory() {
+        try {
+            DBInitalizer.initialize();
+            TableDBInitalizer.initialize();
+
+            SessionFactory sf = new Configuration()
+                    .configure("hanabi/backend/hibernate.cfg.xml")
+                    .addAnnotatedClass(Staff.class)
+                    .addAnnotatedClass(Product.class)
+                    .addAnnotatedClass(Order.class)
+                    .addAnnotatedClass(Invoice.class)
+                    .addAnnotatedClass(OrderDetail.class)
+                    .addAnnotatedClass(Average.class)
+                    .addAnnotatedClass(Salary.class)
+                    .buildSessionFactory();
+
+            DataInitalizer.initialize(sf);
+            return sf;
+        } catch (Throwable ex) {
+            throw new ExceptionInInitializerError("Initial SessionFactory creation failed: " + ex);
+        }
+    }
+
+    public static SessionFactory getSessionFactory() {
+        return sessionFactory;
+    }
+
+    public static void shutdown() {
+        sessionFactory.close();
+    }
+}

@@ -5,7 +5,6 @@ import java.awt.BorderLayout;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
-import javax.swing.WindowConstants;
 
 import com.formdev.flatlaf.FlatLightLaf;
 import com.formdev.flatlaf.extras.FlatAnimatedLafChange;
@@ -14,9 +13,11 @@ import hanabi.view.Login.Banner;
 import hanabi.view.Login.LoginPanel;
 import hanabi.components.MainForm;
 import hanabi.view.Category.DashboardView;
+import hanabi.service.AuthService;
 
 public class Main extends JFrame {
     private static Main app;
+    public static final AuthService authService = new AuthService();
     private final MainForm mainForm;
     private static Banner banner;
     private static LoginPanel loginPanel;
@@ -66,6 +67,7 @@ public class Main extends JFrame {
 
     public static void login() {
         FlatAnimatedLafChange.showSnapshot();
+        app.Dash.refreshData();
         app.setContentPane(app.Dash);
         app.setTitle("HANABI CAFE");
         app.setExtendedState(JFrame.MAXIMIZED_BOTH);
