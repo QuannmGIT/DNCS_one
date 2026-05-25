@@ -30,7 +30,6 @@ public class CategoryPanel extends JPanel {
     public static final int PAGE_MENU_ITEMS = 0;
     public static final int PAGE_ACCOUNTS = 1;
     public static final int PAGE_REVENUE = 2;
-    // public static final int PAGE_SALARY = 3;
 
     private static final Color SIDEBAR_BG = new Color(211, 181, 147);
     private static final Color DARK_BROWN = new Color(90, 70, 61);
@@ -39,7 +38,6 @@ public class CategoryPanel extends JPanel {
     private JButton buttonMenuItems;
     private JButton buttonAccounts;
     private JButton buttonRevenue;
-    // private JButton buttonSalary;
     private JButton buttonLogOut;
 
     private Icon menuIcon, menuIconLight;

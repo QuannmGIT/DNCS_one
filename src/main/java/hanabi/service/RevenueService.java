@@ -4,11 +4,10 @@ import hanabi.dao.AverageDAO;
 import hanabi.dao.InvoiceDAO;
 import hanabi.dao.OrderDAO;
 import hanabi.dao.OrderDetailDAO;
-import hanabi.dao.ProductDAO;
 import hanabi.model.Invoice;
 import hanabi.model.Order;
-import hanabi.model.Product;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -18,7 +17,6 @@ public class RevenueService {
     private final OrderDAO orderDAO = new OrderDAO();
     private final OrderDetailDAO orderDetailDAO = new OrderDetailDAO();
     private final AverageDAO averageDAO = new AverageDAO();
-    private final ProductDAO productDAO = new ProductDAO();
 
     public long getTodayRevenue() {
         return invoiceDAO.totalRevenueToday();
@@ -65,5 +63,22 @@ public class RevenueService {
 
     public List<Invoice> getTodayInvoices() {
         return invoiceDAO.findByDate(LocalDate.now());
+    }
+
+    public Map<String, Long> getMonthlyRevenue(int year) {
+        List<Invoice> invoices = invoiceDAO.findByDateRange(
+                LocalDate.of(year, 1, 1),
+                LocalDate.of(year, 12, 31));
+        Map<String, Long> monthlyMap = new LinkedHashMap<>();
+        for (int m = 1; m <= 12; m++) {
+            monthlyMap.put(String.format("%d-%02d", year, m), 0L);
+        }
+        for (Invoice inv : invoices) {
+            if (inv.getInvoiceDate() != null && Boolean.TRUE.equals(inv.getStatus())) {
+                String key = inv.getInvoiceDate().format(DateTimeFormatter.ofPattern("yyyy-MM"));
+                monthlyMap.merge(key, inv.getTotal() == null ? 0L : inv.getTotal().longValue(), Long::sum);
+            }
+        }
+        return monthlyMap;
     }
 }

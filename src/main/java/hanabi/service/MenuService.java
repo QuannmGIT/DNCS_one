@@ -46,6 +46,15 @@ public class MenuService {
         order.setStaff(staff);
         order.setOrderDate(LocalDate.now());
 
+        Invoice invoice = new Invoice();
+        invoice.setInvoiceId(invoiceId);
+        invoice.setStaff(staff);
+        invoice.setInvoiceDate(LocalDate.now());
+        invoice.setTotal(total);
+        invoice.setStatus(true);
+        invoiceDAO.save(invoice);
+
+        order.setInvoice(invoice);
         for (Map.Entry<String, int[]> entry : cartItems.entrySet()) {
             String productName = entry.getKey();
             int quantity = entry.getValue()[0];
@@ -55,18 +64,10 @@ public class MenuService {
         order.setTotal(total);
         orderDAO.save(order);
 
-        Invoice invoice = new Invoice();
-        invoice.setInvoiceId(invoiceId);
-        invoice.setStaff(staff);
-        invoice.setInvoiceDate(LocalDate.now());
-        invoice.setTotal(total);
-        invoice.setStatus(true);
-        invoiceDAO.save(invoice);
-
         for (Map.Entry<String, int[]> entry : cartItems.entrySet()) {
             String productName = entry.getKey();
             int quantity = entry.getValue()[0];
-            Product product = productDAO.findByCategory(productName).stream().findFirst().orElse(null);
+            Product product = productDAO.findByName(productName).orElse(null);
             if (product != null) {
                 OrderDetail detail = new OrderDetail();
                 detail.setOrderId(orderId);

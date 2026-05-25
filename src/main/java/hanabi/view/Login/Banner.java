@@ -64,12 +64,7 @@ public class Banner extends JPanel {
         }
         lblSlogan.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        Font vietnameseFont;
-        try {
-            vietnameseFont = FontLoader.load("/hanabi/assets/Fonts/DancingScript-Regular.ttf", 21f);
-        } catch (RuntimeException e) {
-            vietnameseFont = new Font("Segoe UI", Font.PLAIN, 18);
-        }
+        Font vietnameseFont = new Font("Segoe UI", Font.PLAIN, 18);
 
         textPanel.setOpaque(false);
         textPanel.setLayout(new BoxLayout(textPanel, BoxLayout.Y_AXIS));

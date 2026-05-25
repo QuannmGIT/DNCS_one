@@ -1,6 +1,5 @@
 package hanabi.service;
 
-import java.awt.Checkbox;
 import java.awt.Component;
 import java.awt.HeadlessException;
 
@@ -8,6 +7,7 @@ import com.formdev.flatlaf.FlatClientProperties;
 import com.formdev.flatlaf.extras.FlatSVGIcon;
 
 import hanabi.model.Staff;
+import hanabi.util.PasswordUtil;
 import net.miginfocom.swing.MigLayout;
 import javax.swing.*;
 
@@ -18,7 +18,7 @@ public class CreateUser extends JPanel {
         private JLabel lbEmail, Fname, lbSalary;
         private JTextField txtEmail, txtName, txtSalary;
         private JLabel lbPassword;
-        private JTextField txtPassword;
+        private JPasswordField txtPassword;
         private final JButton cmdCreate;
         private JCheckBox staffBox, adminBox;
         private static JFrame f;
@@ -58,7 +58,7 @@ public class CreateUser extends JPanel {
                                 "font:bold;");
                 add(lbPassword, "gapy 10 n");
 
-                txtPassword = new JTextField("123456");
+                txtPassword = new JPasswordField();
                 txtPassword.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "at least 8 characters");
                 add(txtPassword);
 
@@ -131,15 +131,20 @@ public class CreateUser extends JPanel {
         private void form() {
                 String Name = txtName.getText();
                 String email = txtEmail.getText();
-                double salary = Double.parseDouble(txtSalary.getText().trim());
                 try {
-                        if (Name != null && !Name.trim().isEmpty() && txtSalary.getText() != null
-                                        && !txtSalary.getText().trim().isEmpty()) {
+                        double salary = 0;
+                        String salaryText = txtSalary.getText().trim();
+                        if (!salaryText.isEmpty()) {
+                                salary = Double.parseDouble(salaryText);
+                        }
+                        if (Name != null && !Name.trim().isEmpty()) {
                                 Staff s = new Staff();
                                 s.setStaffId(java.util.UUID.randomUUID());
                                 s.setStaffName(Name.trim());
                                 s.setFullName(Name.trim());
-                                s.setPassword(txtPassword.getText().trim());
+                                String rawPass = new String(txtPassword.getPassword());
+                                String salt = PasswordUtil.generateSalt();
+                                s.setPassword(salt + ":" + PasswordUtil.hash(rawPass, salt));
                                 s.setRole(staffBox.isSelected() ? "staff" : "admin");
                                 s.setStatus(true);
 
@@ -155,6 +160,10 @@ public class CreateUser extends JPanel {
                                 f.dispose();
 
                         }
+                } catch (NumberFormatException e) {
+                        JOptionPane.showMessageDialog(this,
+                                        "Salary must be a valid number!",
+                                        "Error", JOptionPane.ERROR_MESSAGE);
                 } catch (HeadlessException e) {
                         System.err.println(e.getMessage());
                 }

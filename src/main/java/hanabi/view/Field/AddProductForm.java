@@ -185,10 +185,24 @@ public class AddProductForm extends JPanel {
             p.setImage(imageName);
 
             if (!priceStr.isEmpty()) {
-                p.setPrice(Double.parseDouble(priceStr));
+                try {
+                    p.setPrice(Double.parseDouble(priceStr));
+                } catch (NumberFormatException ex) {
+                    JOptionPane.showMessageDialog(this,
+                            "Price must be a valid number!",
+                            "Error", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
             }
             if (!costStr.isEmpty()) {
-                p.setCost(Double.parseDouble(costStr));
+                try {
+                    p.setCost(Double.parseDouble(costStr));
+                } catch (NumberFormatException ex) {
+                    JOptionPane.showMessageDialog(this,
+                            "Cost must be a valid number!",
+                            "Error", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
             }
             p.setStatus(chkStatus.isSelected());
 

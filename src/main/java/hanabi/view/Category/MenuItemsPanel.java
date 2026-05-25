@@ -24,10 +24,12 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
+import javax.swing.SwingWorker;
 import javax.swing.UIManager;
 import javax.swing.WindowConstants;
 import javax.swing.border.EmptyBorder;
@@ -35,7 +37,9 @@ import javax.swing.border.EmptyBorder;
 import com.formdev.flatlaf.FlatClientProperties;
 import com.formdev.flatlaf.extras.FlatSVGIcon;
 
+import hanabi.Main;
 import hanabi.model.Product;
+import hanabi.model.Staff;
 import hanabi.service.MenuService;
 import hanabi.util.FontLoader;
 import hanabi.view.Field.AddProductForm;
@@ -113,15 +117,15 @@ public class MenuItemsPanel extends JPanel {
 
         gridContainer = new JPanel(new GridLayout(0, 3, 15, 15));
         gridContainer.setBackground(BG_COLOR);
-        gridContainer.setBorder(new EmptyBorder(15, 0, 0, 0));
+        gridContainer.setBorder(BorderFactory.createEmptyBorder());
 
         JScrollPane gridScroll = new JScrollPane(gridContainer);
-        gridScroll.setBorder(null);
+        gridScroll.setBorder(BorderFactory.createEmptyBorder());
         gridScroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
         gridScroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         gridScroll.getVerticalScrollBar().setUnitIncrement(16);
-        gridScroll.setOpaque(false);
-        gridScroll.getViewport().setOpaque(false);
+        gridScroll.setOpaque(true);
+        gridScroll.getViewport().setOpaque(true);
 
         left.add(gridScroll, BorderLayout.CENTER);
         body.add(left, BorderLayout.CENTER);
@@ -289,13 +293,13 @@ public class MenuItemsPanel extends JPanel {
             if (url != null) {
                 if (ext.equals(".svg")) {
                     try {
-                        return new JLabel(new FlatSVGIcon(base + imgIdx + ".svg", 65, 65));
+                        return new JLabel(new FlatSVGIcon(base + imgIdx + ".svg", 120, 120));
                     } catch (Exception ignored) {
                     }
                 } else {
                     try {
                         ImageIcon icon = new ImageIcon(url);
-                        Image scaled = icon.getImage().getScaledInstance(65, 65, Image.SCALE_SMOOTH);
+                        Image scaled = icon.getImage().getScaledInstance(120, 120, Image.SCALE_SMOOTH);
                         return new JLabel(new ImageIcon(scaled));
                     } catch (Exception ignored) {
                     }
@@ -316,7 +320,7 @@ public class MenuItemsPanel extends JPanel {
                 } else {
                     try {
                         ImageIcon icon = new ImageIcon(f.getAbsolutePath());
-                        Image scaled = icon.getImage().getScaledInstance(65, 65, Image.SCALE_SMOOTH);
+                        Image scaled = icon.getImage().getScaledInstance(120, 120, Image.SCALE_SMOOTH);
                         return new JLabel(new ImageIcon(scaled));
                     } catch (Exception ignored) {
                     }
@@ -341,7 +345,7 @@ public class MenuItemsPanel extends JPanel {
         JLabel img = loadProductImage(imgIdx);
         if (img == null) {
             img = new JLabel();
-            img.setPreferredSize(new Dimension(65, 65));
+            img.setPreferredSize(new Dimension(120, 120));
             img.setOpaque(true);
             img.setBackground(new Color(240, 235, 230));
         }
@@ -356,6 +360,7 @@ public class MenuItemsPanel extends JPanel {
         gbc.gridx = 1;
         gbc.gridy = 0;
         gbc.weightx = 1.0;
+        gbc.weighty = 1.0;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         card.add(nameLbl, gbc);
 
@@ -365,6 +370,7 @@ public class MenuItemsPanel extends JPanel {
         gbc.gridx = 0;
         gbc.gridy = 1;
         gbc.weightx = 0;
+        gbc.weighty = 0;
         gbc.fill = GridBagConstraints.NONE;
         gbc.anchor = GridBagConstraints.SOUTHWEST;
         card.add(priceLbl, gbc);
@@ -432,6 +438,8 @@ public class MenuItemsPanel extends JPanel {
         listWrapper.add(header, BorderLayout.NORTH);
 
         cartBody = new JPanel();
+        cartBody.setMaximumSize(new Dimension(WIDTH, 150));
+        cartBody.setPreferredSize(new Dimension(WIDTH, 150));
         cartBody.setLayout(new BoxLayout(cartBody, BoxLayout.Y_AXIS));
         cartBody.setOpaque(false);
         JScrollPane scroll = new JScrollPane(cartBody);
@@ -471,6 +479,7 @@ public class MenuItemsPanel extends JPanel {
         payBtn.putClientProperty(FlatClientProperties.STYLE,
                 "arc:18; borderWidth:0; focusWidth:0;");
         payBtn.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        payBtn.addActionListener(e -> processPayment());
         bottom.add(payBtn, BorderLayout.SOUTH);
 
         cart.add(bottom, BorderLayout.SOUTH);
@@ -592,6 +601,10 @@ public class MenuItemsPanel extends JPanel {
         row.add(nameLbl, BorderLayout.WEST);
         row.add(qtyPanel, BorderLayout.CENTER);
         row.add(priceLbl, BorderLayout.EAST);
+
+        // Constrain max height so the row doesn't stretch to fill vertical space
+        row.setMaximumSize(new Dimension(Integer.MAX_VALUE, row.getPreferredSize().height));
+        
         return row;
     }
 
@@ -603,22 +616,71 @@ public class MenuItemsPanel extends JPanel {
         lbl.putClientProperty(FlatClientProperties.STYLE, "arc:" + size);
     }
 
+    private void processPayment() {
+        if (cartMap.isEmpty()) {
+            JOptionPane.showMessageDialog(this,
+                    "Cart is empty! Please add items before proceeding.",
+                    "Empty Cart", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+        Staff staff = Main.authService.getCurrentStaff();
+        if (staff == null) {
+            JOptionPane.showMessageDialog(this,
+                    "No staff logged in!",
+                    "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        Map<String, Double> productPrices = new java.util.HashMap<>();
+        for (Map.Entry<String, int[]> entry : cartMap.entrySet()) {
+            productPrices.put(entry.getKey(), (double) entry.getValue()[1]);
+        }
+        java.util.UUID orderId = menuService.placeOrder(staff, cartMap, productPrices);
+        if (orderId != null) {
+            JOptionPane.showMessageDialog(this,
+                    "Order placed successfully!\nOrder ID: " + orderId.toString().substring(0, 8),
+                    "Payment Successful", JOptionPane.INFORMATION_MESSAGE);
+            cartMap.clear();
+            rebuildCart();
+        }
+    }
+
     // ─── DB LOAD ────────────────────────────────────────────
 
     public void loadMenuItems() {
-        productList = menuService.getAvailableProducts();
-        List<String[]> filtered = new ArrayList<>();
-        for (Product p : productList) {
-            String img = p.getImage();
-            if (img == null || img.isBlank())
-                continue;
-            String name = p.getProductName();
-            String price = fmtPrice(p.getPrice() != null ? p.getPrice().intValue() : 0);
-            String cat = p.getCategory() != null ? p.getCategory() : "";
-            filtered.add(new String[] { name, price, img, cat });
-        }
-        itemData = filtered.toArray(new String[0][4]);
-        rebuildGrid();
+        gridContainer.removeAll();
+        JLabel loading = new JLabel("Loading...", SwingConstants.CENTER);
+        loading.setFont(new Font("Segoe UI", Font.ITALIC, 18));
+        loading.setForeground(new Color(180, 170, 160));
+        gridContainer.setLayout(new BorderLayout());
+        gridContainer.add(loading, BorderLayout.CENTER);
+        gridContainer.revalidate();
+        gridContainer.repaint();
+
+        new SwingWorker<Void, Void>() {
+            @Override
+            protected Void doInBackground() {
+                productList = menuService.getAvailableProducts();
+                List<String[]> filtered = new ArrayList<>();
+                for (Product p : productList) {
+                    String img = p.getImage();
+                    if (img == null || img.isBlank())
+                        continue;
+                    String name = p.getProductName();
+                    String price = fmtPrice(p.getPrice() != null ? p.getPrice().intValue() : 0);
+                    String cat = p.getCategory() != null ? p.getCategory() : "";
+                    filtered.add(new String[] { name, price, img, cat });
+                }
+                itemData = filtered.toArray(new String[0][4]);
+                return null;
+            }
+
+            @Override
+            protected void done() {
+                gridContainer.removeAll();
+                gridContainer.setLayout(new GridLayout(0, 3, 15, 15));
+                rebuildGrid();
+            }
+        }.execute();
     }
 
     // ─── MAIN ─────────────────────────────────────────────────

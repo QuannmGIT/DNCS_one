@@ -229,7 +229,7 @@ public class LoginPanel extends JPanel {
                 close.putClientProperty(FlatClientProperties.STYLE, "" +
                                 "borderWidth: 0;" +
                                 "disabledBorderColor: @background;");
-                close.addActionListener(_ -> popUp.dispose());
+                close.addActionListener(e -> popUp.dispose());
                 panel.add(close, "center");
                 popUp.add(panel);
                 return popUp;

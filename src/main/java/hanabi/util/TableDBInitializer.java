@@ -4,7 +4,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.Statement;
 
-public class TableDBInitalizer {
+public class TableDBInitializer {
 
     private static final String DB_URL = global.DB_URL;
     private static final String USER = global.USER;
@@ -64,10 +64,10 @@ public class TableDBInitalizer {
         + "  average_score INT DEFAULT NULL"
         + ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4",
 
-        "CREATE TABLE IF NOT EXISTS salarys ("
+        "CREATE TABLE IF NOT EXISTS salaries ("
         + "  staff_id BINARY(16) NOT NULL PRIMARY KEY,"
         + "  baseSalary DECIMAL DEFAULT NULL,"
-        + "  CommissionRate DECIMAL DEFAULT NULL"
+        + "  commissionRate DECIMAL DEFAULT NULL"
         + ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4"
     };
 

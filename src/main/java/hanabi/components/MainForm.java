@@ -32,6 +32,9 @@ public class MainForm extends JLayeredPane {
     }
 
     public void showForm(Component component) {
+        if (component.getParent() != null) {
+            component.getParent().remove(component);
+        }
         panelBody.removeAll();
         panelBody.add(component);
         panelBody.repaint();

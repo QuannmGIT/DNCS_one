@@ -28,7 +28,7 @@ public class SalaryDAO extends BaseDAO<Salary, UUID> {
             return session.createQuery(
                     "SELECT s.staffId, s.fullName, s.role, " +
                     "sa.baseSalary, sa.commissionRate, " +
-                    "(COALESCE(sa.baseSalary, 0) + COALESCE(sa.commissionRate, 0)) " +
+                    "(COALESCE(sa.baseSalary, 0) + COALESCE(sa.baseSalary, 0) * COALESCE(sa.commissionRate, 0) / 100) " +
                     "FROM Staff s LEFT JOIN s.salary sa " +
                     "ORDER BY s.staffId", Object[].class)
                     .list();

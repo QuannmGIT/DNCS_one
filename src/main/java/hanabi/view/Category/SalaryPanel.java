@@ -7,6 +7,7 @@ import java.awt.Font;
 
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.SwingWorker;
 
 import hanabi.components.SalaryTablePanel;
 import hanabi.service.AccountService;
@@ -24,8 +25,22 @@ public class SalaryPanel extends JPanel {
     }
 
     public void loadData() {
-        java.util.List<Object[]> salaryData = accountService.getSalaryData();
-        salaryTablePanel.loadSalaryData(salaryData);
+        salaryTablePanel.clearData();
+
+        new SwingWorker<Void, Void>() {
+            private java.util.List<Object[]> salaryData;
+
+            @Override
+            protected Void doInBackground() {
+                salaryData = accountService.getSalaryData();
+                return null;
+            }
+
+            @Override
+            protected void done() {
+                salaryTablePanel.loadSalaryData(salaryData);
+            }
+        }.execute();
     }
 
     private void initComponents() {

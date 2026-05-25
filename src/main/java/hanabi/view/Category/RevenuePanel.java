@@ -19,32 +19,27 @@ import java.awt.Insets;
 import java.awt.RenderingHints;
 import java.awt.geom.Path2D;
 
+import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
-import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
-import javax.swing.WindowConstants;
+import javax.swing.SwingWorker;
 import javax.swing.border.EmptyBorder;
 
 import com.formdev.flatlaf.FlatClientProperties;
 import com.formdev.flatlaf.extras.FlatSVGIcon;
 
-import hanabi.model.Invoice;
 import hanabi.model.Order;
-import hanabi.model.Product;
 import hanabi.service.RevenueService;
 import hanabi.util.FontLoader;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
-import javax.swing.Box;
 
 public class RevenuePanel extends JPanel {
 
@@ -55,6 +50,7 @@ public class RevenuePanel extends JPanel {
 
     private Font amaticFont;
     private final RevenueService revenueService = new RevenueService();
+    private String currentFilter = "Today";
 
     private JLabel todayValue;
     private JLabel ordersValue;
@@ -62,6 +58,7 @@ public class RevenuePanel extends JPanel {
     private JLabel ratingValue;
     private JPanel bottomSection;
     private JPanel chartSection;
+    private CustomChartPanel chartPanel;
 
     public RevenuePanel() {
         loadFont();
@@ -101,7 +98,8 @@ public class RevenuePanel extends JPanel {
 
         // 2.2 Chart Section
         gbc.gridy = 1;
-        gbc.weighty = 0.6; 
+        gbc.weighty = 0.6;
+        gbc.ipadx = 2;
         contentWrapper.add(createChartSection(), gbc);
 
         // 2.3 Bottom Section (Orders & Top Products)
@@ -204,8 +202,8 @@ public class RevenuePanel extends JPanel {
     private JPanel createChartSection() {
         JPanel chartSection = new JPanel(new BorderLayout(0, 10));
         chartSection.setBackground(BG_COLOR);
-        chartSection.putClientProperty(FlatClientProperties.STYLE, "arc:20; border: 1,1,1,1, #5A463D");
-        chartSection.setBorder(new EmptyBorder(15, 20, 15, 20));
+        chartSection.putClientProperty(FlatClientProperties.STYLE, "arc:20;");
+        chartSection.setBorder(BorderFactory.createEmptyBorder());
 
         // Chart Header
         JPanel headerPanel = new JPanel(new BorderLayout());
@@ -220,7 +218,7 @@ public class RevenuePanel extends JPanel {
         JPanel filterPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 2, 0));
         filterPanel.setOpaque(false);
         filterPanel.putClientProperty(FlatClientProperties.STYLE, "arc:20; border: 1,1,1,1, #5A463D");
-        filterPanel.setBorder(new EmptyBorder(3, 5, 3, 5));
+        // filterPanel.setBorder(new EmptyBorder(3, 5, 3, 5));
         
         for (JButton btn : createFilterGroup("Today", "This Week", "This Month", "Year")) {
             filterPanel.add(btn);
@@ -230,8 +228,8 @@ public class RevenuePanel extends JPanel {
 
         chartSection.add(headerPanel, BorderLayout.NORTH);
 
-        // Biểu đồ Custom (Mock data)
-        chartSection.add(new CustomChartPanel(), BorderLayout.CENTER);
+        chartPanel = new CustomChartPanel();
+        chartSection.add(chartPanel, BorderLayout.CENTER);
 
         return chartSection;
     }
@@ -271,6 +269,7 @@ public class RevenuePanel extends JPanel {
                 src.setFont(new Font("Segoe UI", Font.BOLD, 12));
                 src.setBackground(DARK_BROWN);
                 src.setForeground(Color.WHITE);
+                loadChartData(src.getText());
             });
         }
         return btns;
@@ -310,6 +309,7 @@ public class RevenuePanel extends JPanel {
         headerRow.add(createTableLabel("Time"));
         headerRow.add(createTableLabel("Day"));
         headerRow.add(createTableLabel("Total"));
+        headerRow.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
         tablePanel.add(headerRow);
 
         // Separator
@@ -338,8 +338,10 @@ public class RevenuePanel extends JPanel {
                 cell.setForeground(DARK_BROWN);
                 row.add(cell);
             }
+            row.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
             tablePanel.add(row);
         }
+        tablePanel.add(Box.createVerticalGlue());
         recentPanel.add(tablePanel, BorderLayout.CENTER);
 
         // --- Top Selling Products ---
@@ -402,8 +404,10 @@ public class RevenuePanel extends JPanel {
             qtyLbl.setForeground(TEXT_MENU);
             row.add(qtyLbl, BorderLayout.EAST);
 
+            row.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
             listPanel.add(row);
         }
+        listPanel.add(Box.createVerticalGlue());
 
         // Vertical Filter
         JPanel verticalFilter = new JPanel(new GridLayout(4, 1, 3, 3));
@@ -446,12 +450,17 @@ public class RevenuePanel extends JPanel {
     // CUSTOM CHART PANEL (Vẽ Line Chart với Gradient)
     // ==========================================
     private class CustomChartPanel extends JPanel {
-        // Dữ liệu giả lập trục Y (đã chuẩn hóa 0.0 -> 1.0)
-        private final double[] dataPoints = {0.2, 0.3, 0.4, 0.5, 0.2, 0.25, 0.5, 0.2, 0.6, 0.9, 0.5, 0.8, 0.6, 0.8, 0.9, 1.0, 0.5, 0.7, 0.9};
-        private final String[] xLabels = {"1", "3", "4", "7", "9", "11", "13", "15", "17", "19", "21", "23", "25", "27", "29", "31"};
+        private double[] dataPoints = {0.2, 0.3, 0.4, 0.5, 0.2, 0.35, 0.5, 0.6, 0.7, 0.5, 0.8, 0.6, 0.9, 0.7, 0.8, 0.45, 0.6, 0.5, 0.3, 0.7, 0.5, 0.8, 0.9, 0.6, 0.4, 0.5, 0.7, 0.8, 0.5, 0.6, 0.9};
+        private String[] xLabels = {"1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31"};
 
         public CustomChartPanel() {
             setOpaque(false);
+        }
+
+        public void updateData(double[] dataPoints, String[] xLabels) {
+            this.dataPoints = dataPoints;
+            this.xLabels = xLabels;
+            repaint();
         }
 
         @Override
@@ -462,7 +471,7 @@ public class RevenuePanel extends JPanel {
 
             int width = getWidth();
             int height = getHeight();
-            int paddingX = 30;
+            int paddingX = 50;
             int paddingY = 30;
 
             int chartWidth = width - 2 * paddingX;
@@ -479,23 +488,25 @@ public class RevenuePanel extends JPanel {
                 g2.setColor(DARK_BROWN);
                 g2.setFont(new Font("Segoe UI", Font.PLAIN, 12));
                 FontMetrics fm = g2.getFontMetrics();
-                g2.drawString(yLabels[i], paddingX - fm.stringWidth(yLabels[i]) - 8, y + fm.getHeight() / 3);
+                g2.drawString(yLabels[i], paddingX - fm.stringWidth(yLabels[i]) - 15, y + fm.getHeight() / 3);
                 g2.setColor(new Color(240, 235, 230));
             }
 
             g2.setColor(DARK_BROWN);
             g2.setFont(new Font("Segoe UI", Font.PLAIN, 13));
             FontMetrics fm = g2.getFontMetrics();
-            int stepX = chartWidth / (xLabels.length - 1);
-            for (int i = 0; i < xLabels.length; i++) {
-                int x = paddingX + (i * stepX);
-                int y = height - paddingY + fm.getHeight() + 8;
-                g2.drawString(xLabels[i], x - fm.stringWidth(xLabels[i]) / 2, y);
+            if (xLabels.length > 1) {
+                int stepX = chartWidth / (xLabels.length - 1);
+                for (int i = 0; i < xLabels.length; i++) {
+                    int x = paddingX + (i * stepX);
+                    int y = height - paddingY + fm.getHeight() + 8;
+                    g2.drawString(xLabels[i], x - fm.stringWidth(xLabels[i]) / 2, y);
+                }
             }
 
             int[] xCoords = new int[dataPoints.length];
             int[] yCoords = new int[dataPoints.length];
-            int dataStepX = chartWidth / (dataPoints.length - 1);
+            int dataStepX = dataPoints.length > 1 ? chartWidth / (dataPoints.length - 1) : 0;
 
             for (int i = 0; i < dataPoints.length; i++) {
                 xCoords[i] = paddingX + (i * dataStepX);
@@ -539,35 +550,152 @@ public class RevenuePanel extends JPanel {
 
     private String fmtRevenue(long v) {
         if (v >= 1_000_000) {
-            return String.format("%,.0fđ", v / 1_000_000.0).replace(",", ".") + "M";
+            return String.format("%,.0fMđ", v / 1_000_000.0).replace(",", ".");
         }
-        return String.format("%,d", v).replace(",", ".") + "đ";
+        return String.format("%,dđ", v).replace(",", ".");
     }
 
     public void loadData() {
-        long todayRev = revenueService.getTodayRevenue();
-        todayValue.setText(fmtRevenue(todayRev));
-
-        long totalOrders = revenueService.getTotalOrders();
-        ordersValue.setText(String.valueOf(totalOrders));
-
-        String best = revenueService.getBestSeller();
-        productValue.setText(best.isEmpty() ? "..." : best);
-
-        double avg = revenueService.getAverageRating();
-        ratingValue.setText(String.format("%.1f", avg));
+        todayValue.setText("...");
+        ordersValue.setText("...");
+        productValue.setText("...");
+        ratingValue.setText("...");
 
         if (bottomSection != null) {
             bottomSection.removeAll();
-            bottomSection.setLayout(new GridLayout(1, 2, 15, 0));
-            bottomSection.add(createRecentOrdersPanel());
-            bottomSection.add(createTopSellingPanel());
+            bottomSection.setLayout(new GridLayout(1, 1, 0, 0));
+            JLabel loading = new JLabel("Loading...", SwingConstants.CENTER);
+            loading.setFont(new Font("Segoe UI", Font.ITALIC, 18));
+            loading.setForeground(TEXT_MENU);
+            bottomSection.add(loading);
             bottomSection.revalidate();
             bottomSection.repaint();
         }
+
+        chartPanel.updateData(new double[]{0}, new String[]{""});
+
+        new SwingWorker<Void, Void>() {
+            private long todayRev;
+            private long totalOrders;
+            private String best;
+            private double avg;
+            private List<Order> recentOrders;
+            private List<Object[]> topProducts;
+
+            @Override
+            protected Void doInBackground() {
+                todayRev = revenueService.getTodayRevenue();
+                totalOrders = revenueService.getTotalOrders();
+                best = revenueService.getBestSeller();
+                avg = revenueService.getAverageRating();
+                recentOrders = revenueService.getRecentOrders(4);
+                topProducts = revenueService.getTopSellingProducts(4);
+                return null;
+            }
+
+            @Override
+            protected void done() {
+                todayValue.setText(fmtRevenue(todayRev));
+                ordersValue.setText(String.valueOf(totalOrders));
+                productValue.setText(best.isEmpty() ? "..." : best);
+                ratingValue.setText(String.format("%.1f", avg));
+
+                if (bottomSection != null) {
+                    bottomSection.removeAll();
+                    bottomSection.setLayout(new GridLayout(1, 2, 15, 0));
+                    bottomSection.add(createRecentOrdersPanel(recentOrders));
+                    bottomSection.add(createTopSellingPanel(topProducts));
+                    bottomSection.revalidate();
+                    bottomSection.repaint();
+                }
+
+                loadChartData(currentFilter);
+            }
+        }.execute();
     }
 
-    private JPanel createRecentOrdersPanel() {
+    private void loadChartData(String filter) {
+        currentFilter = filter;
+        chartPanel.updateData(new double[]{0}, new String[]{""});
+
+        LocalDate now = LocalDate.now();
+        LocalDate start, end;
+
+        switch (filter) {
+            case "Today":
+                start = now; end = now; break;
+            case "This Week":
+                start = now.with(java.time.DayOfWeek.MONDAY);
+                end = start.plusDays(6);
+                if (end.isAfter(now)) end = now;
+                break;
+            case "This Month":
+                start = now.withDayOfMonth(1);
+                end = start.withDayOfMonth(start.lengthOfMonth());
+                break;
+            case "Year":
+                start = now.withDayOfYear(1);
+                end = start.withDayOfYear(start.lengthOfYear());
+                break;
+            default:
+                return;
+        }
+
+        final LocalDate fStart = start;
+        final LocalDate fEnd = end;
+        final boolean isYear = "Year".equals(filter);
+
+        new SwingWorker<Void, Void>() {
+            private double[] chartData;
+            private String[] chartLabels;
+
+            @Override
+            protected Void doInBackground() {
+                if (isYear) {
+                    Map<String, Long> monthlyRev = revenueService.getMonthlyRevenue(now.getYear());
+                    int monthsElapsed = now.getMonthValue();
+                    chartData = new double[monthsElapsed];
+                    chartLabels = new String[monthsElapsed];
+                    long yrMax = 1;
+                    String[] monthNames = {"Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"};
+                    for (int m = 0; m < monthsElapsed; m++) {
+                        String key = String.format("%d-%02d", now.getYear(), m + 1);
+                        long rev = monthlyRev.getOrDefault(key, 0L);
+                        if (rev > yrMax) yrMax = rev;
+                        chartData[m] = rev;
+                        chartLabels[m] = monthNames[m];
+                    }
+                    if (yrMax > 0) {
+                        for (int m = 0; m < monthsElapsed; m++) chartData[m] = chartData[m] / (double) yrMax;
+                    }
+                } else {
+                    Map<LocalDate, Long> revenueByDay = revenueService.getRevenueByDateRange(fStart, fEnd);
+                    int totalDays = (int) java.time.temporal.ChronoUnit.DAYS.between(fStart, fEnd) + 1;
+                    chartData = new double[totalDays];
+                    chartLabels = new String[totalDays];
+                    long maxRevenue = 1;
+                    for (int d = 0; d < totalDays; d++) {
+                        LocalDate date = fStart.plusDays(d);
+                        long rev = revenueByDay.getOrDefault(date, 0L);
+                        if (rev > maxRevenue) maxRevenue = rev;
+                        chartData[d] = rev;
+                        chartLabels[d] = date.format(DateTimeFormatter.ofPattern("dd/MM"));
+                    }
+                    if (maxRevenue > 0) {
+                        for (int d = 0; d < totalDays; d++) chartData[d] = chartData[d] / (double) maxRevenue;
+                    }
+                }
+                return null;
+            }
+
+            @Override
+            protected void done() {
+                chartPanel.updateData(chartData, chartLabels);
+            }
+        }.execute();
+    }
+
+    private JPanel createRecentOrdersPanel(List<Order> orders) {
         JPanel panel = new JPanel(new BorderLayout());
         panel.setBackground(BG_COLOR);
         panel.putClientProperty(FlatClientProperties.STYLE, "arc:20; border: 1,1,1,1, #5A463D");
@@ -586,9 +714,10 @@ public class RevenuePanel extends JPanel {
         JPanel headerRow = new JPanel(new GridLayout(1, 4, 0, 0));
         headerRow.setOpaque(false);
         headerRow.add(createTableLabel("Order ID"));
-        headerRow.add(createTableLabel("Time"));
+        headerRow.add(createTableLabel("Date"));
         headerRow.add(createTableLabel("Day"));
         headerRow.add(createTableLabel("Total"));
+        headerRow.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
         tablePanel.add(headerRow);
 
         JPanel sep = new JPanel();
@@ -599,27 +728,28 @@ public class RevenuePanel extends JPanel {
         tablePanel.add(sep);
         tablePanel.add(Box.createVerticalStrut(4));
 
-        List<Order> orders = revenueService.getRecentOrders(4);
         for (int i = 0; i < orders.size(); i++) {
             Order o = orders.get(i);
             JPanel row = new JPanel(new GridLayout(1, 4, 0, 0));
             row.setBackground(i % 2 == 0 ? Color.WHITE : new Color(250, 247, 244));
             row.setBorder(new EmptyBorder(6, 0, 6, 0));
             row.add(new JLabel("#" + o.getOrderId().toString().substring(0, 8)));
-            row.add(new JLabel(o.getOrderDate() != null ? o.getOrderDate().format(DateTimeFormatter.ofPattern("HH:mm")) : ""));
+            row.add(new JLabel(o.getOrderDate() != null ? o.getOrderDate().format(DateTimeFormatter.ofPattern("dd/MM")) : ""));
             row.add(new JLabel(o.getOrderDate() != null ? o.getOrderDate().format(DateTimeFormatter.ofPattern("EEE")) : ""));
             row.add(new JLabel(o.getTotal() != null ? fmtRevenue(o.getTotal()) : "0đ"));
             for (java.awt.Component c : row.getComponents()) {
                 ((JLabel) c).setFont(new Font("Segoe UI", Font.PLAIN, 13));
                 ((JLabel) c).setForeground(DARK_BROWN);
             }
+            row.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
             tablePanel.add(row);
         }
+        tablePanel.add(Box.createVerticalGlue());
         panel.add(tablePanel, BorderLayout.CENTER);
         return panel;
     }
 
-    private JPanel createTopSellingPanel() {
+    private JPanel createTopSellingPanel(List<Object[]> topProducts) {
         JPanel panel = new JPanel(new BorderLayout());
         panel.setBackground(BG_COLOR);
         panel.putClientProperty(FlatClientProperties.STYLE, "arc:20; border: 1,1,1,1, #5A463D");
@@ -649,7 +779,6 @@ public class RevenuePanel extends JPanel {
             DARK_BROWN
         };
 
-        List<Object[]> topProducts = revenueService.getTopSellingProducts(4);
         for (int i = 0; i < topProducts.size(); i++) {
             JPanel row = new JPanel(new BorderLayout(10, 0));
             row.setBackground(i % 2 == 0 ? Color.WHITE : new Color(250, 247, 244));
@@ -673,25 +802,12 @@ public class RevenuePanel extends JPanel {
             qtyLbl.setForeground(TEXT_MENU);
             row.add(qtyLbl, BorderLayout.EAST);
 
+            row.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
             listPanel.add(row);
         }
+        listPanel.add(Box.createVerticalGlue());
         panel.add(listPanel, BorderLayout.CENTER);
         return panel;
     }
 
-    // Demo Run
-    public static void main(String[] args) {
-    //     try {
-    //         UIManager.setLookAndFeel(new com.formdev.flatlaf.FlatLightLaf());
-    //     } catch (Exception ignored) {}
-
-    //     SwingUtilities.invokeLater(() -> {
-    //         JFrame frame = new JFrame("Revenue Panel - HANABI CAFE");
-    //         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-    //         frame.getContentPane().add(new RevenuePanel());
-    //         frame.setSize(1000, 700);
-    //         frame.setLocationRelativeTo(null);
-    //         frame.setVisible(true);
-    //     });
-    }
 }

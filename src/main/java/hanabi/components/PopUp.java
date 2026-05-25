@@ -24,6 +24,7 @@ public class PopUp extends JDialog {
 
     public PopUp(JComponent Main, String title, int width, int height) {
         this.main = Main;
+        this.parent = (Main != null) ? (JFrame) SwingUtilities.getWindowAncestor(Main) : null;
         this.title = title;
         this.width = width;
         this.height = height;

@@ -15,8 +15,8 @@ public class HibernateUtil {
 
     private static SessionFactory buildSessionFactory() {
         try {
-            DBInitalizer.initialize();
-            TableDBInitalizer.initialize();
+            DBInitializer.initialize();
+            TableDBInitializer.initialize();
 
             SessionFactory sf = new Configuration()
                     .configure("hanabi/backend/hibernate.cfg.xml")
@@ -29,7 +29,7 @@ public class HibernateUtil {
                     .addAnnotatedClass(Salary.class)
                     .buildSessionFactory();
 
-            DataInitalizer.initialize(sf);
+            DataInitializer.initialize(sf);
             return sf;
         } catch (Throwable ex) {
             throw new ExceptionInInitializerError("Initial SessionFactory creation failed: " + ex);

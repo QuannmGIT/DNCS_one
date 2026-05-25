@@ -6,6 +6,7 @@ import hanabi.dao.SalaryDAO;
 import hanabi.dao.StaffDAO;
 import hanabi.model.Staff;
 import hanabi.util.HibernateUtil;
+import hanabi.util.PasswordUtil;
 
 import java.util.List;
 import java.util.UUID;
@@ -35,9 +36,8 @@ public class AccountService {
     }
 
     public Integer getPoints(UUID staffId) {
-        return averageDAO.findById(staffId) != null
-                ? averageDAO.findById(staffId).getAverageScore()
-                : 0;
+        hanabi.model.Average avg = averageDAO.findById(staffId);
+        return avg != null ? avg.getAverageScore() : 0;
     }
 
     public int getStaffCount() {
@@ -93,7 +93,8 @@ public class AccountService {
     public boolean changePassword(UUID staffId, String newPassword) {
         Staff staff = staffDAO.findById(staffId);
         if (staff != null) {
-            staff.setPassword(newPassword);
+            String salt = PasswordUtil.generateSalt();
+            staff.setPassword(salt + ":" + PasswordUtil.hash(newPassword, salt));
             staffDAO.update(staff);
             return true;
         }

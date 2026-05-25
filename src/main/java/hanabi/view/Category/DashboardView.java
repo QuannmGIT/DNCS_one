@@ -16,12 +16,10 @@ public class DashboardView extends CrazyPanel {
     private static final String PANEL_MENU = "menu";
     private static final String PANEL_ACCOUNTS = "accounts";
     private static final String PANEL_REVENUE = "revenue";
-    // private static final String PANEL_SALARY = "salary";
 
     private MenuItemsPanel menuItemsPanel;
     private AccountPanel accountPanel;
     private RevenuePanel revenuePanel;
-    // private SalaryPanel salaryPanel;
 
     public DashboardView() {
         setLayout(new BorderLayout());
@@ -32,7 +30,6 @@ public class DashboardView extends CrazyPanel {
         menuItemsPanel.loadMenuItems();
         accountPanel.loadUser();
         revenuePanel.loadData();
-        // salaryPanel.loadData();
     }
 
     private void init() {
@@ -46,24 +43,24 @@ public class DashboardView extends CrazyPanel {
         revenuePanel = new RevenuePanel();
         revenuePanel.setBackground(Color.WHITE);
 
-        // salaryPanel = new SalaryPanel();
-
         centerPanel.add(menuItemsPanel, PANEL_MENU);
         centerPanel.add(accountPanel, PANEL_ACCOUNTS);
         centerPanel.add(revenuePanel, PANEL_REVENUE);
-        // centerPanel.add(salaryPanel, PANEL_SALARY);
 
         CategoryPanel categoryPanel = new CategoryPanel(page -> {
             String target;
             switch (page) {
                 case CategoryPanel.PAGE_MENU_ITEMS:
                     target = PANEL_MENU;
+                    refreshData();
                     break;
                 case CategoryPanel.PAGE_ACCOUNTS:
                     target = PANEL_ACCOUNTS;
+                    refreshData();
                     break;
                 case CategoryPanel.PAGE_REVENUE:
                     target = PANEL_REVENUE;
+                    refreshData();
                     break;
                 default:
                     return;

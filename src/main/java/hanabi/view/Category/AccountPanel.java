@@ -19,6 +19,7 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
+import javax.swing.SwingWorker;
 import javax.swing.border.EmptyBorder;
 
 import com.formdev.flatlaf.FlatClientProperties;
@@ -30,6 +31,8 @@ import hanabi.model.User;
 import hanabi.service.AccountService;
 import hanabi.service.CreateUser;
 import hanabi.util.FontLoader;
+import java.util.List;
+import java.util.UUID;
 
 public class AccountPanel extends JPanel {
 
@@ -42,23 +45,6 @@ public class AccountPanel extends JPanel {
     private static final Color INFO_CARD_BG = new Color(211, 181, 147);
     private static final Color STATS_BG = new Color(248, 248, 248);
     private static final Color AVATAR_BG = new Color(239, 223, 204);
-
-    public static void main(String[] args) {
-        // try {
-        // UIManager.setLookAndFeel(new com.formdev.flatlaf.FlatLightLaf());
-        // } catch (Exception ignored) {
-        // }
-
-        // SwingUtilities.invokeLater(() -> {
-        // JFrame frame = new JFrame("Account Panel Demo");
-        // frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-        // frame.setResizable(false);
-        // frame.getContentPane().add(new AccountPanel());
-        // frame.pack();
-        // frame.setLocationRelativeTo(null);
-        // frame.setVisible(true);
-        // });
-    }
 
     private Font amaticFont;
 
@@ -90,7 +76,7 @@ public class AccountPanel extends JPanel {
         if (u == null)
             return;
 
-        if (!(u.isAdmin() == true)) {
+        if (!u.isAdmin()) {
             btnTerminate.setVisible(false);
             btnAddUser.setVisible(false);
             salaryPanel.setVisible(false);
@@ -101,14 +87,31 @@ public class AccountPanel extends JPanel {
         labelFullname.setText(u.getFullName() != null ? u.getFullName() : "");
         labelEmail.setText(u.getEmail() != null ? u.getEmail() : "");
 
-        long orders = accountService.getTotalOrders(u.getStaffId());
-        labelOrdersValue.setText(String.valueOf(orders));
+        labelOrdersValue.setText("...");
+        labelPointsValue.setText("...");
+        salaryPanel.clearData();
 
-        Integer points = accountService.getPoints(u.getStaffId());
-        labelPointsValue.setText(points != null ? String.valueOf(points) : "0");
+        UUID staffId = u.getStaffId();
+        new SwingWorker<Void, Void>() {
+            private long orders;
+            private Integer points;
+            private List<Object[]> salaryData;
 
-        java.util.List<Object[]> salaryData = accountService.getSalaryData();
-        salaryPanel.loadSalaryData(salaryData);
+            @Override
+            protected Void doInBackground() {
+                orders = accountService.getTotalOrders(staffId);
+                points = accountService.getPoints(staffId);
+                salaryData = accountService.getSalaryData();
+                return null;
+            }
+
+            @Override
+            protected void done() {
+                labelOrdersValue.setText(String.valueOf(orders));
+                labelPointsValue.setText(points != null ? String.valueOf(points) : "0");
+                salaryPanel.loadSalaryData(salaryData);
+            }
+        }.execute();
     }
 
     private void loadFont() {

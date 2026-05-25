@@ -4,6 +4,7 @@ import com.formdev.flatlaf.FlatClientProperties;
 
 import javax.swing.*;
 
+@Deprecated
 public class ButtonLink extends JButton {
 
     public ButtonLink(String text) {

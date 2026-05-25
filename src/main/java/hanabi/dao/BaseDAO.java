@@ -52,15 +52,21 @@ public class BaseDAO<T, ID> {
 
     public T findById(ID id) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            return session.get(entityClass, id);
+            Transaction tx = session.beginTransaction();
+            T result = session.get(entityClass, id);
+            tx.commit();
+            return result;
         }
     }
 
     public List<T> findAll() {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            Transaction tx = session.beginTransaction();
             CriteriaQuery<T> query = session.getCriteriaBuilder().createQuery(entityClass);
             query.select(query.from(entityClass));
-            return session.createQuery(query).list();
+            List<T> result = session.createQuery(query).list();
+            tx.commit();
+            return result;
         }
     }
 }

@@ -4,7 +4,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.Statement;
 
-public class DBInitalizer {
+public class DBInitializer {
 
     private static final String DB_URL = global.DB_URL;
     private static final String DB_NAME = global.DB_NAME;

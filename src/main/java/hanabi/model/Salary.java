@@ -10,7 +10,7 @@ import jakarta.persistence.Table;
 import java.util.UUID;
 
 @Entity
-@Table(name = "salarys")
+@Table(name = "salaries")
 public class Salary {
     @Id
     @Column(name = "staff_id", columnDefinition = "BINARY(16)")
