@@ -34,4 +34,14 @@ public class SalaryDAO extends BaseDAO<Salary, UUID> {
                     .list();
         }
     }
+
+    public Double getTotalByStaffId(UUID staffId) {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            return session.createQuery(
+                    "SELECT (COALESCE(sa.baseSalary, 0) + COALESCE(sa.baseSalary, 0) * COALESCE(sa.commissionRate, 0) / 100) " +
+                    "FROM Salary sa WHERE sa.staffId = :staffId", Double.class)
+                    .setParameter("staffId", staffId)
+                    .uniqueResult();
+        }
+    }
 }

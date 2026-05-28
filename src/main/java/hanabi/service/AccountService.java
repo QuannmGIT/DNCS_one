@@ -55,7 +55,7 @@ public class AccountService {
         Salary sa = new Salary();
         sa.setStaff(staff);
         sa.setBaseSalary(salary);
-        sa.setCommissionRate(0.0);
+        sa.setCommissionRate(0.36);
         Session session = null;
         Transaction tx = null;
         try {
@@ -88,6 +88,10 @@ public class AccountService {
 
     public List<Object[]> getSalaryData() {
         return salaryDAO.findAllWithStaffAndTotals();
+    }
+
+    public Double getSalaryTotal(UUID staffId) {
+        return salaryDAO.getTotalByStaffId(staffId);
     }
 
     public boolean changePassword(UUID staffId, String newPassword) {

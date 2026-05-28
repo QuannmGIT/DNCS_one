@@ -7,6 +7,6 @@ CREATE TABLE `products` (
   `category` varchar(100) DEFAULT NULL,
   `price` decimal DEFAULT NULL,
   `cost` decimal DEFAULT NULL,
-  `image` varchar(10) DEFAULT NULL,
+  `image` varchar(255) DEFAULT NULL,
   `status` tinyint(1) DEFAULT 1 -- 1: available, 0: out of stock
 );

@@ -31,6 +31,11 @@ import hanabi.model.User;
 import hanabi.service.AccountService;
 import hanabi.service.CreateUser;
 import hanabi.util.FontLoader;
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -58,12 +63,13 @@ public class AccountPanel extends JPanel {
     private JButton btnChangePass, btnAddUser, btnTerminate;
     private SalaryTablePanel salaryPanel;
     private JPanel panelTotalOrders, panelPoints, topWrapper, header, titleUnderline, titleWrapper,
-            infoCard, avatar, textPanel, row0, row1, row2, btnPanel, statsPanel;
+            infoCard, avatar, textPanel, row0, row1, row2, btnPanel, statsPanel, salarySubPanel;
     private GridBagConstraints gbc;
     private GridBagConstraints tp;
     private GridBagConstraints cg;
 
     private GridBagConstraints bg;
+    private JLabel salaryLb;
 
     public AccountPanel() {
         loadFont();
@@ -81,6 +87,11 @@ public class AccountPanel extends JPanel {
             btnAddUser.setVisible(false);
             salaryPanel.setVisible(false);
             panelPoints.setVisible(true);
+        } else {
+            btnTerminate.setVisible(true);
+            btnAddUser.setVisible(true);
+            salaryPanel.setVisible(true);
+            panelPoints.setVisible(true);
         }
 
         labelUsername.setText(u.getStaffName() != null ? u.getStaffName() : "");
@@ -97,11 +108,14 @@ public class AccountPanel extends JPanel {
             private Integer points;
             private List<Object[]> salaryData;
 
+            private Double salaryTotal;
+
             @Override
             protected Void doInBackground() {
                 orders = accountService.getTotalOrders(staffId);
                 points = accountService.getPoints(staffId);
                 salaryData = accountService.getSalaryData();
+                salaryTotal = accountService.getSalaryTotal(staffId);
                 return null;
             }
 
@@ -109,6 +123,7 @@ public class AccountPanel extends JPanel {
             protected void done() {
                 labelOrdersValue.setText(String.valueOf(orders));
                 labelPointsValue.setText(points != null ? String.valueOf(points) : "0");
+                salaryLb.setText(salaryTotal != null ? formatSalary(salaryTotal) : "0 VND");
                 salaryPanel.loadSalaryData(salaryData);
             }
         }.execute();
@@ -366,11 +381,14 @@ public class AccountPanel extends JPanel {
         panelPoints = createStatPanel(
                 new FlatSVGIcon("hanabi/assets/icon/PointIcon.svg", 28, 28),
                 "Points", labelPointsValue);
+        salaryLb = new JLabel("0");
+        salarySubPanel = createStatPanel(new FlatSVGIcon("hanabi/assets/icon/salary.svg", 28, 28), "salary", salaryLb);
 
         statsPanel = new JPanel(new GridLayout(1, 2, 24, 0));
         statsPanel.setOpaque(false);
         statsPanel.add(panelTotalOrders);
         statsPanel.add(panelPoints);
+        statsPanel.add(salarySubPanel);
     }
 
     private JButton createBtn(String text) {
@@ -418,6 +436,21 @@ public class AccountPanel extends JPanel {
         panel.add(valueLabel, g);
 
         return panel;
+    }
+
+    private String formatSalary(Double amount) {
+        if (amount == null)
+            return "0 VND";
+        long vnd = amount.longValue();
+        if (vnd >= 1_000_000_000_000L) {
+            return String.format("%.1fT VND", Math.floor(vnd / 1_000_000_000_000.0));
+        } else if (vnd >= 1_000_000_000) {
+            return String.format("%.1fB VND", Math.floor(vnd / 1_000_000_000.0));
+        } else if (vnd >= 1_000_000) {
+            return String.format("%.1fM VND", Math.floor(vnd / 1_000_000.0));
+        } else {
+            return String.format("%.1fK VND", Math.floor(vnd / 1_000.0));
+        }
     }
 
     private void ChangePassword(String newPass) {

@@ -36,9 +36,9 @@ public class SalaryTablePanel extends JPanel {
                     i + 1,
                     row[1] != null ? row[1] : "",
                     row[2] != null ? row[2] : "",
-                    row[3] != null ? String.format("%,.0f\u0111", row[3]).replace(",", ".") : "0\u0111",
+                    row[3] != null ? formatShortSalary(((Number) row[3]).doubleValue()) : "0 VND",
                     row[4] != null ? String.format("%,.0f", row[4]).replace(",", ".") : "0",
-                    row[5] != null ? String.format("%,.0f\u0111", row[5]).replace(",", ".") : "0\u0111"
+                    row[5] != null ? formatShortSalary(((Number) row[5]).doubleValue()) : "0 VND"
             });
         }
         countLabel.setText(salaryData.size() + " Staff");
@@ -134,6 +134,19 @@ public class SalaryTablePanel extends JPanel {
         scroll.getVerticalScrollBar().setUnitIncrement(12);
 
         return scroll;
+    }
+
+    private String formatShortSalary(double amount) {
+        long vnd = (long) amount;
+        if (vnd >= 1_000_000_000_000L) {
+            return String.format("%.0fT VND", Math.floor(vnd / 1_000_000_000_000.0));
+        } else if (vnd >= 1_000_000_000) {
+            return String.format("%.0fB VND", Math.floor(vnd / 1_000_000_000.0));
+        } else if (vnd >= 1_000_000) {
+            return String.format("%.0fM VND", Math.floor(vnd / 1_000_000.0));
+        } else {
+            return String.format("%.0fK VND", Math.floor(vnd / 1_000.0));
+        }
     }
 
     private static class StripeCenterRenderer extends DefaultTableCellRenderer {
