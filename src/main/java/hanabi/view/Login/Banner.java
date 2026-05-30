@@ -30,7 +30,7 @@ public class Banner extends JPanel {
 
     private void init() {
         setPreferredSize(new Dimension(550, 600));
-        setLayout(new BorderLayout());        
+        setLayout(new BorderLayout());
     }
 
     private void initComponents() {
@@ -64,7 +64,12 @@ public class Banner extends JPanel {
         }
         lblSlogan.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        Font vietnameseFont = new Font("Segoe UI", Font.PLAIN, 18);
+        Font vietnameseFont;
+        try {
+            vietnameseFont = FontLoader.load("/hanabi/assets/Fonts/DancingScript-Regular.ttf", 21f);
+        } catch (RuntimeException e) {
+            vietnameseFont = new Font("Segoe UI", Font.PLAIN, 18);
+        }
 
         textPanel.setOpaque(false);
         textPanel.setLayout(new BoxLayout(textPanel, BoxLayout.Y_AXIS));
