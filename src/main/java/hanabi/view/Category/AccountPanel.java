@@ -113,7 +113,7 @@ public class AccountPanel extends JPanel {
             @Override
             protected Void doInBackground() {
                 orders = accountService.getTotalOrders(staffId);
-                points = accountService.getPoints(staffId);
+                // points = accountService.getPoints(staffId);
                 salaryData = accountService.getSalaryData();
                 salaryTotal = accountService.getSalaryTotal(staffId);
                 return null;

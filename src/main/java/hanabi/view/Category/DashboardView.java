@@ -1,5 +1,8 @@
 package hanabi.view.Category;
 
+import hanabi.Main;
+import hanabi.model.User;
+
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Color;
@@ -16,13 +19,22 @@ public class DashboardView extends CrazyPanel {
     private static final String PANEL_MENU = "menu";
     private static final String PANEL_ACCOUNTS = "accounts";
     private static final String PANEL_REVENUE = "revenue";
+    private static final String PANEL_ORDERS = "orders";
+    private static final String PANEL_CHAT = "chat";
 
     private MenuItemsPanel menuItemsPanel;
     private AccountPanel accountPanel;
     private RevenuePanel revenuePanel;
+    private OrdersPanel ordersPanel;
+    private ChatPanel chatPanel;
+    private final JPanel centerPanel;
+    private final CardLayout cardLayout;
 
     public DashboardView() {
         setLayout(new BorderLayout());
+        cardLayout = new CardLayout();
+        centerPanel = new JPanel(cardLayout);
+        centerPanel.setBackground(Color.WHITE);
         init();
     }
 
@@ -33,19 +45,18 @@ public class DashboardView extends CrazyPanel {
     }
 
     private void init() {
-        CardLayout cardLayout = new CardLayout();
-        JPanel centerPanel = new JPanel(cardLayout);
-        centerPanel.setBackground(Color.WHITE);
-
         menuItemsPanel = new MenuItemsPanel();
         accountPanel = new AccountPanel();
 
         revenuePanel = new RevenuePanel();
         revenuePanel.setBackground(Color.WHITE);
 
+        ordersPanel = new OrdersPanel();
+
         centerPanel.add(menuItemsPanel, PANEL_MENU);
         centerPanel.add(accountPanel, PANEL_ACCOUNTS);
         centerPanel.add(revenuePanel, PANEL_REVENUE);
+        centerPanel.add(ordersPanel, PANEL_ORDERS);
 
         CategoryPanel categoryPanel = new CategoryPanel(page -> {
             String target;
@@ -62,6 +73,14 @@ public class DashboardView extends CrazyPanel {
                     target = PANEL_REVENUE;
                     refreshData();
                     break;
+                case CategoryPanel.PAGE_ORDERS:
+                    target = PANEL_ORDERS;
+                    ordersPanel.loadData();
+                    break;
+                case CategoryPanel.PAGE_CHAT:
+                    target = PANEL_CHAT;
+                    ensureChatPanel();
+                    break;
                 default:
                     return;
             }
@@ -75,23 +94,25 @@ public class DashboardView extends CrazyPanel {
         content.add(centerPanel, BorderLayout.CENTER);
 
         add(content);
-        // setSize(1320, 800);
         setVisible(true);
-
     }
 
-    public static void main(String[] args) {
-        // try {
-        // UIManager.setLookAndFeel(new FlatLightLaf());
-        // } catch (Exception e) {
-        // System.err.println("Failed to set FlatLaf: " + e.getMessage());
-        // }
+    private void ensureChatPanel() {
+        if (chatPanel != null) return;
 
-        // SwingUtilities.invokeLater(() -> {
-        // JFrame frame = new JFrame("HANABI CAFE");
-        // frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-        // frame.setResizable(false);
+        User user = Main.authService.getCurrentUser();
+        if (user == null) return;
 
-        // });
+        chatPanel = new ChatPanel(user.getStaffId(), user.getFullName(), user.isAdmin());
+        centerPanel.add(chatPanel, PANEL_CHAT);
+        centerPanel.revalidate();
+        centerPanel.repaint();
+    }
+
+    public void shutdownChat() {
+        if (chatPanel != null) {
+            chatPanel.shutdown();
+            chatPanel = null;
+        }
     }
 }

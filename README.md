@@ -15,7 +15,7 @@ A desktop application for managing coffee shop operations built with Java Swing 
 ## Features
 
 - **Authentication** — Login/logout with role-based access (admin/staff)
-- **Dashboard** — Revenue overview, daily/monthly statistics, best-sellers, recent orders, average rating
+- **Dashboard** — Revenue overview, daily/monthly statistics, best-sellers, recent orders
 - **Menu Management** — CRUD for products, grid display with category filtering, status tracking
 - **Order Management** — Create and manage orders, order details with product selection
 - **Invoice Management** — Invoice creation, payment status tracking
@@ -36,7 +36,6 @@ src/main/java/
 │   │   ├── PopUp.java          # Custom popup dialogs
 │   │   └── SalaryTablePanel.java
 │   ├── dao/                    # Data access layer (Hibernate queries)
-│   │   ├── AverageDAO.java
 │   │   ├── BaseDAO.java
 │   │   ├── InvoiceDAO.java
 │   │   ├── OrderDAO.java
@@ -46,7 +45,6 @@ src/main/java/
 │   │   ├── StaffDAO.java
 │   │   └── UserDAO.java
 │   ├── model/                  # JPA entities
-│   │   ├── Average.java
 │   │   ├── Invoice.java
 │   │   ├── Order.java
 │   │   ├── OrderDetail.java
@@ -84,7 +82,6 @@ src/main/java/
 │           ├── Banner.java
 │           └── LoginPanel.java
 ├── schemas/                    # Reference SQL DDL
-│   ├── average.sql
 │   ├── invoice.sql
 │   ├── order_details.sql
 │   ├── orders.sql
@@ -128,12 +125,6 @@ src/main/resources/
 | baseSalary | DECIMAL | |
 | commissionRate | DECIMAL | |
 
-#### `average`
-| Column | Type | Constraints |
-|--------|------|-------------|
-| staff_id | BINARY(16) | PK, FK → staff(staff_id) |
-| average_score | INT | |
-
 #### `products`
 | Column | Type | Constraints |
 |--------|------|-------------|
@@ -159,7 +150,7 @@ src/main/resources/
 |--------|------|-------------|
 | order_id | BINARY(16) | PK |
 | invoice_id | BINARY(16) | NOT NULL, FK → invoices(invoice_id) |
-| user_id | BINARY(16) | NOT NULL, FK → staff(staff_id) |
+| staff_id | BINARY(16) | NOT NULL, FK → staff(staff_id) |
 | order_date | DATE | |
 | total | INT | |
 
@@ -175,7 +166,6 @@ src/main/resources/
 ```mermaid
 **erDiagram
     staff ||--o| salaries : "1:1"
-    staff ||--o| average : "1:1"
     staff ||--o{ invoices : "1:N"
     staff ||--o{ orders : "1:N"
     invoices ||--o{ orders : "1:N"
@@ -196,11 +186,6 @@ src/main/resources/
         binary16 staff_id PK,FK
         decimal baseSalary
         decimal commissionRate
-    }
-
-    average {
-        binary16 staff_id PK,FK
-        int average_score
     }
 
     products {
@@ -224,7 +209,7 @@ src/main/resources/
     orders {
         binary16 order_id PK
         binary16 invoice_id FK "NOT NULL"
-        binary16 user_id FK "NOT NULL"
+        binary16 staff_id FK "NOT NULL"
         date order_date
         int total
     }
@@ -251,16 +236,15 @@ src/main/resources/
 | # | From | To | Type | Constraint |
 |---|------|----|------|------------|
 | 1 | `staff` | `salaries` | One-to-One | Shared primary key (`staff_id`) |
-| 2 | `staff` | `average` | One-to-One | Shared primary key (`staff_id`) |
-| 3 | `staff` | `invoices` | One-to-Many | `invoices.staff_id` → `staff.staff_id` |
-| 4 | `staff` | `orders` | One-to-Many | `orders.user_id` → `staff.staff_id` |
+| 2 | `staff` | `invoices` | One-to-Many | `invoices.staff_id` → `staff.staff_id` |
+| 4 | `staff` | `orders` | One-to-Many | `orders.staff_id` → `staff.staff_id` |
 | 5 | `invoices` | `orders` | One-to-Many | `orders.invoice_id` → `invoices.invoice_id` |
 | 6 | `orders` | `orders_details` | One-to-Many | `orders_details.order_id` → `orders.order_id` |
 | 7 | `products` | `orders_details` | One-to-Many | `orders_details.product_id` → `products.product_id` |
 
 ### Referential Integrity
 
-- Deleting a `staff` cascades to `salaries`, `average`, `invoices`, and `orders` via Hibernate cascade settings.
+- Deleting a `staff` cascades to `salaries`, `invoices`, and `orders` via Hibernate cascade settings.
 - Deleting an `invoice` cascades to its related `orders`.
 - Deleting an `order` cascades to its `orders_details`.
 - Deleting a `product` is restricted if referenced in `orders_details`.

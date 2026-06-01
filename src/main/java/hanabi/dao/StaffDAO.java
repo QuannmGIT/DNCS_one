@@ -44,4 +44,17 @@ public class StaffDAO extends BaseDAO<Staff, java.util.UUID> {
             return Optional.empty();
         }
     }
+
+    public Optional<Staff> findAdmin() {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            Staff admin = session.createQuery(
+                    "FROM Staff WHERE role = :role AND status = true", Staff.class)
+                    .setParameter("role", "admin")
+                    .setMaxResults(1)
+                    .getSingleResult();
+            return Optional.ofNullable(admin);
+        } catch (jakarta.persistence.NoResultException e) {
+            return Optional.empty();
+        }
+    }
 }

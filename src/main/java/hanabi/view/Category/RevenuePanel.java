@@ -55,7 +55,6 @@ public class RevenuePanel extends JPanel {
     private JLabel todayValue;
     private JLabel ordersValue;
     private JLabel productValue;
-    private JLabel ratingValue;
     private JPanel bottomSection;
     private JPanel chartSection;
     private CustomChartPanel chartPanel;
@@ -142,11 +141,9 @@ public class RevenuePanel extends JPanel {
         todayValue = new JLabel("...");
         ordersValue = new JLabel("...");
         productValue = new JLabel("...");
-        ratingValue = new JLabel("...");
         statsPanel.add(createStatCard("Today", todayValue, "Total Revenue", "Today.svg"));
         statsPanel.add(createStatCard("Orders", ordersValue, "Total Orders", "Orders.svg"));
         statsPanel.add(createStatCard("Product", productValue, "Best Seller", "MenuIcon.svg"));
-        statsPanel.add(createStatCard("Rating", ratingValue, "Average Rating", "Rating.svg"));
 
         return statsPanel;
     }
@@ -559,7 +556,6 @@ public class RevenuePanel extends JPanel {
         todayValue.setText("...");
         ordersValue.setText("...");
         productValue.setText("...");
-        ratingValue.setText("...");
 
         if (bottomSection != null) {
             bottomSection.removeAll();
@@ -578,16 +574,14 @@ public class RevenuePanel extends JPanel {
             private long todayRev;
             private long totalOrders;
             private String best;
-            private double avg;
-            private List<Order> recentOrders;
-            private List<Object[]> topProducts;
+            private List<Order> recentOrders = List.of();
+            private List<Object[]> topProducts = List.of();
 
             @Override
             protected Void doInBackground() {
                 todayRev = revenueService.getTodayRevenue();
                 totalOrders = revenueService.getTotalOrders();
                 best = revenueService.getBestSeller();
-                avg = revenueService.getAverageRating();
                 recentOrders = revenueService.getRecentOrders(4);
                 topProducts = revenueService.getTopSellingProducts(4);
                 return null;
@@ -598,7 +592,6 @@ public class RevenuePanel extends JPanel {
                 todayValue.setText(fmtRevenue(todayRev));
                 ordersValue.setText(String.valueOf(totalOrders));
                 productValue.setText(best.isEmpty() ? "..." : best);
-                ratingValue.setText(String.format("%.1f", avg));
 
                 if (bottomSection != null) {
                     bottomSection.removeAll();

@@ -1,6 +1,5 @@
 package hanabi.service;
 
-import hanabi.dao.AverageDAO;
 import hanabi.dao.InvoiceDAO;
 import hanabi.dao.OrderDAO;
 import hanabi.dao.OrderDetailDAO;
@@ -11,12 +10,12 @@ import java.time.format.DateTimeFormatter;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 public class RevenueService {
     private final InvoiceDAO invoiceDAO = new InvoiceDAO();
     private final OrderDAO orderDAO = new OrderDAO();
     private final OrderDetailDAO orderDetailDAO = new OrderDetailDAO();
-    private final AverageDAO averageDAO = new AverageDAO();
 
     public long getTodayRevenue() {
         return invoiceDAO.totalRevenueToday();
@@ -32,10 +31,6 @@ public class RevenueService {
             return (String) top.get(0)[0];
         }
         return "";
-    }
-
-    public double getAverageRating() {
-        return averageDAO.getAverageScore();
     }
 
     public List<Order> getRecentOrders(int limit) {
@@ -59,6 +54,14 @@ public class RevenueService {
             }
         }
         return revenueMap;
+    }
+
+    public List<Order> getFilteredOrders(LocalDate fromDate, LocalDate toDate, UUID staffId, int offset, int limit) {
+        return orderDAO.findFiltered(fromDate, toDate, staffId, offset, limit);
+    }
+
+    public long countFilteredOrders(LocalDate fromDate, LocalDate toDate, UUID staffId) {
+        return orderDAO.countFiltered(fromDate, toDate, staffId);
     }
 
     public List<Invoice> getTodayInvoices() {

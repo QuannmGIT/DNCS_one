@@ -37,7 +37,7 @@ public class SalaryTablePanel extends JPanel {
                     row[1] != null ? row[1] : "",
                     row[2] != null ? row[2] : "",
                     row[3] != null ? formatShortSalary(((Number) row[3]).doubleValue()) : "0 VND",
-                    row[4] != null ? String.format("%,.0f", row[4]).replace(",", ".") : "0",
+                    row[4] != null ? formatShortSalary(((Number) row[4]).doubleValue()) : "0 VND",
                     row[5] != null ? formatShortSalary(((Number) row[5]).doubleValue()) : "0 VND"
             });
         }
@@ -74,7 +74,7 @@ public class SalaryTablePanel extends JPanel {
     }
 
     private JScrollPane createScrollPane() {
-        String[] cols = {"STT", "Name", "Role", "Salary", "Commission rate", "Total salary"};
+        String[] cols = {"STT", "Name", "Role", "Base salary", "Invoice sales", "Total salary"};
 
         salaryModel = new DefaultTableModel(new Object[][]{}, cols) {
             @Override
@@ -117,7 +117,7 @@ public class SalaryTablePanel extends JPanel {
         table.getColumnModel().getColumn(1).setPreferredWidth(180);
         table.getColumnModel().getColumn(2).setPreferredWidth(100);
         table.getColumnModel().getColumn(3).setPreferredWidth(130);
-        table.getColumnModel().getColumn(4).setPreferredWidth(110);
+        table.getColumnModel().getColumn(4).setPreferredWidth(130);
         table.getColumnModel().getColumn(5).setPreferredWidth(130);
 
         JScrollPane scroll = new JScrollPane(table);

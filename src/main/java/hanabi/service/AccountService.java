@@ -1,6 +1,5 @@
 package hanabi.service;
 
-import hanabi.dao.AverageDAO;
 import hanabi.dao.OrderDAO;
 import hanabi.dao.SalaryDAO;
 import hanabi.dao.StaffDAO;
@@ -14,13 +13,12 @@ import java.util.UUID;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 
-import hanabi.model.Average;
 import hanabi.model.Salary;
+import hanabi.util.global;
 
 public class AccountService {
     private final StaffDAO staffDAO = new StaffDAO();
     private final OrderDAO orderDAO = new OrderDAO();
-    private final AverageDAO averageDAO = new AverageDAO();
     private final SalaryDAO salaryDAO = new SalaryDAO();
 
     public Staff getStaffById(UUID staffId) {
@@ -33,11 +31,6 @@ public class AccountService {
 
     public long getTotalOrders(UUID staffId) {
         return orderDAO.countByStaffId(staffId);
-    }
-
-    public Integer getPoints(UUID staffId) {
-        hanabi.model.Average avg = averageDAO.findById(staffId);
-        return avg != null ? avg.getAverageScore() : 0;
     }
 
     public int getStaffCount() {
@@ -55,7 +48,7 @@ public class AccountService {
         Salary sa = new Salary();
         sa.setStaff(staff);
         sa.setBaseSalary(salary);
-        sa.setCommissionRate(0.36);
+        sa.setCommissionRate(global.COMMISSION_RATE);
         Session session = null;
         Transaction tx = null;
         try {

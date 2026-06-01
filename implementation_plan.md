@@ -9,11 +9,11 @@ Please review the proposed files to modify. Does this approach look good to proc
 ## Proposed Changes
 
 ### `hanabi/view/Category/RevenuePanel.java`
-- Modify `loadData()`: Wrap data fetching (`getTodayRevenue`, `getTotalOrders`, `getBestSeller`, `getAverageRating`, `getRecentOrders`, `getTopSellingProducts`) inside a `SwingWorker`'s `doInBackground()`. Update labels and tables in `done()`.
+- Modify `loadData()`: Wrap data fetching (`getTodayRevenue`, `getTotalOrders`, `getBestSeller`, `getRecentOrders`, `getTopSellingProducts`) inside a `SwingWorker`'s `doInBackground()`. Update labels and tables in `done()`.
 - Modify `loadChartData(String filter)`: Wrap `getRevenueByDateRange` and `getMonthlyRevenue` inside a `SwingWorker`. Update `chartPanel` in `done()`.
 
 ### `hanabi/view/Category/AccountPanel.java`
-- Modify `loadUser()`: Wrap `getTotalOrders`, `getPoints`, and `getSalaryData` inside a `SwingWorker`'s `doInBackground()`. Update the UI in `done()`.
+- Modify `loadUser()`: Wrap `getTotalOrders` and `getSalaryData` inside a `SwingWorker`'s `doInBackground()`. Update the UI in `done()`.
 
 ### `hanabi/view/Category/SalaryPanel.java`
 - Modify `loadData()`: Wrap `accountService.getSalaryData()` inside a `SwingWorker`. Update the table in `done()`.

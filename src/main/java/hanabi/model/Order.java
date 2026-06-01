@@ -21,8 +21,11 @@ public class Order {
     private Invoice invoice;
 
     @ManyToOne
-    @JoinColumn(name = "user_id", referencedColumnName = "staff_id", nullable = false, columnDefinition = "BINARY(16)")
+    @JoinColumn(name = "staff_id", referencedColumnName = "staff_id", nullable = false, columnDefinition = "BINARY(16)")
     private Staff staff;
+
+    @Column(name = "user_id", columnDefinition = "BINARY(16)")
+    private UUID userId;
 
     @Column(name = "order_date")
     private LocalDate orderDate;
