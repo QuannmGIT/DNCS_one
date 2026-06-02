@@ -42,6 +42,21 @@ INSERT INTO `average` (`staff_id`, `average_score`) VALUES
 (0xa11f9efdabd2464aa13506b6dc92fb82, 92);
 
 --
+-- Table structure for table `chat_messages`
+--
+
+CREATE TABLE `chat_messages` (
+  `message_id` binary(16) NOT NULL,
+  `sender_id` binary(16) NOT NULL,
+  `content` text NOT NULL,
+  `message_type` varchar(10) NOT NULL DEFAULT 'TEXT',
+  `file_path` varchar(500) DEFAULT NULL,
+  `created_at` datetime NOT NULL,
+  `receiver_id` binary(16) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+
+--
 -- Table structure for table `invoices`
 --
 
@@ -173,6 +188,22 @@ INSERT INTO `staff` (`staff_id`, `staff_name`, `email`, `password`, `full_name`,
 -- Password addmin: admin123
 -- Password staff: staff123
 
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `chat_messages`
+--
+
+CREATE TABLE `chat_messages` (
+  `message_id` binary(16) NOT NULL,
+  `sender_id` binary(16) NOT NULL,
+  `receiver_id` binary(16) NOT NULL,
+  `content` text NOT NULL,
+  `message_type` varchar(10) DEFAULT 'TEXT',
+  `file_path` varchar(500) DEFAULT NULL,
+  `created_at` datetime NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
 --
 -- Indexes for table `average`
 --
@@ -208,6 +239,14 @@ ALTER TABLE `orders_details`
 ALTER TABLE `products`
   ADD PRIMARY KEY (`product_id`),
   ADD UNIQUE KEY `product_name` (`product_name`);
+
+--
+-- Indexes for table `chat_messages`
+--
+ALTER TABLE `chat_messages`
+  ADD PRIMARY KEY (`message_id`),
+  ADD KEY `idx_chat_sender` (`sender_id`),
+  ADD KEY `idx_chat_receiver` (`receiver_id`);
 
 --
 -- Indexes for table `salaries`

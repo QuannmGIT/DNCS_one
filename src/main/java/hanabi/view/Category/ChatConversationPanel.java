@@ -1,327 +1,225 @@
 package hanabi.view.Category;
 
 import com.formdev.flatlaf.FlatClientProperties;
+import hanabi.dao.ChatMessageDAO;
+import hanabi.model.ChatMessage;
+
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Cursor;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.List;
+import java.util.UUID;
+import java.util.function.Consumer;
+
+import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
-import javax.swing.SwingConstants;
+import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
+import javax.swing.Timer;
 import net.miginfocom.swing.MigLayout;
 
 public class ChatConversationPanel extends JPanel {
 
     private static final Color DARK_BROWN = new Color(90, 70, 61);
     private static final Color LIGHT_BG = new Color(250, 248, 245);
-    private static final Color BUBBLE_SENT = new Color(211, 181, 147);
-    private static final Color BUBBLE_RECEIVED = Color.WHITE;
-    private static final Color HEADER_BORDER = new Color(224, 216, 208);
-    private static final Color TIME_COLOR = new Color(180, 170, 160);
-    private static final Color SEP_BG = new Color(235, 230, 225);
+    private static final Color BUBBLE_RECEIVED = new Color(242, 242, 242);
 
-    private static final Font FONT_NAME = new Font("Segoe UI", Font.BOLD, 16);
-    private static final Font FONT_STATUS = new Font("Segoe UI", Font.PLAIN, 12);
-    private static final Font FONT_BUBBLE = new Font("Segoe UI", Font.PLAIN, 14);
-    private static final Font FONT_TIME = new Font("Segoe UI", Font.PLAIN, 10);
-    private static final Font FONT_SEP = new Font("Segoe UI", Font.PLAIN, 11);
-    private static final Font FONT_EMOJI = new Font("Segoe UI Emoji", Font.PLAIN, 18);
-    private static final Font FONT_SEND = new Font("Segoe UI", Font.BOLD, 14);
-
+    private final JLabel lblContactName;
     private final JPanel chatArea;
     private final JScrollPane scrollPane;
-    private final JPanel headerPanel;
-    private final JPanel centerWrapper;
+    private final JTextField txtInput;
+    private final ChatMessageDAO messageDAO;
+    private final Timer pollTimer;
 
-    public ChatConversationPanel() {
+    private UUID currentUserId;
+    private UUID currentContactId;
+    private Timestamp lastPollTime;
+    private final Consumer<ChatMessage> onSendMessage;
+
+    public ChatConversationPanel(Consumer<ChatMessage> onSendMessage) {
+        this.onSendMessage = onSendMessage;
+        this.messageDAO = new ChatMessageDAO();
+
         setLayout(new BorderLayout());
         setBackground(LIGHT_BG);
 
-        headerPanel = createHeader();
-        centerWrapper = new JPanel(new BorderLayout());
-        centerWrapper.setBackground(LIGHT_BG);
+        // Top Header
+        JPanel header = new JPanel(new MigLayout("insets 15 30 15 30, fillx", "[grow][]"));
+        header.setBackground(Color.WHITE);
+        header.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(230, 225, 220)));
 
-        chatArea = new JPanel(new MigLayout("wrap, fillx, insets 20 30 10 30", "[fill]"));
+        lblContactName = new JLabel("Chọn một cuộc trò chuyện");
+        lblContactName.setFont(new Font("Segoe UI", Font.BOLD, 18));
+        lblContactName.setForeground(DARK_BROWN);
+
+        JLabel lblStatus = new JLabel("● Đang hoạt động");
+        lblStatus.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        lblStatus.setForeground(new Color(46, 204, 113));
+
+        JPanel titleWrapper = new JPanel(new MigLayout("insets 0, wrap"));
+        titleWrapper.setOpaque(false);
+        titleWrapper.add(lblContactName);
+        titleWrapper.add(lblStatus);
+
+        header.add(titleWrapper);
+        add(header, BorderLayout.NORTH);
+
+        // Chat Area
+        chatArea = new JPanel(new MigLayout("insets 20 30 20 30, wrap, fillx"));
         chatArea.setBackground(LIGHT_BG);
 
         scrollPane = new JScrollPane(chatArea);
         scrollPane.setBorder(null);
         scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        scrollPane.getVerticalScrollBar().setUnitIncrement(16);
         scrollPane.getVerticalScrollBar().putClientProperty(FlatClientProperties.STYLE,
-                "width:8; trackArc:999; thumbInsets:0,0,0,0; trackInsets:0,0,0,0;");
+                "width:8; trackArc:999; thumbInsets:2,2,2,2;");
+        add(scrollPane, BorderLayout.CENTER);
 
-        centerWrapper.add(scrollPane, BorderLayout.CENTER);
-        centerWrapper.add(createInputPanel(), BorderLayout.SOUTH);
+        // Bottom Input
+        JPanel inputPanel = new JPanel(new MigLayout("insets 15 30 20 30, fillx", "[grow][50!]"));
+        inputPanel.setBackground(LIGHT_BG);
 
-        JPanel emptyPanel = createEmptyState();
-        centerWrapper.add(emptyPanel, BorderLayout.CENTER);
-        centerWrapper.remove(emptyPanel);
-
-        add(headerPanel, BorderLayout.NORTH);
-        add(centerWrapper, BorderLayout.CENTER);
-    }
-
-    private JPanel createHeader() {
-        JPanel header = new JPanel(new MigLayout("insets 12 24 12 24, fillx"));
-        header.setBackground(Color.WHITE);
-        header.putClientProperty(FlatClientProperties.STYLE,
-                "border:0,0,1,0," + colorToHex(HEADER_BORDER));
-
-        JLabel lblName = new JLabel("Chọn một cuộc trò chuyện");
-        lblName.setFont(FONT_NAME);
-        lblName.setForeground(DARK_BROWN);
-        header.add(lblName, "wrap");
-
-        JLabel lblStatus = new JLabel("");
-        lblStatus.setFont(FONT_STATUS);
-        header.add(lblStatus);
-
-        return header;
-    }
-
-    private JPanel createInputPanel() {
-        JPanel input = new JPanel(new MigLayout("insets 12 20 12 20, fillx", "[][][fill, grow][]"));
-        input.setBackground(Color.WHITE);
-        input.putClientProperty(FlatClientProperties.STYLE,
-                "border:1,0,0,0," + colorToHex(HEADER_BORDER));
-
-        JButton btnAttach = createIconBtn("\uD83D\uDCCE");
-        JButton btnImage = createIconBtn("\uD83D\uDDBC\uFE0F");
-        JButton btnEmoji = createIconBtn("\uD83D\uDE0A");
-
-        JTextArea txtInput = new JTextArea(1, 20);
-        txtInput.setFont(FONT_BUBBLE);
-        txtInput.setLineWrap(true);
-        txtInput.setWrapStyleWord(true);
-        txtInput.setRows(1);
+        txtInput = new JTextField();
         txtInput.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Nhập tin nhắn...");
         txtInput.putClientProperty(FlatClientProperties.STYLE,
-                "arc:20; margin:7,15,7,15; borderWidth:1; focusColor:#D3B593");
+                "arc:99; borderWidth:0; margin:10,15,10,15;");
+        txtInput.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+
+        JButton btnSend = new JButton("Gửi");
+        btnSend.setBackground(DARK_BROWN);
+        btnSend.setForeground(Color.WHITE);
+        btnSend.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        btnSend.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnSend.putClientProperty(FlatClientProperties.STYLE,
+                "arc:99; borderWidth:0; focusWidth:0;");
+        btnSend.setPreferredSize(new Dimension(50, 40));
+
         txtInput.addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
-                if (e.getKeyCode() == KeyEvent.VK_ENTER && !e.isShiftDown()) {
-                    e.consume();
+                if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+                    sendMessage();
                 }
             }
         });
+        btnSend.addActionListener(e -> sendMessage());
 
-        JButton btnSend = new JButton("Gửi");
-        btnSend.setFont(FONT_SEND);
-        btnSend.setForeground(Color.WHITE);
-        btnSend.setBackground(DARK_BROWN);
-        btnSend.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        btnSend.putClientProperty(FlatClientProperties.STYLE,
-                "arc:20; margin:7,18,7,18; borderWidth:0; focusWidth:0; hoverBackground:#4A352C");
+        inputPanel.add(txtInput, "growx, height 45!");
+        inputPanel.add(btnSend, "height 45!");
+        add(inputPanel, BorderLayout.SOUTH);
 
-        input.add(btnAttach, "height 36!, width 36!");
-        input.add(btnImage, "height 36!, width 36!");
-        input.add(txtInput, "growx, height 36!");
-        input.add(btnEmoji, "height 36!, width 36!");
-        input.add(btnSend, "height 36!");
-
-        return input;
+        // Poll every 2.5s for new messages in the active conversation
+        pollTimer = new Timer(2500, e -> pollNewMessages());
+        pollTimer.start();
     }
 
-    private JPanel createEmptyState() {
-        JPanel p = new JPanel(new MigLayout("insets 0, wrap, fill", "[center]"));
-        p.setBackground(LIGHT_BG);
+    public void loadConversation(UUID contactId, String contactName,
+            List<ChatMessage> messages, UUID currentUserId) {
+        this.currentContactId = contactId;
+        this.currentUserId = currentUserId;
+        lastPollTime = messages.isEmpty()
+                ? new Timestamp(System.currentTimeMillis())
+                : messages.get(messages.size() - 1).getCreatedAt();
 
-        JLabel icon = new JLabel("\uD83D\uDCAC", SwingConstants.CENTER);
-        icon.setFont(new Font("Segoe UI Emoji", Font.PLAIN, 64));
-
-        JLabel text = new JLabel("Chọn một cuộc trò chuyện để bắt đầu", SwingConstants.CENTER);
-        text.setFont(new Font("Segoe UI", Font.PLAIN, 15));
-        text.setForeground(TIME_COLOR);
-
-        p.add(icon, "wrap, gaptop 80");
-        p.add(text);
-
-        return p;
-    }
-
-    public void showConversation(ContactInfo contact) {
-        centerWrapper.removeAll();
-        centerWrapper.add(scrollPane, BorderLayout.CENTER);
-        centerWrapper.add(createInputPanel(), BorderLayout.SOUTH);
-
-        setHeaderInfo(contact);
-        loadMessages(contact);
-        centerWrapper.revalidate();
-        centerWrapper.repaint();
-    }
-
-    private void setHeaderInfo(ContactInfo contact) {
-        headerPanel.removeAll();
-        headerPanel.setLayout(new MigLayout("insets 12 24 12 24, fillx"));
-
-        JLabel lblName = new JLabel(contact.name);
-        lblName.setFont(FONT_NAME);
-        lblName.setForeground(DARK_BROWN);
-        headerPanel.add(lblName, "wrap");
-
-        JLabel lblStatus = new JLabel("\u25CF Đang hoạt động");
-        lblStatus.setFont(FONT_STATUS);
-        lblStatus.setForeground(new Color(46, 204, 113));
-        headerPanel.add(lblStatus);
-
-        headerPanel.revalidate();
-        headerPanel.repaint();
-    }
-
-    private void loadMessages(ContactInfo contact) {
+        lblContactName.setText(contactName);
         chatArea.removeAll();
 
-        List<MessageItem> messages = contact.messages;
-        if (messages == null || messages.isEmpty()) {
-            chatArea.add(new JLabel("Chưa có tin nhắn nào"), "al center, gaptop 40");
-            refreshChatArea();
-            return;
+        for (ChatMessage msg : messages) {
+            boolean isSent = msg.getSenderId().equals(currentUserId);
+            appendMessage(msg.getContent(), msg.getCreatedAt(), isSent);
         }
 
-        String lastDate = "";
-        for (MessageItem msg : messages) {
-            if (!msg.time.equals(lastDate)) {
-                chatArea.add(createDateSeparator(msg.time), "al center, gapy 12 8, width ::220!");
-                lastDate = msg.time;
-            }
-            renderMessage(msg);
-        }
-
-        refreshChatArea();
-    }
-
-    private void renderMessage(MessageItem msg) {
-        String timeLabel = msg.time.length() > 5 ? msg.time.substring(0, 5) : msg.time;
-
-        if (msg.isMe) {
-            JPanel bubble = createSentBubble(msg.content);
-            chatArea.add(bubble, "al right, gapleft push, width ::70%, gapy 2");
-            JLabel timeTag = new JLabel(timeLabel);
-            timeTag.setFont(FONT_TIME);
-            timeTag.setForeground(TIME_COLOR);
-            chatArea.add(timeTag, "al right, gapleft push, gaptop 0, gapbottom 6");
-        } else {
-            JPanel bubble = createReceivedBubble(msg.content);
-            chatArea.add(bubble, "al left, gapright push, width ::70%, gapy 2");
-            JLabel timeTag = new JLabel(timeLabel);
-            timeTag.setFont(FONT_TIME);
-            timeTag.setForeground(TIME_COLOR);
-            chatArea.add(timeTag, "al left, gapright push, gaptop 0, gapbottom 6");
-        }
-    }
-
-    private JLabel createDateSeparator(String raw) {
-        String label = getDateLabel(raw);
-        JLabel sep = new JLabel(label, SwingConstants.CENTER);
-        sep.setFont(FONT_SEP);
-        sep.setForeground(TIME_COLOR);
-        sep.setOpaque(true);
-        sep.setBackground(SEP_BG);
-        sep.putClientProperty(FlatClientProperties.STYLE, "arc:10");
-        return sep;
-    }
-
-    private JPanel createSentBubble(String text) {
-        JTextArea ta = new JTextArea(text);
-        ta.setEditable(false);
-        ta.setFont(FONT_BUBBLE);
-        ta.setLineWrap(true);
-        ta.setWrapStyleWord(true);
-        ta.setBackground(BUBBLE_SENT);
-        ta.setForeground(new Color(74, 53, 44));
-        ta.putClientProperty(FlatClientProperties.STYLE,
-                "arc:18 18 4 18; margin:10,15,10,15; borderWidth:0;");
-
-        JPanel wrapper = new JPanel(new BorderLayout());
-        wrapper.setOpaque(false);
-        wrapper.add(ta, BorderLayout.CENTER);
-        return wrapper;
-    }
-
-    private JPanel createReceivedBubble(String text) {
-        JTextArea ta = new JTextArea(text);
-        ta.setEditable(false);
-        ta.setFont(FONT_BUBBLE);
-        ta.setLineWrap(true);
-        ta.setWrapStyleWord(true);
-        ta.setBackground(BUBBLE_RECEIVED);
-        ta.setForeground(DARK_BROWN);
-        ta.putClientProperty(FlatClientProperties.STYLE,
-                "arc:18 18 18 4; margin:10,15,10,15; borderWidth:0;");
-
-        JPanel wrapper = new JPanel(new BorderLayout());
-        wrapper.setOpaque(false);
-        wrapper.add(ta, BorderLayout.CENTER);
-        return wrapper;
-    }
-
-    private JButton createIconBtn(String emoji) {
-        JButton btn = new JButton(emoji);
-        btn.setFont(FONT_EMOJI);
-        btn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        btn.putClientProperty(FlatClientProperties.STYLE,
-                "arc:12; borderWidth:0; focusWidth:0; background:null; hoverBackground:#F0EBE5");
-        return btn;
-    }
-
-    private String getDateLabel(String raw) {
-        if (raw == null || raw.isEmpty()) return "";
-        String d = raw.split(" ")[0];
-        if (d.equals("homnay")) return "Hôm nay";
-        if (d.equals("homqua")) return "Hôm qua";
-        if (d.matches("\\d+/\\d+/\\d{4}")) return "Ngày " + d;
-        return raw;
-    }
-
-    private void refreshChatArea() {
         chatArea.revalidate();
         chatArea.repaint();
-        SwingUtilities.invokeLater(() ->
+        scrollToBottom();
+    }
+
+    private void sendMessage() {
+        String text = txtInput.getText().trim();
+        if (text.isEmpty() || currentContactId == null || currentUserId == null)
+            return;
+
+        ChatMessage msg = new ChatMessage();
+        msg.setMessageId(UUID.randomUUID());
+        msg.setSenderId(currentUserId);
+        msg.setReceiverId(currentContactId);
+        msg.setContent(text);
+        msg.setMessageType(ChatMessage.MessageType.TEXT);
+        msg.setCreatedAt(new Timestamp(System.currentTimeMillis()));
+
+        onSendMessage.accept(msg);
+
+        appendMessage(text, msg.getCreatedAt(), true);
+        lastPollTime = msg.getCreatedAt();
+        txtInput.setText("");
+        chatArea.revalidate();
+        chatArea.repaint();
+        scrollToBottom();
+    }
+
+    private void pollNewMessages() {
+        if (currentUserId == null || currentContactId == null || lastPollTime == null)
+            return;
+
+        List<ChatMessage> newMsgs = messageDAO.findNewMessages(
+                currentUserId, currentContactId, lastPollTime);
+
+        if (!newMsgs.isEmpty()) {
+            for (ChatMessage msg : newMsgs) {
+                boolean isSent = msg.getSenderId().equals(currentUserId);
+                appendMessage(msg.getContent(), msg.getCreatedAt(), isSent);
+            }
+            lastPollTime = newMsgs.get(newMsgs.size() - 1).getCreatedAt();
+            chatArea.revalidate();
+            chatArea.repaint();
+            scrollToBottom();
+        }
+    }
+
+    private void appendMessage(String content, Timestamp time, boolean isSent) {
+        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm");
+        JLabel lblTime = new JLabel(sdf.format(time));
+        lblTime.setFont(new Font("Segoe UI", Font.PLAIN, 11));
+        lblTime.setForeground(Color.GRAY);
+
+        JTextArea txtMsg = new JTextArea(content);
+        txtMsg.setEditable(false);
+        txtMsg.setLineWrap(true);
+        txtMsg.setWrapStyleWord(true);
+        txtMsg.setOpaque(false);
+        txtMsg.setBorder(null);
+        txtMsg.setFont(new Font("Segoe UI", Font.PLAIN, 15));
+        txtMsg.setForeground(isSent ? Color.WHITE : Color.BLACK);
+
+        JPanel bubble = new JPanel(new MigLayout("insets 10 15 10 15, wrap"));
+        bubble.setBackground(isSent ? DARK_BROWN : BUBBLE_RECEIVED);
+        bubble.putClientProperty(FlatClientProperties.STYLE, "arc:35;");
+        bubble.add(txtMsg, "growx");
+
+        String align = isSent ? "al right" : "al left";
+        JPanel wrapper = new JPanel(new MigLayout("insets 5 10 5 10, " + align + ", wrap"));
+        wrapper.setOpaque(false);
+        wrapper.add(bubble, "wmax 1000px, gapy 0 0");
+        wrapper.add(lblTime, "gapy 2 0");
+
+        chatArea.add(wrapper, "growx, wrap, gapy 0 0");
+    }
+
+    private void scrollToBottom() {
+        SwingUtilities.invokeLater(() -> {
             scrollPane.getVerticalScrollBar().setValue(
-                scrollPane.getVerticalScrollBar().getMaximum()));
-    }
-
-    private static String colorToHex(Color c) {
-        return String.format("#%02x%02x%02x", c.getRed(), c.getGreen(), c.getBlue());
-    }
-
-    static class MessageItem {
-        String content;
-        boolean isMe;
-        String time;
-
-        MessageItem(String content, boolean isMe, String time) {
-            this.content = content;
-            this.isMe = isMe;
-            this.time = time;
-        }
-    }
-
-    static class ContactInfo {
-        String id;
-        String name;
-        String lastMessage;
-        String lastTime;
-        int unreadCount;
-        List<MessageItem> messages;
-
-        ContactInfo(String id, String name,
-                    String lastMessage, String lastTime, int unreadCount,
-                    List<MessageItem> messages) {
-            this.id = id;
-            this.name = name;
-            this.lastMessage = lastMessage;
-            this.lastTime = lastTime;
-            this.unreadCount = unreadCount;
-            this.messages = messages;
-        }
+                    scrollPane.getVerticalScrollBar().getMaximum());
+        });
     }
 }

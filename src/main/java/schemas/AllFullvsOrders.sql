@@ -42,6 +42,34 @@ INSERT INTO `average` (`staff_id`, `average_score`) VALUES
 (0xa11f9efdabd2464aa13506b6dc92fb82, 92);
 
 --
+-- Table structure for table `chat_messages`
+--
+
+CREATE TABLE `chat_messages` (
+  `message_id` binary(16) NOT NULL,
+  `sender_id` binary(16) NOT NULL,
+  `content` text NOT NULL,
+  `message_type` varchar(10) NOT NULL DEFAULT 'TEXT',
+  `file_path` varchar(500) DEFAULT NULL,
+  `created_at` datetime NOT NULL,
+  `receiver_id` binary(16) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `chat_messages`
+--
+
+INSERT INTO `chat_messages` (`message_id`, `sender_id`, `content`, `message_type`, `file_path`, `created_at`, `receiver_id`) VALUES
+(0x11357dea20b34f058e97424ccf7013e4, 0x41443030310000000000000000000000, 'nha em', 'TEXT', NULL, '2026-06-02 18:32:31', 0x09dc209bb3b94b08aa6cb559d02baa5f),
+(0x401e3578665b42e2a5445e28d71d3725, 0x09dc209bb3b94b08aa6cb559d02baa5f, 'vâng', 'TEXT', NULL, '2026-06-02 19:21:10', 0x41443030310000000000000000000000),
+(0x59eead2a69114f1da678dd67a2e87d31, 0x41443030310000000000000000000000, 'vậy mai qua sớm trước 1 tiếng', 'TEXT', NULL, '2026-06-02 19:22:57', 0x09dc209bb3b94b08aa6cb559d02baa5f),
+(0x7458f8bd9ac441f9b5b627ba27b19447, 0x41443030310000000000000000000000, 'xong rồi em đổ bỏ hết vật liệu còn dư lại hôm qua', 'TEXT', NULL, '2026-06-02 19:24:34', 0x09dc209bb3b94b08aa6cb559d02baa5f),
+(0x7b1b8507bcea4b26862b73e1211abd12, 0x09dc209bb3b94b08aa6cb559d02baa5f, 'ok a', 'TEXT', NULL, '2026-06-02 19:20:35', 0x41443030310000000000000000000000),
+(0xc353d0e44e2b408a9cd7b6953b6405a1, 0x41443030310000000000000000000000, 'tí 12h lên làm đơn nha em', 'TEXT', NULL, '2026-06-02 18:17:11', 0x09dc209bb3b94b08aa6cb559d02baa5f);
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `invoices`
 --
 

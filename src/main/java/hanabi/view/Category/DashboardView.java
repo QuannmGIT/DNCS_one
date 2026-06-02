@@ -17,11 +17,13 @@ public class DashboardView extends CrazyPanel {
     private static final String PANEL_ACCOUNTS = "accounts";
     private static final String PANEL_REVENUE = "revenue";
     private static final String PANEL_ORDERS = "orders";
+    private static final String PANEL_CHAT = "chat";
 
     private MenuItemsPanel menuItemsPanel;
     private AccountPanel accountPanel;
     private RevenuePanel revenuePanel;
     private OrdersPanel ordersPanel;
+    private ChatPanel chatPanel;
 
 
     public DashboardView() {
@@ -47,12 +49,14 @@ public class DashboardView extends CrazyPanel {
         revenuePanel.setBackground(Color.WHITE);
 
         ordersPanel = new OrdersPanel();
+        chatPanel = new ChatPanel();
 
 
         centerPanel.add(menuItemsPanel, PANEL_MENU);
         centerPanel.add(accountPanel, PANEL_ACCOUNTS);
         centerPanel.add(revenuePanel, PANEL_REVENUE);
         centerPanel.add(ordersPanel, PANEL_ORDERS);
+        centerPanel.add(chatPanel, PANEL_CHAT);
 
 
         CategoryPanel categoryPanel = new CategoryPanel(page -> {
@@ -73,6 +77,10 @@ public class DashboardView extends CrazyPanel {
                 case CategoryPanel.PAGE_ORDERS:
                     target = PANEL_ORDERS;
                     ordersPanel.loadData();
+                    break;
+                case CategoryPanel.PAGE_CHAT:
+                    target = PANEL_CHAT;
+                    chatPanel.loadContacts();
                     break;
                 default:
                     return;

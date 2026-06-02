@@ -22,8 +22,8 @@ public class RevenueService {
         return invoiceDAO.totalRevenueToday();
     }
 
-    public long getTotalOrders() {
-        return orderDAO.countAll();
+    public long getTodayOrdersCount() {
+        return orderDAO.countToday();
     }
 
     public String getBestSeller() {

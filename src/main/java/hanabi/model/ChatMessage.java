@@ -24,6 +24,9 @@ public class ChatMessage {
     @Column(name = "sender_id", nullable = false, columnDefinition = "BINARY(16)")
     private UUID senderId;
 
+    @Column(name = "receiver_id", nullable = false, columnDefinition = "BINARY(16)")
+    private UUID receiverId;
+
     @Column(nullable = false, columnDefinition = "TEXT")
     private String content;
 
@@ -44,6 +47,9 @@ public class ChatMessage {
 
     public UUID getSenderId() { return senderId; }
     public void setSenderId(UUID senderId) { this.senderId = senderId; }
+
+    public UUID getReceiverId() { return receiverId; }
+    public void setReceiverId(UUID receiverId) { this.receiverId = receiverId; }
 
     public String getContent() { return content; }
     public void setContent(String content) { this.content = content; }

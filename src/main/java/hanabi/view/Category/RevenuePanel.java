@@ -585,7 +585,7 @@ public class RevenuePanel extends JPanel {
             @Override
             protected Void doInBackground() {
                 todayRev = revenueService.getTodayRevenue();
-                totalOrders = revenueService.getTotalOrders();
+                totalOrders = revenueService.getTodayOrdersCount();
                 best = revenueService.getBestSeller();
                 avg = revenueService.getAverageRating();
                 recentOrders = revenueService.getRecentOrders(4);

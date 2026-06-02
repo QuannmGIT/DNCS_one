@@ -56,4 +56,13 @@ public class OrderDAO extends BaseDAO<Order, UUID> {
                     .getSingleResult();
         }
     }
+
+    public long countToday() {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            return session.createQuery(
+                    "SELECT COUNT(o) FROM Order o WHERE o.orderDate = :today", Long.class)
+                    .setParameter("today", LocalDate.now())
+                    .getSingleResult();
+        }
+    }
 }
