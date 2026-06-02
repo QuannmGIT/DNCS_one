@@ -47,9 +47,4 @@ public class PopUp extends JDialog {
         setVisible(true);
     }
 
-    // experimental function
-    public static void main(String[] arg) {
-        PopUp popUp = new PopUp(new JPanel(), "", 400, 300);
-        popUp.initFrame();
-    }
 }

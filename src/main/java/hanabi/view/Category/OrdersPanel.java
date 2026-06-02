@@ -1,5 +1,13 @@
 package hanabi.view.Category;
 
+import com.formdev.flatlaf.FlatClientProperties;
+import hanabi.dao.InvoiceDAO;
+import hanabi.dao.OrderDAO;
+import hanabi.dao.OrderDetailDAO;
+import hanabi.model.Invoice;
+import hanabi.model.Order;
+import hanabi.model.OrderDetail;
+
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -10,19 +18,17 @@ import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
-import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
-import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
@@ -31,14 +37,6 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
-
-import com.formdev.flatlaf.FlatClientProperties;
-import com.formdev.flatlaf.extras.FlatSVGIcon;
-
-import hanabi.model.Order;
-import hanabi.model.Staff;
-import hanabi.service.AccountService;
-import hanabi.service.RevenueService;
 
 public class OrdersPanel extends JPanel {
 
@@ -49,8 +47,10 @@ public class OrdersPanel extends JPanel {
     private static final Color SUBTITLE_COLOR = new Color(140, 120, 110);
     private static final Color PAGINATION_ACTIVE = new Color(211, 181, 147);
 
-    private final RevenueService revenueService = new RevenueService();
-    private final AccountService accountService = new AccountService();
+    private final InvoiceDAO invoiceDAO = new InvoiceDAO();
+    private final OrderDAO orderDAO = new OrderDAO();
+    private final OrderDetailDAO orderDetailDAO = new OrderDetailDAO();
+
 
     private int currentPage = 1;
     private int pageSize = 12;
@@ -58,85 +58,50 @@ public class OrdersPanel extends JPanel {
 
     private JLabel lblTotalCount;
     private JTextField txtSearch;
-    private JTextField txtFromDate;
-    private JTextField txtToDate;
-    private JComboBox<StaffItem> cboStaff;
-    private JTable table;
-    private DefaultTableModel model;
+    private JTable tblInvoices;
+    private DefaultTableModel invoiceModel;
+    private JTable tblDetails;
+    private DefaultTableModel detailModel;
     private JPanel paginationPanel;
+    private List<java.util.UUID> invoiceIdList = new ArrayList<>();
 
     public OrdersPanel() {
         initComponents();
     }
 
     public void loadData() {
-        new SwingWorker<List<Staff>, Void>() {
-            @Override
-            protected List<Staff> doInBackground() {
-                return accountService.getAllStaff();
-            }
-
-            @Override
-            protected void done() {
-                try {
-                    List<Staff> staffList = get();
-                    cboStaff.removeAllItems();
-                    cboStaff.addItem(new StaffItem(null, "Tất cả nhân viên"));
-                    if (staffList != null) {
-                        for (Staff s : staffList) {
-                            cboStaff.addItem(new StaffItem(s.getStaffId(), s.getFullName()));
-                        }
-                    }
-                    currentPage = 1;
-                    applyFilters();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        }.execute();
+        currentPage = 1;
+        applyFilters();
     }
 
     private void applyFilters() {
         String search = txtSearch.getText().trim();
-        String fromText = txtFromDate.getText().trim();
-        String toText = txtToDate.getText().trim();
-        StaffItem selected = (StaffItem) cboStaff.getSelectedItem();
-        UUID staffId = (selected != null && selected.id != null) ? selected.id : null;
-
-        LocalDate fromDate = parseDate(fromText);
-        LocalDate toDate = parseDate(toText);
-
-        boolean hasSearch = !search.isEmpty();
         int page = currentPage;
         int size = pageSize;
 
         new SwingWorker<Void, Void>() {
-            private List<Order> resultOrders = List.of();
+            private List<Invoice> resultInvoices = List.of();
             private int totalCount;
             private int resolvedPage = page;
 
             @Override
             protected Void doInBackground() {
-                if (hasSearch) {
-                    String upperSearch = search.toUpperCase();
-                    List<Order> all = revenueService.getFilteredOrders(fromDate, toDate, staffId, 0, Integer.MAX_VALUE);
-                    List<Order> matched = all.stream()
-                            .filter(o -> o.getOrderId() != null
-                                    && o.getOrderId().toString().toUpperCase().contains(upperSearch))
-                            .collect(Collectors.toList());
-                    totalCount = matched.size();
-                    int totalPages = Math.max(1, (int) Math.ceil((double) totalCount / size));
-                    if (resolvedPage > totalPages) resolvedPage = totalPages;
-                    int fromIdx = (resolvedPage - 1) * size;
-                    int toIdx = Math.min(fromIdx + size, matched.size());
-                    resultOrders = (fromIdx < matched.size()) ? matched.subList(fromIdx, toIdx) : List.of();
+                List<Invoice> all;
+                if (search.isEmpty()) {
+                    all = invoiceDAO.findAll();
                 } else {
-                    totalCount = (int) revenueService.countFilteredOrders(fromDate, toDate, staffId);
-                    int totalPages = Math.max(1, (int) Math.ceil((double) totalCount / size));
-                    if (resolvedPage > totalPages) resolvedPage = totalPages;
-                    int offset = (resolvedPage - 1) * size;
-                    resultOrders = revenueService.getFilteredOrders(fromDate, toDate, staffId, offset, size);
+                    String upper = search.toUpperCase();
+                    all = invoiceDAO.findAll().stream()
+                            .filter(inv -> inv.getInvoiceId() != null
+                                    && inv.getInvoiceId().toString().toUpperCase().contains(upper))
+                            .collect(Collectors.toList());
                 }
+                totalCount = all.size();
+                int totalPages = Math.max(1, (int) Math.ceil((double) totalCount / size));
+                if (resolvedPage > totalPages) resolvedPage = totalPages;
+                int fromIdx = (resolvedPage - 1) * size;
+                int toIdx = Math.min(fromIdx + size, all.size());
+                resultInvoices = (fromIdx < all.size()) ? all.subList(fromIdx, toIdx) : List.of();
                 return null;
             }
 
@@ -144,29 +109,31 @@ public class OrdersPanel extends JPanel {
             protected void done() {
                 currentPage = resolvedPage;
                 totalFilteredCount = totalCount;
-                updateTable(resultOrders);
+                updateInvoiceTable(resultInvoices);
                 int totalPages = Math.max(1, (int) Math.ceil((double) totalCount / size));
                 updatePagination(totalPages);
-                lblTotalCount.setText("Tổng số đơn: " + totalCount);
+                lblTotalCount.setText("Tổng số hóa đơn: " + totalCount);
             }
         }.execute();
     }
 
-    private void updateTable(List<Order> orders) {
-        model.setRowCount(0);
+    private void updateInvoiceTable(List<Invoice> invoices) {
+        invoiceModel.setRowCount(0);
+        invoiceIdList.clear();
         int stt = (currentPage - 1) * pageSize + 1;
-        for (Order order : orders) {
-            String shortId = order.getOrderId() != null
-                    ? order.getOrderId().toString().substring(0, 8).toUpperCase()
+        for (Invoice inv : invoices) {
+            java.util.UUID uuid = inv.getInvoiceId();
+            String shortId = uuid != null ? uuid.toString().substring(0, 8).toUpperCase() : "N/A";
+            String date = inv.getInvoiceDate() != null
+                    ? inv.getInvoiceDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))
                     : "N/A";
-            String date = order.getOrderDate() != null
-                    ? order.getOrderDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))
+            String staffName = (inv.getStaff() != null && inv.getStaff().getFullName() != null)
+                    ? inv.getStaff().getFullName()
                     : "N/A";
-            String staffName = (order.getStaff() != null && order.getStaff().getFullName() != null)
-                    ? order.getStaff().getFullName()
-                    : "N/A";
-            String totalStr = String.format("%,d đ", order.getTotal() != null ? order.getTotal() : 0);
-            model.addRow(new Object[] { stt++, shortId, date, staffName, totalStr });
+            String totalStr = String.format("%,d đ", inv.getTotal() != null ? inv.getTotal() : 0);
+            String statusStr = Boolean.TRUE.equals(inv.getStatus()) ? "Active" : "Inactive";
+            invoiceModel.addRow(new Object[]{stt++, shortId, date, staffName, totalStr, statusStr});
+            invoiceIdList.add(uuid);
         }
     }
 
@@ -175,7 +142,7 @@ public class OrdersPanel extends JPanel {
 
         if (totalPages > 1) {
             JButton btnPrev = createPageBtn("");
-            btnPrev.setIcon(new FlatSVGIcon("hanabi/assets/icon/LeftArrow.svg", 16, 16));
+            btnPrev.setIcon(new javax.swing.ImageIcon(getClass().getResource("/hanabi/assets/icon/LeftArrow.svg")));
             btnPrev.setEnabled(currentPage > 1);
             btnPrev.addActionListener(e -> {
                 if (currentPage > 1) {
@@ -187,18 +154,14 @@ public class OrdersPanel extends JPanel {
 
             List<Integer> pages = new ArrayList<>();
             if (totalPages <= 7) {
-                for (int i = 1; i <= totalPages; i++)
-                    pages.add(i);
+                for (int i = 1; i <= totalPages; i++) pages.add(i);
             } else {
                 pages.add(1);
-                if (currentPage > 3)
-                    pages.add(-1);
+                if (currentPage > 3) pages.add(-1);
                 int start = Math.max(2, currentPage - 1);
                 int end = Math.min(totalPages - 1, currentPage + 1);
-                for (int i = start; i <= end; i++)
-                    pages.add(i);
-                if (currentPage < totalPages - 2)
-                    pages.add(-1);
+                for (int i = start; i <= end; i++) pages.add(i);
+                if (currentPage < totalPages - 2) pages.add(-1);
                 pages.add(totalPages);
             }
 
@@ -227,7 +190,7 @@ public class OrdersPanel extends JPanel {
             }
 
             JButton btnNext = createPageBtn("");
-            btnNext.setIcon(new FlatSVGIcon("hanabi/assets/icon/RightArrow.svg", 16, 16));
+            btnNext.setIcon(new javax.swing.ImageIcon(getClass().getResource("/hanabi/assets/icon/RightArrow.svg")));
             btnNext.setEnabled(currentPage < totalPages);
             btnNext.addActionListener(e -> {
                 if (currentPage < totalPages) {
@@ -261,7 +224,7 @@ public class OrdersPanel extends JPanel {
         setLayout(new BorderLayout(0, 0));
 
         add(createHeaderPanel(), BorderLayout.NORTH);
-        add(createTablePanel(), BorderLayout.CENTER);
+        add(createCenterPanel(), BorderLayout.CENTER);
         add(createPaginationBar(), BorderLayout.SOUTH);
     }
 
@@ -270,7 +233,6 @@ public class OrdersPanel extends JPanel {
         header.setBackground(LIGHT_BG);
         header.setBorder(new EmptyBorder(25, 30, 20, 30));
 
-        // Left: Title and total count
         JPanel left = new JPanel(new BorderLayout(0, 5));
         left.setOpaque(false);
 
@@ -278,16 +240,14 @@ public class OrdersPanel extends JPanel {
         lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 28));
         lblTitle.setForeground(DARK_BROWN);
 
-        lblTotalCount = new JLabel("Order total: ...");
+        lblTotalCount = new JLabel("Tổng số hóa đơn: ...");
         lblTotalCount.setFont(new Font("Segoe UI", Font.PLAIN, 15));
         lblTotalCount.setForeground(SUBTITLE_COLOR);
 
         left.add(lblTitle, BorderLayout.NORTH);
         left.add(lblTotalCount, BorderLayout.CENTER);
-
         header.add(left, BorderLayout.WEST);
 
-        // Right: Filter toolbar
         JPanel right = new JPanel(new GridBagLayout());
         right.setOpaque(false);
         GridBagConstraints gbc = new GridBagConstraints();
@@ -295,10 +255,10 @@ public class OrdersPanel extends JPanel {
         gbc.insets = new Insets(0, 8, 0, 0);
 
         txtSearch = new JTextField();
-        txtSearch.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Search order ID...");
+        txtSearch.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Search invoice ID...");
         txtSearch.putClientProperty(FlatClientProperties.TEXT_FIELD_SHOW_CLEAR_BUTTON, true);
         txtSearch.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-        txtSearch.setPreferredSize(new Dimension(180, 38));
+        txtSearch.setPreferredSize(new Dimension(200, 38));
         txtSearch.putClientProperty(FlatClientProperties.STYLE,
                 "arc:15; borderWidth:1; borderColor:#DCD5CE; focusColor:#D3B593;");
         txtSearch.addActionListener(e -> {
@@ -310,104 +270,199 @@ public class OrdersPanel extends JPanel {
         gbc.weightx = 0;
         right.add(txtSearch, gbc);
 
-        txtFromDate = new JTextField();
-        txtFromDate.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "From ");
-        txtFromDate.putClientProperty(FlatClientProperties.TEXT_FIELD_SHOW_CLEAR_BUTTON, true);
-        txtFromDate.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-        txtFromDate.setPreferredSize(new Dimension(110, 38));
-        txtFromDate.putClientProperty(FlatClientProperties.STYLE,
-                "arc:15; borderWidth:1; borderColor:#DCD5CE; focusColor:#D3B593;");
-        txtFromDate.addActionListener(e -> {
+        JButton btnRefresh = new JButton("Refresh");
+        btnRefresh.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        btnRefresh.setPreferredSize(new Dimension(100, 38));
+        btnRefresh.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnRefresh.putClientProperty(FlatClientProperties.STYLE,
+                "arc:15; borderWidth:0; focusWidth:0;");
+        btnRefresh.putClientProperty("JButton.hoverBackground", new Color(200, 180, 160));
+        btnRefresh.addActionListener(e -> {
             currentPage = 1;
+            txtSearch.setText("");
             applyFilters();
         });
 
         gbc.gridx = 1;
-        right.add(txtFromDate, gbc);
-
-        txtToDate = new JTextField();
-        txtToDate.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "to ");
-        txtToDate.putClientProperty(FlatClientProperties.TEXT_FIELD_SHOW_CLEAR_BUTTON, true);
-        txtToDate.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-        txtToDate.setPreferredSize(new Dimension(110, 38));
-        txtToDate.putClientProperty(FlatClientProperties.STYLE,
-                "arc:15; borderWidth:1; borderColor:#DCD5CE; focusColor:#D3B593;");
-        txtToDate.addActionListener(e -> {
-            currentPage = 1;
-            applyFilters();
-        });
-
-        gbc.gridx = 2;
-        right.add(txtToDate, gbc);
-
-        cboStaff = new JComboBox<>();
-        cboStaff.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-        cboStaff.setPreferredSize(new Dimension(180, 38));
-        cboStaff.putClientProperty(FlatClientProperties.STYLE,
-                "arc:15; borderWidth:1; borderColor:#DCD5CE; focusColor:#D3B593;");
-        cboStaff.addActionListener(e -> {
-            if (cboStaff.getSelectedIndex() >= 0) {
-                currentPage = 1;
-                applyFilters();
-            }
-        });
-
-        gbc.gridx = 3;
-        right.add(cboStaff, gbc);
+        right.add(btnRefresh, gbc);
 
         header.add(right, BorderLayout.EAST);
         return header;
     }
 
-    private JPanel createTablePanel() {
-        JPanel container = new JPanel(new BorderLayout());
-        container.setBackground(Color.WHITE);
-        container.setBorder(new EmptyBorder(0, 30, 0, 30));
-
-        String[] columns = { "STT", "ID invoices (ID)", "Date", "Staff", "Total" };
-        model = new DefaultTableModel(columns, 0) {
+    private JPanel createCenterPanel() {
+        String[] invCols = {"STT", "ID", "Date", "Staff", "Total", "Status"};
+        invoiceModel = new DefaultTableModel(invCols, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
                 return false;
             }
         };
+        tblInvoices = new JTable(invoiceModel);
+        tblInvoices.setRowHeight(50);
+        tblInvoices.setShowGrid(false);
+        tblInvoices.setIntercellSpacing(new Dimension(0, 0));
+        tblInvoices.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        tblInvoices.setForeground(new Color(50, 40, 35));
+        tblInvoices.setSelectionBackground(new Color(242, 236, 228));
+        tblInvoices.setSelectionForeground(DARK_BROWN);
 
-        table = new JTable(model);
-        table.setRowHeight(55);
-        table.setShowGrid(false);
-        table.setIntercellSpacing(new Dimension(0, 0));
-        table.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        table.setForeground(new Color(50, 40, 35));
-        table.setSelectionBackground(new Color(242, 236, 228));
-        table.setSelectionForeground(DARK_BROWN);
+        JTableHeader hdr = tblInvoices.getTableHeader();
+        hdr.setReorderingAllowed(false);
+        hdr.setFont(new Font("Segoe UI", Font.BOLD, 15));
+        hdr.setBackground(DARK_BROWN);
+        hdr.setForeground(Color.WHITE);
+        hdr.setPreferredSize(new Dimension(0, 44));
 
-        JTableHeader header = table.getTableHeader();
-        header.setReorderingAllowed(false);
-        header.setFont(new Font("Segoe UI", Font.BOLD, 15));
-        header.setBackground(DARK_BROWN);
-        header.setForeground(Color.WHITE);
-        header.setPreferredSize(new Dimension(0, 50)); // Tăng chiều cao Header lên 50
+        tblInvoices.getColumnModel().getColumn(0).setPreferredWidth(50);
+        tblInvoices.getColumnModel().getColumn(1).setPreferredWidth(120);
+        tblInvoices.getColumnModel().getColumn(2).setPreferredWidth(120);
+        tblInvoices.getColumnModel().getColumn(3).setPreferredWidth(200);
+        tblInvoices.getColumnModel().getColumn(4).setPreferredWidth(120);
+        tblInvoices.getColumnModel().getColumn(5).setPreferredWidth(80);
 
-        table.getColumnModel().getColumn(0).setPreferredWidth(60);
-        table.getColumnModel().getColumn(1).setPreferredWidth(160);
-        table.getColumnModel().getColumn(2).setPreferredWidth(140);
-        table.getColumnModel().getColumn(3).setPreferredWidth(250);
-        table.getColumnModel().getColumn(4).setPreferredWidth(140);
+        tblInvoices.getColumnModel().getColumn(0).setCellRenderer(new StripeCenterRenderer());
+        tblInvoices.getColumnModel().getColumn(1).setCellRenderer(new StripeCenterRenderer());
+        tblInvoices.getColumnModel().getColumn(2).setCellRenderer(new StripeCenterRenderer());
+        tblInvoices.getColumnModel().getColumn(3).setCellRenderer(new StripeCenterRenderer());
+        tblInvoices.getColumnModel().getColumn(4).setCellRenderer(new StripeRightRenderer());
+        tblInvoices.getColumnModel().getColumn(5).setCellRenderer(new StripeCenterRenderer());
 
-        table.getColumnModel().getColumn(0).setCellRenderer(new StripeCenterRenderer());
-        table.getColumnModel().getColumn(1).setCellRenderer(new StripeCenterRenderer());
-        table.getColumnModel().getColumn(2).setCellRenderer(new StripeCenterRenderer());
-        table.getColumnModel().getColumn(3).setCellRenderer(new StripeCenterRenderer());
-        table.getColumnModel().getColumn(4).setCellRenderer(new StripeRightRenderer());
-
-        JScrollPane scrollPane = new JScrollPane(table);
-        scrollPane.setBorder(BorderFactory.createLineBorder(BORDER_COLOR, 1));
-        scrollPane.getViewport().setBackground(Color.WHITE);
-        scrollPane.getVerticalScrollBar().putClientProperty(FlatClientProperties.STYLE,
+        JScrollPane invScroll = new JScrollPane(tblInvoices);
+        invScroll.setBorder(BorderFactory.createLineBorder(BORDER_COLOR, 1));
+        invScroll.getViewport().setBackground(Color.WHITE);
+        invScroll.getVerticalScrollBar().putClientProperty(FlatClientProperties.STYLE,
                 "width:10; trackArc:999; thumbInsets:2,2,2,2; trackInsets:2,2,2,2;");
 
-        container.add(scrollPane, BorderLayout.CENTER);
-        return container;
+        String[] detCols = {"Product", "Quantity", "Price", "Total"};
+        detailModel = new DefaultTableModel(detCols, 0) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
+        tblDetails = new JTable(detailModel);
+        tblDetails.setRowHeight(40);
+        tblDetails.setShowGrid(false);
+        tblDetails.setIntercellSpacing(new Dimension(0, 0));
+        tblDetails.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        tblDetails.setForeground(new Color(50, 40, 35));
+        tblDetails.setSelectionBackground(new Color(242, 236, 228));
+        tblDetails.setSelectionForeground(DARK_BROWN);
+
+        JTableHeader hdr2 = tblDetails.getTableHeader();
+        hdr2.setReorderingAllowed(false);
+        hdr2.setFont(new Font("Segoe UI", Font.BOLD, 15));
+        hdr2.setBackground(DARK_BROWN);
+        hdr2.setForeground(Color.WHITE);
+        hdr2.setPreferredSize(new Dimension(0, 44));
+
+        tblDetails.getColumnModel().getColumn(0).setPreferredWidth(180);
+        tblDetails.getColumnModel().getColumn(1).setPreferredWidth(80);
+        tblDetails.getColumnModel().getColumn(2).setPreferredWidth(100);
+        tblDetails.getColumnModel().getColumn(3).setPreferredWidth(120);
+
+        tblDetails.getColumnModel().getColumn(0).setCellRenderer(new StripeCenterRenderer());
+        tblDetails.getColumnModel().getColumn(1).setCellRenderer(new StripeCenterRenderer());
+        tblDetails.getColumnModel().getColumn(2).setCellRenderer(new StripeRightRenderer());
+        tblDetails.getColumnModel().getColumn(3).setCellRenderer(new StripeRightRenderer());
+
+        JScrollPane detScroll = new JScrollPane(tblDetails);
+        detScroll.setBorder(BorderFactory.createLineBorder(BORDER_COLOR, 1));
+        detScroll.getViewport().setBackground(Color.WHITE);
+        detScroll.getVerticalScrollBar().putClientProperty(FlatClientProperties.STYLE,
+                "width:10; trackArc:999; thumbInsets:2,2,2,2; trackInsets:2,2,2,2;");
+
+        JPanel invoicePanel = new JPanel(new BorderLayout());
+        JLabel invTitle = new JLabel("Invoices");
+        invTitle.setFont(new Font("Segoe UI", Font.BOLD, 18));
+        invTitle.setForeground(DARK_BROWN);
+        invTitle.setBorder(new EmptyBorder(0, 0, 8, 0));
+        invoicePanel.add(invTitle, BorderLayout.NORTH);
+        invoicePanel.add(invScroll, BorderLayout.CENTER);
+
+        JPanel detailPanel = new JPanel(new BorderLayout());
+        JLabel detTitle = new JLabel("Invoice Details");
+        detTitle.setFont(new Font("Segoe UI", Font.BOLD, 18));
+        detTitle.setForeground(DARK_BROWN);
+        detTitle.setBorder(new EmptyBorder(0, 0, 8, 0));
+        detailPanel.add(detTitle, BorderLayout.NORTH);
+        detailPanel.add(detScroll, BorderLayout.CENTER);
+
+        JPanel wrapper1 = new JPanel(new BorderLayout());
+        wrapper1.setBackground(Color.WHITE);
+        wrapper1.setBorder(new EmptyBorder(0, 30, 0, 10));
+        wrapper1.add(invoicePanel, BorderLayout.CENTER);
+
+        JPanel wrapper2 = new JPanel(new BorderLayout());
+        wrapper2.setBackground(Color.WHITE);
+        wrapper2.setBorder(new EmptyBorder(0, 10, 0, 30));
+        wrapper2.add(detailPanel, BorderLayout.CENTER);
+
+        JSplitPane split = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, wrapper1, wrapper2);
+        split.setDividerLocation(500);
+        split.setResizeWeight(0.6);
+        split.setDividerSize(1);
+        split.setContinuousLayout(true);
+        split.setBorder(null);
+
+        tblInvoices.getSelectionModel().addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting()) {
+                int row = tblInvoices.getSelectedRow();
+                if (row >= 0 && row < invoiceIdList.size()) {
+                    java.util.UUID id = invoiceIdList.get(row);
+                    if (id != null) loadInvoiceDetails(id);
+                }
+            }
+        });
+
+        JPanel centerPanel = new JPanel(new BorderLayout());
+        centerPanel.setBackground(Color.WHITE);
+        centerPanel.add(split, BorderLayout.CENTER);
+        return centerPanel;
+    }
+
+    private void loadInvoiceDetails(java.util.UUID invoiceId) {
+        detailModel.setRowCount(0);
+        new SwingWorker<Void, Void>() {
+            private List<Object[]> rows = new ArrayList<>();
+
+            @Override
+            protected Void doInBackground() {
+                try (org.hibernate.Session session = hanabi.util.HibernateUtil.getSessionFactory().openSession()) {
+                    List<Object[]> queryResult = session.createQuery(
+                            "SELECT od.product.productName, od.quantity, od.product.price, (od.quantity * od.product.price) " +
+                            "FROM OrderDetail od " +
+                            "WHERE od.order.invoice.invoiceId = :iid", Object[].class)
+                            .setParameter("iid", invoiceId)
+                            .list();
+                    
+                    for (Object[] row : queryResult) {
+                        String productName = row[0] != null ? row[0].toString() : "N/A";
+                        int qty = row[1] != null ? ((Number) row[1]).intValue() : 0;
+                        double price = row[2] != null ? ((Number) row[2]).doubleValue() : 0;
+                        double total = row[3] != null ? ((Number) row[3]).doubleValue() : 0;
+                        
+                        rows.add(new Object[]{
+                                productName, 
+                                qty,
+                                String.format("%,.0f đ", price),
+                                String.format("%,.0f đ", total)
+                        });
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                return null;
+            }
+
+            @Override
+            protected void done() {
+                for (Object[] row : rows) {
+                    detailModel.addRow(row);
+                }
+            }
+        }.execute();
     }
 
     private JPanel createPaginationBar() {
@@ -420,15 +475,6 @@ public class OrdersPanel extends JPanel {
 
         wrapper.add(paginationPanel, BorderLayout.CENTER);
         return wrapper;
-    }
-
-    private static LocalDate parseDate(String text) {
-        if (text == null || text.isEmpty()) return null;
-        try {
-            return LocalDate.parse(text, DateTimeFormatter.ofPattern("dd/MM/yyyy"));
-        } catch (Exception e) {
-            return null;
-        }
     }
 
     private static class StripeCenterRenderer extends DefaultTableCellRenderer {
@@ -454,21 +500,6 @@ public class OrdersPanel extends JPanel {
             setHorizontalAlignment(SwingConstants.RIGHT);
             setBorder(new EmptyBorder(0, 10, 0, 20));
             return c;
-        }
-    }
-
-    private static class StaffItem {
-        final UUID id;
-        final String display;
-
-        StaffItem(UUID id, String display) {
-            this.id = id;
-            this.display = display;
-        }
-
-        @Override
-        public String toString() {
-            return display;
         }
     }
 }

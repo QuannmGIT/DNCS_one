@@ -77,7 +77,6 @@ public class Main extends JFrame {
     }
 
     public static void logout() {
-        app.Dash.shutdownChat();
         authService.logout();
         FlatAnimatedLafChange.showSnapshot();
         app.setContentPane(app.loginPane);

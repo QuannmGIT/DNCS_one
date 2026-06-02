@@ -1,8 +1,5 @@
 package hanabi.view.Category;
 
-import hanabi.Main;
-import hanabi.model.User;
-
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Color;
@@ -13,20 +10,17 @@ import raven.crazypanel.CrazyPanel;
 
 public class DashboardView extends CrazyPanel {
 
-    private static final Color DARK_BROWN = new Color(90, 70, 61);
     private static final Color LIGHT_BG = new Color(250, 248, 245);
 
     private static final String PANEL_MENU = "menu";
     private static final String PANEL_ACCOUNTS = "accounts";
     private static final String PANEL_REVENUE = "revenue";
     private static final String PANEL_ORDERS = "orders";
-    private static final String PANEL_CHAT = "chat";
 
     private MenuItemsPanel menuItemsPanel;
     private AccountPanel accountPanel;
     private RevenuePanel revenuePanel;
     private OrdersPanel ordersPanel;
-    private ChatPanel chatPanel;
     private final JPanel centerPanel;
     private final CardLayout cardLayout;
 
@@ -77,10 +71,7 @@ public class DashboardView extends CrazyPanel {
                     target = PANEL_ORDERS;
                     ordersPanel.loadData();
                     break;
-                case CategoryPanel.PAGE_CHAT:
-                    target = PANEL_CHAT;
-                    ensureChatPanel();
-                    break;
+
                 default:
                     return;
             }
@@ -97,22 +88,5 @@ public class DashboardView extends CrazyPanel {
         setVisible(true);
     }
 
-    private void ensureChatPanel() {
-        if (chatPanel != null) return;
 
-        User user = Main.authService.getCurrentUser();
-        if (user == null) return;
-
-        chatPanel = new ChatPanel(user.getStaffId(), user.getFullName(), user.isAdmin());
-        centerPanel.add(chatPanel, PANEL_CHAT);
-        centerPanel.revalidate();
-        centerPanel.repaint();
-    }
-
-    public void shutdownChat() {
-        if (chatPanel != null) {
-            chatPanel.shutdown();
-            chatPanel = null;
-        }
-    }
 }

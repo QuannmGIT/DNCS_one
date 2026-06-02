@@ -64,18 +64,6 @@ public class TableDBInitializer {
                     + "  staff_id BINARY(16) NOT NULL PRIMARY KEY,"
                     + "  baseSalary DECIMAL DEFAULT NULL,"
                     + "  commissionRate DECIMAL DEFAULT NULL"
-                    + ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4",
-
-            "CREATE TABLE IF NOT EXISTS chat_messages ("
-                    + "  message_id BINARY(16) NOT NULL PRIMARY KEY,"
-                    + "  sender_id BINARY(16) NOT NULL,"
-                    + "  receiver_id BINARY(16) NOT NULL,"
-                    + "  content TEXT NOT NULL,"
-                    + "  message_type VARCHAR(10) NOT NULL DEFAULT 'TEXT',"
-                    + "  file_path VARCHAR(500) DEFAULT NULL,"
-                    + "  created_at DATETIME NOT NULL,"
-                    + "  INDEX idx_chat_sender (sender_id),"
-                    + "  INDEX idx_chat_receiver (receiver_id)"
                     + ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4"
     };
 

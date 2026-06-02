@@ -31,11 +31,6 @@ import hanabi.model.User;
 import hanabi.service.AccountService;
 import hanabi.service.CreateUser;
 import hanabi.util.FontLoader;
-import java.text.SimpleDateFormat;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 

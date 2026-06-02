@@ -6,9 +6,11 @@ public class global {
     public static final String DB_NAME = "StoreManagement";
     public static final String USER = "root";
     public static final String PASSWORD = "";
-    public static final int CHAT_SERVER_PORT = 12345;
-    public static String chatServerHost = "localhost";
     public static double COMMISSION_RATE = 0.01;
+    public static final String BANKCODE = "MB"; // replace your Bank code
+    public static final String ACCOUNTNUMBER = "33669917012007";
+    public static final String ACCOUNTNAME = "HANABI CAFE";
+    public static final String ADDINFO = "Thanh toan Hanabi Cafe";
 
     public static String getAssetsPath() {
         return assetsPath;

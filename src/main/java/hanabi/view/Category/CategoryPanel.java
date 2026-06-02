@@ -31,7 +31,6 @@ public class CategoryPanel extends JPanel {
     public static final int PAGE_ACCOUNTS = 1;
     public static final int PAGE_REVENUE = 2;
     public static final int PAGE_ORDERS = 3;
-    public static final int PAGE_CHAT = 4;
 
     private static final Color SIDEBAR_BG = new Color(211, 181, 147);
     private static final Color DARK_BROWN = new Color(90, 70, 61);
@@ -42,13 +41,11 @@ public class CategoryPanel extends JPanel {
     private JButton buttonRevenue;
     private JButton buttonLogOut;
     private JButton buttonOrders;
-    private JButton buttonChat;
 
     private Icon menuIcon, menuIconLight;
     private Icon accountIcon, accountIconLight;
     private Icon revenueIcon, revenueIconLight;
     private Icon ordersIcon, ordersIconLight;
-    private Icon messageIcon, messageIconLight;
 
     private Consumer<Integer> onNavigate;
 
@@ -62,8 +59,7 @@ public class CategoryPanel extends JPanel {
     }
 
     public void setActivePage(int page) {
-        // JButton[] buttons = { buttonMenuItems, buttonAccounts, buttonRevenue};
-        JButton[] buttons = { buttonMenuItems, buttonAccounts, buttonRevenue, buttonOrders, buttonChat };
+        JButton[] buttons = { buttonMenuItems, buttonAccounts, buttonRevenue, buttonOrders };
         for (int i = 0; i < buttons.length; i++) {
             applyButtonAppearance(buttons[i], i == page);
         }
@@ -80,9 +76,6 @@ public class CategoryPanel extends JPanel {
         accountIconLight = new FlatSVGIcon("hanabi/assets/icon/AccountIconLight.svg", 22, 22);
         revenueIcon = new FlatSVGIcon("hanabi/assets/icon/RevenueIcon.svg", 22, 22);
         revenueIconLight = new FlatSVGIcon("hanabi/assets/icon/RevenueIconLight.svg", 22, 22);
-        messageIcon = new FlatSVGIcon("hanabi/assets/icon/MessageIcon.svg", 22, 22);
-        messageIconLight = new FlatSVGIcon("hanabi/assets/icon/MessageIconLight.svg", 22, 22);
-
         ordersIcon = new FlatSVGIcon("hanabi/assets/icon/OrdersIcon.svg", 22, 22);
         ordersIconLight = new FlatSVGIcon("hanabi/assets/icon/OrdersIconLight.svg", 22, 22);
 
@@ -99,7 +92,6 @@ public class CategoryPanel extends JPanel {
         buttonAccounts = createNavBtn("Accounts");
         buttonRevenue = createNavBtn("Revenue");
         buttonOrders = createNavBtn("Orders");
-        buttonChat = createNavBtn("Messages");
         // buttonSalary = createNavBtn("Salary");
 
         buttonMenuItems.addActionListener(this::onMenuItems);
@@ -108,7 +100,6 @@ public class CategoryPanel extends JPanel {
         // buttonSalary.addActionListener(this::onSalary);
 
         buttonOrders.addActionListener(this::onOrders);
-        buttonChat.addActionListener(this::onChat);
 
         setActivePage(PAGE_MENU_ITEMS);
 
@@ -154,12 +145,8 @@ public class CategoryPanel extends JPanel {
         add(buttonRevenue, gbc);
         gbc.gridy = 5;
         add(buttonOrders, gbc);
-        // add(buttonSalary, gbc);
 
         gbc.gridy = 6;
-        add(buttonChat, gbc);
-        gbc.gridy = 7;
-        gbc.gridy = 8;
         gbc.weighty = 1.0;
         gbc.anchor = GridBagConstraints.SOUTH;
         gbc.insets = new Insets(10, 20, 30, 20);
@@ -201,8 +188,6 @@ public class CategoryPanel extends JPanel {
             btn.setIcon(active ? revenueIconLight : revenueIcon);
         } else if (btn == buttonOrders) {
             btn.setIcon(active ? ordersIconLight : ordersIcon);
-        } else if (btn == buttonChat) {
-            btn.setIcon(active ? messageIconLight : messageIcon);
         }
     }
 
@@ -228,12 +213,6 @@ public class CategoryPanel extends JPanel {
         setActivePage(PAGE_ORDERS);
         if (onNavigate != null)
             onNavigate.accept(PAGE_ORDERS);
-    }
-
-    private void onChat(ActionEvent evt) {
-        setActivePage(PAGE_CHAT);
-        if (onNavigate != null)
-            onNavigate.accept(PAGE_CHAT);
     }
 
     // private void onSalary(ActionEvent evt) {

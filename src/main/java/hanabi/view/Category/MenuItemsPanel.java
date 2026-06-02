@@ -630,18 +630,13 @@ public class MenuItemsPanel extends JPanel {
                     "Error", JOptionPane.ERROR_MESSAGE);
             return;
         }
-        Map<String, Double> productPrices = new java.util.HashMap<>();
+        
+        // get Current total in cart
+        int totalAmount = 0;
         for (Map.Entry<String, int[]> entry : cartMap.entrySet()) {
-            productPrices.put(entry.getKey(), (double) entry.getValue()[1]);
+            totalAmount += entry.getValue()[0] * entry.getValue()[1];
         }
-        java.util.UUID orderId = menuService.placeOrder(staff, cartMap, productPrices);
-        if (orderId != null) {
-            JOptionPane.showMessageDialog(this,
-                    "Order placed successfully!\nOrder ID: " + orderId.toString().substring(0, 8),
-                    "Payment Successful", JOptionPane.INFORMATION_MESSAGE);
-            cartMap.clear();
-            rebuildCart();
-        }
+        menuService.QRPayment(totalAmount, staff, this);
     }
 
     // ─── DB LOAD ────────────────────────────────────────────
@@ -664,7 +659,8 @@ public class MenuItemsPanel extends JPanel {
                 for (Product p : productList) {
                     String img = p.getImage();
                     if (img == null || img.isBlank())
-                        continue;
+                        img = "Image not found";
+                        // continue;
                     String name = p.getProductName();
                     String price = fmtPrice(p.getPrice() != null ? p.getPrice().intValue() : 0);
                     String cat = p.getCategory() != null ? p.getCategory() : "";
@@ -681,6 +677,15 @@ public class MenuItemsPanel extends JPanel {
                 rebuildGrid();
             }
         }.execute();
+    }
+
+    public Map<String, int[]> getCartMap() {
+        return cartMap;
+    }
+
+    public void clearCart() {
+        cartMap.clear();
+        rebuildCart();
     }
 
     // ─── MAIN ─────────────────────────────────────────────────
