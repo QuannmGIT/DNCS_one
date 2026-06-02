@@ -17,7 +17,11 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.net.URL;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 
+import javax.imageio.ImageIO;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
@@ -33,6 +37,7 @@ import javax.swing.SwingWorker;
 import javax.swing.UIManager;
 import javax.swing.WindowConstants;
 import javax.swing.border.EmptyBorder;
+import javax.swing.JDialog;
 
 import com.formdev.flatlaf.FlatClientProperties;
 import com.formdev.flatlaf.extras.FlatSVGIcon;
@@ -479,7 +484,10 @@ public class MenuItemsPanel extends JPanel {
         payBtn.putClientProperty(FlatClientProperties.STYLE,
                 "arc:18; borderWidth:0; focusWidth:0;");
         payBtn.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        
+        // Gắn sự kiện thanh toán
         payBtn.addActionListener(e -> processPayment());
+        
         bottom.add(payBtn, BorderLayout.SOUTH);
 
         cart.add(bottom, BorderLayout.SOUTH);
@@ -602,7 +610,6 @@ public class MenuItemsPanel extends JPanel {
         row.add(qtyPanel, BorderLayout.CENTER);
         row.add(priceLbl, BorderLayout.EAST);
 
-        // Constrain max height so the row doesn't stretch to fill vertical space
         row.setMaximumSize(new Dimension(Integer.MAX_VALUE, row.getPreferredSize().height));
         
         return row;
@@ -630,18 +637,104 @@ public class MenuItemsPanel extends JPanel {
                     "Error", JOptionPane.ERROR_MESSAGE);
             return;
         }
-        Map<String, Double> productPrices = new java.util.HashMap<>();
+
+        // Tính tổng số tiền để truyền vào QR
+        int totalAmount = 0;
         for (Map.Entry<String, int[]> entry : cartMap.entrySet()) {
-            productPrices.put(entry.getKey(), (double) entry.getValue()[1]);
+            totalAmount += entry.getValue()[0] * entry.getValue()[1];
         }
-        java.util.UUID orderId = menuService.placeOrder(staff, cartMap, productPrices);
-        if (orderId != null) {
-            JOptionPane.showMessageDialog(this,
-                    "Order placed successfully!\nOrder ID: " + orderId.toString().substring(0, 8),
-                    "Payment Successful", JOptionPane.INFORMATION_MESSAGE);
-            cartMap.clear();
-            rebuildCart();
-        }
+
+        // Gọi hiển thị Pop-up QR
+        showQRAndCheckout(totalAmount, staff);
+    }
+
+    // ─── THANH TOÁN VIETQR ────────────────────────────────────
+
+    private void showQRAndCheckout(int totalAmount, Staff staff) {
+        String bankCode = "MB"; // Thay bằng mã ngân hàng của bạn
+        String accountNumber = "33669917012007"; 
+        String accountName = "HANABI CAFE"; 
+        String addInfo = "Thanh toan Hanabi Cafe"; 
+        
+        JDialog qrDialog = new JDialog(Main.getFrame(), "Thanh toán VietQR", true);
+        qrDialog.setLayout(new BorderLayout());
+        qrDialog.setSize(400, 500);
+        qrDialog.setLocationRelativeTo(Main.getFrame());
+        qrDialog.getContentPane().setBackground(Color.WHITE);
+
+        JLabel lblTitle = new JLabel("Quét mã để thanh toán", SwingConstants.CENTER);
+        lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 18));
+        lblTitle.setForeground(new Color(90, 70, 61)); 
+        lblTitle.setBorder(new EmptyBorder(20, 0, 10, 0));
+        qrDialog.add(lblTitle, BorderLayout.NORTH);
+
+        JLabel lblQR = new JLabel("Đang tải mã QR...", SwingConstants.CENTER);
+        lblQR.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        qrDialog.add(lblQR, BorderLayout.CENTER);
+
+        new SwingWorker<ImageIcon, Void>() {
+            @Override
+            protected ImageIcon doInBackground() throws Exception {
+                String encodedName = URLEncoder.encode(accountName, StandardCharsets.UTF_8.toString()).replace("+", "%20");
+                String encodedInfo = URLEncoder.encode(addInfo, StandardCharsets.UTF_8.toString()).replace("+", "%20");
+                
+                String urlString = String.format(
+                    "https://img.vietqr.io/image/%s-%s-compact2.png?amount=%d&addInfo=%s&accountName=%s",
+                    bankCode, accountNumber, totalAmount, encodedInfo, encodedName
+                );
+                
+                URL url = new URL(urlString);
+                Image img = ImageIO.read(url);
+                Image scaledImg = img.getScaledInstance(300, 350, Image.SCALE_SMOOTH);
+                return new ImageIcon(scaledImg);
+            }
+
+            @Override
+            protected void done() {
+                try {
+                    lblQR.setText(""); 
+                    lblQR.setIcon(get());
+                } catch (Exception e) {
+                    lblQR.setText("Lỗi mạng: Không thể tải mã QR");
+                }
+            }
+        }.execute();
+
+        JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        bottomPanel.setBackground(Color.WHITE);
+        bottomPanel.setBorder(new EmptyBorder(10, 0, 20, 0));
+
+        JButton btnConfirm = new JButton("Xác nhận đã nhận tiền");
+        btnConfirm.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        btnConfirm.setBackground(new Color(46, 204, 113)); 
+        btnConfirm.setForeground(Color.WHITE);
+        btnConfirm.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnConfirm.putClientProperty(FlatClientProperties.STYLE, "arc:15; borderWidth:0; focusWidth:0; padding:10,20,10,20");
+        
+        btnConfirm.addActionListener(e -> {
+            qrDialog.dispose(); 
+            
+            // XỬ LÝ LƯU DATABASE TẠI ĐÂY (đã được chuyển từ hàm processPayment cũ qua)
+            Map<String, Double> productPrices = new java.util.HashMap<>();
+            for (Map.Entry<String, int[]> entry : cartMap.entrySet()) {
+                productPrices.put(entry.getKey(), (double) entry.getValue()[1]);
+            }
+            
+            java.util.UUID orderId = menuService.placeOrder(staff, cartMap, productPrices);
+            
+            if (orderId != null) {
+                JOptionPane.showMessageDialog(Main.getFrame(),
+                        "Thanh toán thành công!\nMã đơn: " + orderId.toString().substring(0, 8),
+                        "Thành công", JOptionPane.INFORMATION_MESSAGE);
+                cartMap.clear();
+                rebuildCart();
+            }
+        });
+
+        bottomPanel.add(btnConfirm);
+        qrDialog.add(bottomPanel, BorderLayout.SOUTH);
+
+        qrDialog.setVisible(true);
     }
 
     // ─── DB LOAD ────────────────────────────────────────────
