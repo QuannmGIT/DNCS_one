@@ -38,9 +38,9 @@ public class Banner extends JPanel {
         lblMainTitle = new JLabel("HANABI CAFE");
         lblSlogan = new JLabel("FIND THE PERFECT COFFEE");
         Color textColor = new Color(54, 38, 28);
-        txtLabel1 = new JLabel("Những bậc thầy về cà phê của chúng tôi đã đúc kết nhiều năm");
-        txtLabel2 = new JLabel("kinh nghiệm, nếm thử cà phê của họ trong ba câu hỏi đơn giản");
-        txtLabel3 = new JLabel("để giúp bạn tìm loại cà phê mà bạn chắc hẳn sẽ thích.");
+        txtLabel1 = new JLabel("Our coffee masters have distilled years");
+        txtLabel2 = new JLabel("of coffee tasting experience into three simple questions");
+        txtLabel3 = new JLabel("to help you find a coffee you will surely love.");
 
         try {
             backgroundImage = new ImageIcon(getClass().getResource("/hanabi/assets/img/CuaHangImage2.png")).getImage();
