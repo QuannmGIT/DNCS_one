@@ -37,6 +37,7 @@ hanabi\view\Category\OrdersPanel.class
 hanabi\view\Category\MenuItemsPanel$CatInfo.class
 hanabi\dao\ChatMessageDAO.class
 hanabi\service\CreateUser.class
+hanabi\view\Category\OrdersPanel$6.class
 hanabi\model\ChatMessage.class
 hanabi\view\Category\MenuItemsPanel$4.class
 hanabi\view\Login\Banner.class
@@ -72,6 +73,7 @@ hanabi\components\SalaryTablePanel.class
 hanabi\dao\StaffDAO.class
 hanabi\view\Field\AddProductForm$1.class
 hanabi\view\Category\ChatPanel$1.class
+hanabi\view\Category\OrdersPanel$5.class
 hanabi\dao\UserDAO.class
 hanabi\service\RevenueService.class
 hanabi\util\PasswordUtil.class
