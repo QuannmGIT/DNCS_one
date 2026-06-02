@@ -199,4 +199,7 @@ public class ChatContactPanel extends JPanel {
     private static String colorToHex(Color c) {
         return String.format("#%02x%02x%02x", c.getRed(), c.getGreen(), c.getBlue());
     }
+public class ChatContactPanel {
+    
+}
 }

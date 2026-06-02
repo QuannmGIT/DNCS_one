@@ -45,6 +45,7 @@ import com.formdev.flatlaf.extras.FlatSVGIcon;
 import hanabi.Main;
 import hanabi.model.Product;
 import hanabi.model.Staff;
+import hanabi.model.User;
 import hanabi.service.MenuService;
 import hanabi.util.FontLoader;
 import hanabi.view.Field.AddProductForm;
@@ -64,6 +65,7 @@ public class MenuItemsPanel extends JPanel {
 
     private String[][] itemData = new String[0][4];
     private List<Product> productList;
+    private JButton addBtn;
 
     private static class CatInfo {
         final String name;
@@ -95,6 +97,11 @@ public class MenuItemsPanel extends JPanel {
     public MenuItemsPanel() {
         loadFont();
         initComponents();
+
+        User u = hanabi.Main.authService.getCurrentUser();
+        if (u != null && !u.isAdmin()) {
+            addBtn.setVisible(false);
+        }
     }
 
     private void loadFont() {
@@ -155,7 +162,7 @@ public class MenuItemsPanel extends JPanel {
         JPanel rightPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
         rightPanel.setOpaque(false);
 
-        JButton addBtn = new JButton("+ Add Product");
+        addBtn = new JButton("+ Add Product");
         addBtn.setFont(new Font("Segoe UI", Font.BOLD, 14));
         addBtn.setBackground(new Color(80, 160, 80));
         addBtn.setForeground(Color.WHITE);
@@ -785,12 +792,12 @@ public class MenuItemsPanel extends JPanel {
         }
 
         SwingUtilities.invokeLater(() -> {
-            JFrame frame = new JFrame("Place Order View - HANABI CAFE");
-            frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-            frame.getContentPane().add(new MenuItemsPanel());
-            frame.setSize(1100, 750);
-            frame.setLocationRelativeTo(null);
-            frame.setVisible(true);
+            // JFrame frame = new JFrame("Place Order View - HANABI CAFE");
+            // frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+            // frame.getContentPane().add(new MenuItemsPanel());
+            // frame.setSize(1100, 750);
+            // frame.setLocationRelativeTo(null);
+            // frame.setVisible(true);
         });
     }
 }

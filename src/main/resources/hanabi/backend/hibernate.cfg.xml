@@ -22,6 +22,5 @@
         <mapping class="hanabi.model.OrderDetail"/>
         <mapping class="hanabi.model.Average"/>
         <mapping class="hanabi.model.Salary"/>
-        <mapping class="hanabi.model.ChatMessage"/>
     </session-factory>
 </hibernate-configuration>

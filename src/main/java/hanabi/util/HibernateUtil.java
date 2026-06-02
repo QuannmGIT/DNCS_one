@@ -1,7 +1,6 @@
 package hanabi.util;
 
 import hanabi.model.Average;
-import hanabi.model.ChatMessage;
 import hanabi.model.Invoice;
 import hanabi.model.Order;
 import hanabi.model.OrderDetail;
@@ -28,7 +27,6 @@ public class HibernateUtil {
                     .addAnnotatedClass(OrderDetail.class)
                     .addAnnotatedClass(Average.class)
                     .addAnnotatedClass(Salary.class)
-                    .addAnnotatedClass(ChatMessage.class)
                     .buildSessionFactory();
 
             DataInitializer.initialize(sf);

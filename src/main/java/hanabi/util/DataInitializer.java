@@ -78,20 +78,32 @@ public class DataInitializer {
             createAverage(session, staff2, 92);
             createAverage(session, staff3, 78);
 
-            Product p1 = createProduct(session, "Americano", "Coffee", 35000.0, 15000.0);
-            Product p2 = createProduct(session, "Cappuccino", "Coffee", 45000.0, 18000.0);
-            Product p3 = createProduct(session, "Latte", "Coffee", 45000.0, 18000.0);
-            Product p4 = createProduct(session, "Matcha Latte", "Tea", 50000.0, 20000.0);
-            Product p5 = createProduct(session, "Iced Coffee", "Coffee", 40000.0, 15000.0);
-            Product p6 = createProduct(session, "Machiato Coffee", "Coffee", 48000.0, 19000.0);
-            Product p7 = createProduct(session, "Matcha Ice Blended", "Blended", 55000.0, 22000.0);
-            Product p8 = createProduct(session, "Chocolate Ice Blended", "Blended", 55000.0, 22000.0);
-            Product p9 = createProduct(session, "Tiramisu", "Pastry", 38000.0, 18000.0);
-            Product p10 = createProduct(session, "Croissant", "Pastry", 25000.0, 10000.0);
-            Product p11 = createProduct(session, "Green Tea", "Tea", 30000.0, 10000.0);
-            Product p12 = createProduct(session, "Strawberry Smoothie", "Smoothie", 50000.0, 20000.0);
+            Product p1 = createProduct(session, "Matcha Ice Blended", "Iced", 35000.0, 15000.0);
+            Product p2 = createProduct(session, "Americano", "Hot", 28000.0, 12000.0);
+            Product p3 = createProduct(session, "Croissants", "Bakery", 25000.0, 10000.0);
+            Product p4 = createProduct(session, "Ice Latte", "Iced", 25000.0, 12000.0);
+            Product p5 = createProduct(session, "Ice Black Coffee", "Iced", 35000.0, 15000.0);
+            Product p6 = createProduct(session, "Caramel Machito", "Hot", 40000.0, 18000.0);
+            Product p7 = createProduct(session, "Tiramisu", "Bakery", 45000.0, 20000.0);
+            Product p8 = createProduct(session, "Lemon Tea", "Iced", 19000.0, 8000.0);
+            Product p9 = createProduct(session, "Orange", "Iced", 23000.0, 10000.0);
+            Product p10 = createProduct(session, "Espresso", "Hot", 20000.0, 8000.0);
+            Product p11 = createProduct(session, "Hot Chocolate", "Hot", 35000.0, 15000.0);
+            Product p12 = createProduct(session, "Cappuccino", "Hot", 32000.0, 12000.0);
+            Product p13 = createProduct(session, "Hot Matcha Latte", "Hot", 35000.0, 15000.0);
+            Product p14 = createProduct(session, "Earl Grey Tea", "Hot", 25000.0, 10000.0);
+            Product p15 = createProduct(session, "Iced Mocha", "Iced", 38000.0, 15000.0);
+            Product p16 = createProduct(session, "Peach Tea", "Iced", 25000.0, 10000.0);
+            Product p17 = createProduct(session, "Cold Brew", "Iced", 35000.0, 15000.0);
+            Product p18 = createProduct(session, "Mango Smoothie", "Iced", 40000.0, 18000.0);
+            Product p19 = createProduct(session, "Strawberry Macchiato", "Iced", 42000.0, 18000.0);
+            Product p20 = createProduct(session, "Cheesecake", "Bakery", 40000.0, 18000.0);
+            Product p21 = createProduct(session, "Choco Cookie", "Bakery", 15000.0, 5000.0);
+            Product p22 = createProduct(session, "Red Velvet", "Bakery", 45000.0, 20000.0);
+            Product p23 = createProduct(session, "Macaron (Set 3)", "Bakery", 30000.0, 12000.0);
+            Product p24 = createProduct(session, "Blueberry Muffin", "Bakery", 25000.0, 10000.0);
 
-            Product[] products = {p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12};
+            Product[] products = {p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17, p18, p19, p20, p21, p22, p23, p24};
             Staff[] staffs = {staff1, staff2, staff3};
             ThreadLocalRandom rng = ThreadLocalRandom.current();
 

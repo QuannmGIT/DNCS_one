@@ -232,7 +232,7 @@ public class OrdersPanel extends JPanel {
     private JPanel createHeaderPanel() {
         JPanel header = new JPanel(new BorderLayout());
         header.setBackground(LIGHT_BG);
-        header.setBorder(new EmptyBorder(25, 30, 20, 30)); 
+        header.setBorder(new EmptyBorder(25, 30, 20, 30));
 
         //Left: Title and total count
         JPanel left = new JPanel(new BorderLayout(0, 5));
@@ -256,7 +256,7 @@ public class OrdersPanel extends JPanel {
         right.setOpaque(false);
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.insets = new Insets(0, 8, 0, 0); 
+        gbc.insets = new Insets(0, 8, 0, 0);
 
         txtSearch = new JTextField();
         txtSearch.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Tìm kiếm mã đơn...");
