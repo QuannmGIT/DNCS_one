@@ -1,4 +1,4 @@
-package hanabi.view.Category;
+package hanabi.view.ui;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -38,11 +38,12 @@ import com.formdev.flatlaf.FlatClientProperties;
 import com.formdev.flatlaf.extras.FlatSVGIcon;
 
 import hanabi.Main;
+import hanabi.components.form.AddProductForm;
+import hanabi.components.form.EditProductForm;
 import hanabi.model.Product;
 import hanabi.model.Staff;
 import hanabi.service.MenuService;
 import hanabi.util.FontLoader;
-import hanabi.view.Field.AddProductForm;
 
 public class MenuItemsPanel extends JPanel {
 
@@ -86,6 +87,11 @@ public class MenuItemsPanel extends JPanel {
     private JPanel gridContainer;
     private JPanel cartBody;
     private JLabel totalLabel;
+    private JButton addBtn;
+    private JLabel name;
+    private JPanel rightPanel;
+    private JLabel title;
+    private JButton modifyBtn;
 
     public MenuItemsPanel() {
         loadFont();
@@ -139,18 +145,18 @@ public class MenuItemsPanel extends JPanel {
     // ─── HEADER ───────────────────────────────────────────────
 
     private JPanel createHeader() {
-        JPanel p = new JPanel(new BorderLayout());
-        p.setOpaque(false);
-        p.setBorder(new EmptyBorder(0, 0, 20, 0));
+        JPanel HeaderPanel = new JPanel(new BorderLayout());
+        HeaderPanel.setOpaque(false);
+        HeaderPanel.setBorder(new EmptyBorder(0, 0, 20, 0));
 
-        JLabel title = new JLabel("Place Order");
+        title = new JLabel("Place Order");
         title.setFont(new Font("Segoe UI", Font.BOLD, 36));
         title.setForeground(DARK_BROWN);
 
-        JPanel rightPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
+        rightPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
         rightPanel.setOpaque(false);
 
-        JButton addBtn = new JButton("+ Add Product");
+        addBtn = new JButton("+ Add Product");
         addBtn.setFont(new Font("Segoe UI", Font.BOLD, 14));
         addBtn.setBackground(new Color(80, 160, 80));
         addBtn.setForeground(Color.WHITE);
@@ -160,9 +166,22 @@ public class MenuItemsPanel extends JPanel {
         addBtn.addActionListener(e -> {
             AddProductForm.init(this::loadMenuItems);
         });
-        rightPanel.add(addBtn);
 
-        JLabel name = new JLabel("HANABI CAFE");
+        modifyBtn = new JButton("Modify product");
+        modifyBtn.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        modifyBtn.setBackground(new Color(80, 160, 80));
+        modifyBtn.setForeground(Color.WHITE);
+        modifyBtn.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        modifyBtn.putClientProperty(FlatClientProperties.STYLE,
+                "arc:12; borderWidth:0; focusWidth:0; innerFocusWidth:0; margin:6,14,6,14;");
+        modifyBtn.addActionListener(e -> {
+            new EditProductForm().setVisible(true);
+        });
+
+        rightPanel.add(addBtn);
+        rightPanel.add(modifyBtn);
+
+        name = new JLabel("HANABI CAFE");
         name.setFont(amaticFont);
         name.setForeground(DARK_BROWN);
         JLabel icon = new JLabel();
@@ -175,9 +194,9 @@ public class MenuItemsPanel extends JPanel {
         rightPanel.add(name);
         rightPanel.add(icon);
 
-        p.add(title, BorderLayout.WEST);
-        p.add(rightPanel, BorderLayout.EAST);
-        return p;
+        HeaderPanel.add(title, BorderLayout.WEST);
+        HeaderPanel.add(rightPanel, BorderLayout.EAST);
+        return HeaderPanel;
     }
 
     // ─── CATEGORY BAR ─────────────────────────────────────────
@@ -422,9 +441,9 @@ public class MenuItemsPanel extends JPanel {
                 new EmptyBorder(0, 4, 8, 4)));
 
         Font hf = new Font("Segoe UI", Font.BOLD, 13);
-        JLabel hItem = new JLabel("Món");
-        JLabel hQty = new JLabel("SL", SwingConstants.CENTER);
-        JLabel hPrice = new JLabel("Thành tiền", SwingConstants.RIGHT);
+        JLabel hItem = new JLabel("Items");
+        JLabel hQty = new JLabel("Quantity", SwingConstants.CENTER);
+        JLabel hPrice = new JLabel("Total", SwingConstants.RIGHT);
         for (JLabel l : new JLabel[] { hItem, hQty, hPrice }) {
             l.setFont(hf);
             l.setForeground(DARK_BROWN);
@@ -461,7 +480,7 @@ public class MenuItemsPanel extends JPanel {
                 BorderFactory.createMatteBorder(2, 0, 0, 0, DARK_BROWN),
                 new EmptyBorder(10, 0, 4, 0)));
 
-        JLabel totalPrefix = new JLabel("Tổng cộng:");
+        JLabel totalPrefix = new JLabel("Total:");
         totalPrefix.setFont(new Font("Segoe UI", Font.BOLD, 15));
         totalPrefix.setForeground(DARK_BROWN);
         totalLabel = new JLabel("0đ", SwingConstants.RIGHT);
@@ -533,7 +552,7 @@ public class MenuItemsPanel extends JPanel {
             idx++;
         }
         if (cartMap.isEmpty()) {
-            JLabel empty = new JLabel("Chưa có món nào", SwingConstants.CENTER);
+            JLabel empty = new JLabel("There are no items yet", SwingConstants.CENTER);
             empty.setFont(new Font("Segoe UI", Font.ITALIC, 14));
             empty.setForeground(new Color(180, 170, 160));
             empty.setBorder(new EmptyBorder(20, 0, 20, 0));
@@ -604,7 +623,7 @@ public class MenuItemsPanel extends JPanel {
 
         // Constrain max height so the row doesn't stretch to fill vertical space
         row.setMaximumSize(new Dimension(Integer.MAX_VALUE, row.getPreferredSize().height));
-        
+
         return row;
     }
 
@@ -630,7 +649,7 @@ public class MenuItemsPanel extends JPanel {
                     "Error", JOptionPane.ERROR_MESSAGE);
             return;
         }
-        
+
         // get Current total in cart
         int totalAmount = 0;
         for (Map.Entry<String, int[]> entry : cartMap.entrySet()) {
@@ -660,7 +679,7 @@ public class MenuItemsPanel extends JPanel {
                     String img = p.getImage();
                     if (img == null || img.isBlank())
                         img = "Image not found";
-                        // continue;
+                    // continue;
                     String name = p.getProductName();
                     String price = fmtPrice(p.getPrice() != null ? p.getPrice().intValue() : 0);
                     String cat = p.getCategory() != null ? p.getCategory() : "";

@@ -1,4 +1,4 @@
-package hanabi.view.Category;
+package hanabi.view.ui;
 
 import com.formdev.flatlaf.FlatClientProperties;
 import hanabi.dao.InvoiceDAO;
@@ -112,7 +112,7 @@ public class OrdersPanel extends JPanel {
                 updateInvoiceTable(resultInvoices);
                 int totalPages = Math.max(1, (int) Math.ceil((double) totalCount / size));
                 updatePagination(totalPages);
-                lblTotalCount.setText("Tổng số hóa đơn: " + totalCount);
+                lblTotalCount.setText("Total invoices: " + totalCount);
             }
         }.execute();
     }
@@ -240,7 +240,7 @@ public class OrdersPanel extends JPanel {
         lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 28));
         lblTitle.setForeground(DARK_BROWN);
 
-        lblTotalCount = new JLabel("Tổng số hóa đơn: ...");
+        lblTotalCount = new JLabel("Total invoices: ...");
         lblTotalCount.setFont(new Font("Segoe UI", Font.PLAIN, 15));
         lblTotalCount.setForeground(SUBTITLE_COLOR);
 

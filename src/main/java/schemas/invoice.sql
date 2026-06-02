@@ -6,5 +6,6 @@ CREATE TABLE `invoices` (
   `staff_id` binary(16) NOT NULL,
   `invoice_date` date DEFAULT NULL,
   `total` int DEFAULT NULL,
-  `status` tinyint(1) DEFAULT 1 -- 1: paid, 0: unpaid
+  `status` tinyint(1) DEFAULT 1, -- 1: paid, 0: unpaid
+  INDEX idx_invoices_staff (`staff_id`)
 );

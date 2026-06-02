@@ -10,7 +10,7 @@ public class global {
     public static final String BANKCODE = "MB"; // replace your Bank code
     public static final String ACCOUNTNUMBER = "33669917012007";
     public static final String ACCOUNTNAME = "HANABI CAFE";
-    public static final String ADDINFO = "Thanh toan Hanabi Cafe";
+    public static final String ADDINFO = "Hanabi Cafe Payment";
 
     public static String getAssetsPath() {
         return assetsPath;

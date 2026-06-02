@@ -1,4 +1,4 @@
-package hanabi.view.Login;
+package hanabi.view.Auth;
 
 import java.awt.Color;
 import java.awt.Component;

@@ -25,6 +25,7 @@ A desktop application for managing coffee shop operations built with Java Swing 
 - **Invoice Management** — Invoice creation, payment status tracking, PDF export
 - **Staff Management** — Add/edit staff, salary table with commission rates
 - **Account Panel** — Staff profile view with order/salary summaries
+- **Chat** — Real-time internal messaging between staff members (text & file sharing)
 - **Revenue Analytics** — Charts and statistics with date range filtering
 - **Salary Formatting** — Compact display (K/M/B/T suffixes)
 
@@ -33,14 +34,20 @@ A desktop application for managing coffee shop operations built with Java Swing 
 ```
 src/main/java/
 ├── App.java                    # Application entry point
-├── Main.java                   # Main window, login/logout flow
+├── Main.java                   # Main window, navigation & login/logout flow
 ├── hanabi/
 │   ├── components/             # Reusable Swing components
 │   │   ├── MainForm.java       # Navigation container
+│   │   ├── Menu.java           # Abstract JFrame base for form windows
 │   │   ├── PopUp.java          # Custom popup dialogs
-│   │   └── SalaryTablePanel.java
+│   │   ├── ProductTable.java   # Dynamic product table (columns from DB metadata)
+│   │   ├── SalaryTablePanel.java
+│   │   └── form/
+│   │       ├── AddProductForm.java   # Add product dialog
+│   │       └── EditProductForm.java  # Edit/delete product dialog
 │   ├── dao/                    # Data access layer (Hibernate queries)
 │   │   ├── BaseDAO.java        # Generic CRUD base
+│   │   ├── ChatMessageDAO.java
 │   │   ├── InvoiceDAO.java
 │   │   ├── OrderDAO.java
 │   │   ├── OrderDetailDAO.java
@@ -49,6 +56,7 @@ src/main/java/
 │   │   ├── StaffDAO.java
 │   │   └── UserDAO.java
 │   ├── model/                  # JPA entities
+│   │   ├── ChatMessage.java    # Internal messaging
 │   │   ├── Invoice.java
 │   │   ├── Order.java
 │   │   ├── OrderDetail.java
@@ -72,19 +80,21 @@ src/main/java/
 │   │   ├── TableDBInitializer.java
 │   │   └── UIUtils.java
 │   └── view/                   # UI panels
-│       ├── Category/
-│       │   ├── AccountPanel.java
-│       │   ├── CategoryPanel.java   # Sidebar navigation
-│       │   ├── DashboardView.java
-│       │   ├── MenuItemsPanel.java
-│       │   ├── OrdersPanel.java
-│       │   └── RevenuePanel.java
-│       ├── Field/
-│       │   └── AddProductForm.java
-│       └── Login/
-│           ├── Banner.java
-│           └── LoginPanel.java
+│       ├── Auth/
+│       │   ├── Banner.java
+│       │   └── LoginPanel.java
+│       └── ui/
+│           ├── AccountPanel.java
+│           ├── CategoryPanel.java   # Sidebar navigation
+│           ├── ChatContactPanel.java
+│           ├── ChatConversationPanel.java
+│           ├── ChatPanel.java
+│           ├── DashboardView.java
+│           ├── MenuItemsPanel.java
+│           ├── OrdersPanel.java
+│           └── RevenuePanel.java
 ├── schemas/                    # Reference SQL DDL
+│   ├── chat_messages.sql
 │   ├── invoice.sql
 │   ├── order_details.sql
 │   ├── orders.sql
@@ -112,7 +122,7 @@ src/main/resources/
 - **Name:** `StoreManagement`
 - **Host:** `localhost:3306`
 - **Engine:** MySQL 8+
-- **ORM:** Hibernate `hbm2ddl.auto = update` — tables are auto-created/altered on startup.
+- **ORM:** Hibernate `hbm2ddl.auto = none` — tables are created by `TableDBInitializer` on startup.
 - All primary/foreign keys use `BINARY(16)` for UUID storage.
 
 ### Entity-Relationship Diagram
@@ -122,6 +132,8 @@ erDiagram
     staff ||--o| salaries : "1:1"
     staff ||--o{ invoices : "1:N"
     staff ||--o{ orders : "1:N"
+    staff ||--o{ chat_messages : "1:N" (as sender)
+    staff ||--o{ chat_messages : "1:N" (as receiver)
     invoices ||--o{ orders : "1:N"
     orders ||--o{ orders_details : "1:N"
     products ||--o{ orders_details : "1:N"
@@ -167,14 +179,19 @@ erDiagram
 | total | INT | |
 | status | TINYINT(1) | DEFAULT 1 (1=paid, 0=unpaid) |
 
+Index: `idx_invoices_staff` on `staff_id`
+
 #### `orders`
 | Column | Type | Constraints |
 |--------|------|-------------|
 | order_id | BINARY(16) | PK |
 | invoice_id | BINARY(16) | NOT NULL, FK → invoices(invoice_id) |
 | staff_id | BINARY(16) | NOT NULL, FK → staff(staff_id) |
+| status | TINYINT(1) | DEFAULT 1 (1=active, 0=cancelled) |
 | order_date | DATE | |
 | total | INT | |
+
+Indexes: `idx_orders_staff` on `staff_id`, `idx_orders_invoice` on `invoice_id`
 
 #### `orders_details`
 | Column | Type | Constraints |
@@ -183,6 +200,21 @@ erDiagram
 | product_id | BINARY(16) | PK, FK → products(product_id) |
 | quantity | INT | |
 
+Index: `idx_od_product` on `product_id`
+
+#### `chat_messages`
+| Column | Type | Constraints |
+|--------|------|-------------|
+| message_id | BINARY(16) | PK |
+| sender_id | BINARY(16) | NOT NULL, FK → staff(staff_id) |
+| receiver_id | BINARY(16) | NOT NULL, FK → staff(staff_id) |
+| content | TEXT | NOT NULL |
+| message_type | VARCHAR(10) | DEFAULT 'TEXT' |
+| file_path | VARCHAR(500) | |
+| created_at | DATETIME | NOT NULL |
+
+Indexes: `idx_chat_sender` on `sender_id`, `idx_chat_receiver` on `receiver_id`
+
 ### Relationship Summary
 
 | # | From | To | Type | Constraint |
@@ -190,9 +222,11 @@ erDiagram
 | 1 | `staff` | `salaries` | One-to-One | Shared primary key (`staff_id`) |
 | 2 | `staff` | `invoices` | One-to-Many | `invoices.staff_id` → `staff.staff_id` |
 | 3 | `staff` | `orders` | One-to-Many | `orders.staff_id` → `staff.staff_id` |
-| 4 | `invoices` | `orders` | One-to-Many | `orders.invoice_id` → `invoices.invoice_id` |
-| 5 | `orders` | `orders_details` | One-to-Many | `orders_details.order_id` → `orders.order_id` |
-| 6 | `products` | `orders_details` | One-to-Many | `orders_details.product_id` → `products.product_id` |
+| 4 | `staff` | `chat_messages` | One-to-Many | `chat_messages.sender_id` → `staff.staff_id` |
+| 5 | `staff` | `chat_messages` | One-to-Many | `chat_messages.receiver_id` → `staff.staff_id` |
+| 6 | `invoices` | `orders` | One-to-Many | `orders.invoice_id` → `invoices.invoice_id` |
+| 7 | `orders` | `orders_details` | One-to-Many | `orders_details.order_id` → `orders.order_id` |
+| 8 | `products` | `orders_details` | One-to-Many | `orders_details.product_id` → `products.product_id` |
 
 ### Referential Integrity
 

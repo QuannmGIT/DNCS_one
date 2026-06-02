@@ -28,7 +28,7 @@ public class TableDBInitializer {
                     + "  category VARCHAR(100) DEFAULT NULL,"
                     + "  price DECIMAL DEFAULT NULL,"
                     + "  cost DECIMAL DEFAULT NULL,"
-                    + "  image VARCHAR(10) DEFAULT NULL,"
+                    + "  image VARCHAR(255) DEFAULT NULL,"
                     + "  status TINYINT(1) DEFAULT 1"
                     + ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4",
 
@@ -44,11 +44,11 @@ public class TableDBInitializer {
             "CREATE TABLE IF NOT EXISTS orders ("
                     + "  order_id BINARY(16) NOT NULL PRIMARY KEY,"
                     + "  invoice_id BINARY(16) NOT NULL UNIQUE,"
-+ "  staff_id BINARY(16) NOT NULL,"
-            + "  user_id BINARY(16) NULL,"
-            + "  order_date DATE DEFAULT NULL,"
-            + "  total INT DEFAULT NULL,"
-            + "  INDEX idx_orders_staff (staff_id),"
+                    + "  staff_id BINARY(16) NOT NULL,"
+                    + "  status TINYINT(1) DEFAULT 1,"
+                    + "  order_date DATE DEFAULT NULL,"
+                    + "  total INT DEFAULT NULL,"
+                    + "  INDEX idx_orders_staff (staff_id),"
                     + "  INDEX idx_orders_invoice (invoice_id)"
                     + ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4",
 
@@ -64,7 +64,19 @@ public class TableDBInitializer {
                     + "  staff_id BINARY(16) NOT NULL PRIMARY KEY,"
                     + "  baseSalary DECIMAL DEFAULT NULL,"
                     + "  commissionRate DECIMAL DEFAULT NULL"
-                    + ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4"
+                    + ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4",
+
+            "CREATE TABLE IF NOT EXISTS chat_messages ("
+                    + "  message_id BINARY(16) NOT NULL PRIMARY KEY,"
+                    + "  sender_id BINARY(16) NOT NULL,"
+                    + "  receiver_id BINARY(16) NOT NULL,"
+                    + "  content TEXT NOT NULL,"
+                    + "  message_type VARCHAR(10) DEFAULT 'TEXT',"
+                    + "  file_path VARCHAR(500) DEFAULT NULL,"
+                    + "  created_at DATETIME NOT NULL,"
+                    + "  INDEX idx_chat_sender (sender_id),"
+                    + "  INDEX idx_chat_receiver (receiver_id)"
+                    + ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci"
     };
 
     public static void initialize() {
@@ -76,7 +88,7 @@ public class TableDBInitializer {
                     stmt.executeUpdate(ddl);
                 }
                 String[] fixes = {
-                    "ALTER TABLE orders MODIFY user_id BINARY(16) NULL",
+                        "ALTER TABLE products MODIFY image VARCHAR(255) DEFAULT NULL",
                 };
                 for (String fix : fixes) {
                     try {

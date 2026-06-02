@@ -24,8 +24,8 @@ public class Order {
     @JoinColumn(name = "staff_id", referencedColumnName = "staff_id", nullable = false, columnDefinition = "BINARY(16)")
     private Staff staff;
 
-    @Column(name = "user_id", columnDefinition = "BINARY(16)")
-    private UUID userId;
+    @Column(columnDefinition = "tinyint(1) default 1")
+    private Boolean status;
 
     @Column(name = "order_date")
     private LocalDate orderDate;
@@ -41,6 +41,8 @@ public class Order {
     public void setInvoice(Invoice invoice) { this.invoice = invoice; }
     public Staff getStaff() { return staff; }
     public void setStaff(Staff staff) { this.staff = staff; }
+    public Boolean getStatus() { return status; }
+    public void setStatus(Boolean status) { this.status = status; }
     public LocalDate getOrderDate() { return orderDate; }
     public void setOrderDate(LocalDate orderDate) { this.orderDate = orderDate; }
     public Integer getTotal() { return total; }

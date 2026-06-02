@@ -1,4 +1,4 @@
-package hanabi.view.Category;
+package hanabi.view.ui;
 
 import java.awt.BasicStroke;
 import java.awt.BorderLayout;
@@ -50,7 +50,7 @@ public class RevenuePanel extends JPanel {
 
     private Font amaticFont;
     private final RevenueService revenueService = new RevenueService();
-    private String currentFilter = "Today";
+    private String currentFilter = "This Week";
 
     private JLabel todayValue;
     private JLabel ordersValue;
@@ -217,7 +217,7 @@ public class RevenuePanel extends JPanel {
         filterPanel.putClientProperty(FlatClientProperties.STYLE, "arc:20; border: 1,1,1,1, #5A463D");
         // filterPanel.setBorder(new EmptyBorder(3, 5, 3, 5));
         
-        for (JButton btn : createFilterGroup("Today", "This Week", "This Month", "Year")) {
+        for (JButton btn : createFilterGroup("This Week", "This Month", "Year")) {
             filterPanel.add(btn);
         }
         
@@ -411,7 +411,7 @@ public class RevenuePanel extends JPanel {
         verticalFilter.setOpaque(false);
         verticalFilter.putClientProperty(FlatClientProperties.STYLE, "arc:20; border: 1,1,1,1, #5A463D");
         verticalFilter.setBorder(new EmptyBorder(5, 5, 5, 5));
-        for (JButton btn : createFilterGroup("Today", "This Week", "This Month", "Year")) {
+        for (JButton btn : createFilterGroup("This Week", "This Month", "Year")) {
             verticalFilter.add(btn);
         }
 
@@ -444,7 +444,7 @@ public class RevenuePanel extends JPanel {
     }
 
     // ==========================================
-    // CUSTOM CHART PANEL (Vẽ Line Chart với Gradient)
+    // CUSTOM CHART PANEL (draw Line Chart with Gradient)
     // ==========================================
     private class CustomChartPanel extends JPanel {
         private double[] dataPoints = {0.2, 0.3, 0.4, 0.5, 0.2, 0.35, 0.5, 0.6, 0.7, 0.5, 0.8, 0.6, 0.9, 0.7, 0.8, 0.45, 0.6, 0.5, 0.3, 0.7, 0.5, 0.8, 0.9, 0.6, 0.4, 0.5, 0.7, 0.8, 0.5, 0.6, 0.9};
@@ -474,7 +474,8 @@ public class RevenuePanel extends JPanel {
             int chartWidth = width - 2 * paddingX;
             int chartHeight = height - 2 * paddingY;
 
-            // 1. Vẽ lưới mờ (Grid lines) ngang
+            // draw blur grid (Grid lines) vertical
+            // Draw faint horizontal grid lines
             g2.setColor(new Color(240, 235, 230));
             String[] yLabels = {"0", "500K", "1M", "1.5M", "2M"};
             int ySteps = yLabels.length - 1;
@@ -526,7 +527,7 @@ public class RevenuePanel extends JPanel {
             g2.setPaint(gp);
             g2.fill(path);
 
-            // 5. Vẽ Line chính
+            // Draw Main Line
             g2.setColor(new Color(139, 100, 78));
             g2.setStroke(new BasicStroke(3f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
             for (int i = 0; i < dataPoints.length - 1; i++) {

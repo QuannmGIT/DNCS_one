@@ -9,10 +9,10 @@ import javax.swing.SwingUtilities;
 import com.formdev.flatlaf.FlatLightLaf;
 import com.formdev.flatlaf.extras.FlatAnimatedLafChange;
 
-import hanabi.view.Login.Banner;
-import hanabi.view.Login.LoginPanel;
 import hanabi.components.MainForm;
-import hanabi.view.Category.DashboardView;
+import hanabi.view.Auth.Banner;
+import hanabi.view.Auth.LoginPanel;
+import hanabi.view.ui.DashboardView;
 import hanabi.service.AuthService;
 
 public class Main extends JFrame {

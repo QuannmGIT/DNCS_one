@@ -1,4 +1,4 @@
-package hanabi.view.Category;
+package hanabi.view.ui;
 
 import java.awt.BorderLayout;
 import java.awt.Color;

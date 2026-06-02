@@ -1,4 +1,4 @@
-package hanabi.view.Login;
+package hanabi.view.Auth;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -30,7 +30,7 @@ public class Banner extends JPanel {
 
     private void init() {
         setPreferredSize(new Dimension(550, 600));
-        setLayout(new BorderLayout());        
+        setLayout(new BorderLayout());
     }
 
     private void initComponents() {
@@ -38,9 +38,15 @@ public class Banner extends JPanel {
         lblMainTitle = new JLabel("HANABI CAFE");
         lblSlogan = new JLabel("FIND THE PERFECT COFFEE");
         Color textColor = new Color(54, 38, 28);
-        txtLabel1 = new JLabel("Những bậc thầy về cà phê của chúng tôi đã đúc kết nhiều năm");
-        txtLabel2 = new JLabel("kinh nghiệm, nếm thử cà phê của họ trong ba câu hỏi đơn giản");
-        txtLabel3 = new JLabel("để giúp bạn tìm loại cà phê mà bạn chắc hẳn sẽ thích.");
+        // txtLabel1 = new JLabel("Những bậc thầy về cà phê của chúng tôi đã đúc kết
+        // nhiều năm");
+        txtLabel1 = new JLabel("Our coffee masters have distilled years of experience");
+        // txtLabel2 = new JLabel("kinh nghiệm, nếm thử cà phê của họ trong ba câu hỏi
+        // đơn giản");
+        txtLabel2 = new JLabel("their experience and coffee tasting into three simple questions");
+        // txtLabel3 = new JLabel("để giúp bạn tìm loại cà phê mà bạn chắc hẳn sẽ
+        // thích.");
+        txtLabel3 = new JLabel("to help you find the coffee you're sure to love.");
 
         try {
             backgroundImage = new ImageIcon(getClass().getResource("/hanabi/assets/img/CuaHangImage2.png")).getImage();

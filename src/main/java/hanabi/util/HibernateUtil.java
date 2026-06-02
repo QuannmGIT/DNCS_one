@@ -3,6 +3,7 @@ package hanabi.util;
 import hanabi.model.Invoice;
 import hanabi.model.Order;
 import hanabi.model.OrderDetail;
+import hanabi.model.ChatMessage;
 import hanabi.model.Product;
 import hanabi.model.Salary;
 import hanabi.model.Staff;
@@ -25,6 +26,7 @@ public class HibernateUtil {
                     .addAnnotatedClass(Invoice.class)
                     .addAnnotatedClass(OrderDetail.class)
                     .addAnnotatedClass(Salary.class)
+                    .addAnnotatedClass(ChatMessage.class)
                     .buildSessionFactory();
 
             DataInitializer.initialize(sf);

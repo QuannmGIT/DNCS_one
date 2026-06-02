@@ -32,9 +32,8 @@ import javax.swing.border.EmptyBorder;
 
 import com.formdev.flatlaf.FlatClientProperties;
 
-import hanabi.view.Category.MenuItemsPanel;
-
 import hanabi.util.global;
+import hanabi.view.ui.MenuItemsPanel;
 
 import javax.swing.SwingUtilities;
 import javax.swing.JFrame;
@@ -87,6 +86,7 @@ public class MenuService {
         order.setOrderDate(LocalDate.now());
         order.setInvoice(invoice);
         order.setTotal(total);
+        order.setStatus(true);
         orderDAO.save(order);
 
         for (Map.Entry<String, int[]> entry : cartItems.entrySet()) {
@@ -108,7 +108,7 @@ public class MenuService {
     public void QRPayment(int totalAmount, Staff staff, MenuItemsPanel panel) {
         JDialog qrDialog = new JDialog(
                 (JFrame) SwingUtilities.getWindowAncestor(panel),
-                "Thanh toán VietQR", true);
+                "VietQR payment", true);
         qrDialog.setLayout(new BorderLayout());
         qrDialog.setSize(400, 500);
         qrDialog.setLocationRelativeTo(panel);
@@ -127,9 +127,11 @@ public class MenuService {
         new SwingWorker<ImageIcon, Void>() {
             @Override
             protected ImageIcon doInBackground() throws Exception {
-                String encodedName = URLEncoder.encode(global.ACCOUNTNAME, StandardCharsets.UTF_8.toString()).replace("+",
+                String encodedName = URLEncoder.encode(global.ACCOUNTNAME, StandardCharsets.UTF_8.toString()).replace(
+                        "+",
                         "%20");
-                String encodedInfo = URLEncoder.encode(global.ADDINFO, StandardCharsets.UTF_8.toString()).replace("+", "%20");
+                String encodedInfo = URLEncoder.encode(global.ADDINFO, StandardCharsets.UTF_8.toString()).replace("+",
+                        "%20");
 
                 String urlString = String.format(
                         "https://img.vietqr.io/image/%s-%s-compact2.png?amount=%d&addInfo=%s&accountName=%s",
@@ -188,4 +190,31 @@ public class MenuService {
 
         qrDialog.setVisible(true);
     };
+
+    public boolean deleteProduct(UUID productId) {
+        Product product = productDAO.findById(productId);
+        if (product != null) {
+            product.setStatus(false);
+            productDAO.update(product);
+            return true;
+        }
+        return false;
+    }
+
+    public boolean hardDeleteProduct(UUID productId) {
+        Product product = productDAO.findById(productId);
+        if (product != null) {
+            productDAO.delete(product);
+            return true;
+        }
+        return false;
+    }
+
+    public Product getProductById(UUID productId) {
+        return productDAO.findById(productId);
+    }
+
+    public void updateProduct(Product product) {
+        productDAO.update(product);
+    }
 }

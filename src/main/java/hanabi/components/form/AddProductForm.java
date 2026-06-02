@@ -1,4 +1,4 @@
-package hanabi.view.Field;
+package hanabi.components.form;
 
 import java.awt.Component;
 import java.awt.Font;
@@ -48,7 +48,7 @@ public class AddProductForm extends JPanel {
         JLabel lbCategory = new JLabel("Category");
         lbCategory.putClientProperty(FlatClientProperties.STYLE, "font:bold;");
         add(lbCategory, "gapy 10 n");
-        cbCategory = new JComboBox<>(new String[]{"Hot", "Iced", "Bakery"});
+        cbCategory = new JComboBox<>(new String[] { "Hot", "Iced", "Bakery" });
         cbCategory.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         add(cbCategory);
 
