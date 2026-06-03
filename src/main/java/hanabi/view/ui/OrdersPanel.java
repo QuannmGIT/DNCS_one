@@ -119,10 +119,15 @@ public class OrdersPanel extends JPanel {
             @Override
             protected Void doInBackground() {
                 List<Invoice> all = invoiceDAO.findAll();
+                List<Staff> allStaff = staffDAO.findAll();
+                java.util.Map<java.util.UUID, String> staffNameMap = new java.util.HashMap<>();
+                for (Staff s : allStaff) {
+                    staffNameMap.put(s.getStaffId(), s.getFullName() != null ? s.getFullName() : s.getStaffName());
+                }
                 if (selectedStaff != null) {
                     java.util.UUID sid = selectedStaff.getStaffId();
                     all = all.stream()
-                            .filter(inv -> inv.getStaff() != null && sid.equals(inv.getStaff().getStaffId()))
+                            .filter(inv -> inv.getStaffId() != null && sid.equals(inv.getStaffId()))
                             .collect(Collectors.toList());
                 }
                 if (!search.isEmpty()) {
@@ -139,6 +144,10 @@ public class OrdersPanel extends JPanel {
                 int fromIdx = (resolvedPage - 1) * size;
                 int toIdx = Math.min(fromIdx + size, all.size());
                 resultInvoices = (fromIdx < all.size()) ? all.subList(fromIdx, toIdx) : List.of();
+                for (Invoice inv : resultInvoices) {
+                    String name = staffNameMap.get(inv.getStaffId());
+                    if (name == null) name = "N/A";
+                }
                 return null;    
             }
 
@@ -157,6 +166,11 @@ public class OrdersPanel extends JPanel {
     private void updateInvoiceTable(List<Invoice> invoices) {
         invoiceModel.setRowCount(0);
         invoiceIdList.clear();
+        List<Staff> allStaff = staffDAO.findAll();
+        java.util.Map<java.util.UUID, String> staffNameMap = new java.util.HashMap<>();
+        for (Staff s : allStaff) {
+            staffNameMap.put(s.getStaffId(), s.getFullName() != null ? s.getFullName() : s.getStaffName());
+        }
         int stt = (currentPage - 1) * pageSize + 1;
         for (Invoice inv : invoices) {
             java.util.UUID uuid = inv.getInvoiceId();
@@ -164,9 +178,7 @@ public class OrdersPanel extends JPanel {
             String date = inv.getInvoiceDate() != null
                     ? inv.getInvoiceDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))
                     : "N/A";
-            String staffName = (inv.getStaff() != null && inv.getStaff().getFullName() != null)
-                    ? inv.getStaff().getFullName()
-                    : "N/A";
+            String staffName = staffNameMap.getOrDefault(inv.getStaffId(), "N/A");
             String totalStr = String.format("%,d đ", inv.getTotal() != null ? inv.getTotal() : 0);
             String statusStr = Boolean.TRUE.equals(inv.getStatus()) ? "Active" : "Inactive";
             invoiceModel.addRow(new Object[]{stt++, shortId, date, staffName, totalStr, statusStr});
@@ -496,27 +508,8 @@ public class OrdersPanel extends JPanel {
 
             @Override
             protected Void doInBackground() {
-                try (org.hibernate.Session session = hanabi.util.HibernateUtil.getSessionFactory().openSession()) {
-                    List<Object[]> queryResult = session.createQuery(
-                            "SELECT od.product.productName, od.quantity, od.product.price, (od.quantity * od.product.price) " +
-                            "FROM OrderDetail od " +
-                            "WHERE od.order.invoice.invoiceId = :iid", Object[].class)
-                            .setParameter("iid", invoiceId)
-                            .list();
-                    
-                    for (Object[] row : queryResult) {
-                        String productName = row[0] != null ? row[0].toString() : "N/A";
-                        int qty = row[1] != null ? ((Number) row[1]).intValue() : 0;
-                        double price = row[2] != null ? ((Number) row[2]).doubleValue() : 0;
-                        double total = row[3] != null ? ((Number) row[3]).doubleValue() : 0;
-                        
-                        rows.add(new Object[]{
-                                productName, 
-                                qty,
-                                String.format("%,.0f đ", price),
-                                String.format("%,.0f đ", total)
-                        });
-                    }
+                try {
+                    rows = orderDetailDAO.findInvoiceDetails(invoiceId);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }

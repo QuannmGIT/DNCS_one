@@ -4,14 +4,10 @@ import hanabi.dao.OrderDAO;
 import hanabi.dao.SalaryDAO;
 import hanabi.dao.StaffDAO;
 import hanabi.model.Staff;
-import hanabi.util.HibernateUtil;
 import hanabi.util.PasswordUtil;
 
 import java.util.List;
 import java.util.UUID;
-
-import org.hibernate.Session;
-import org.hibernate.Transaction;
 
 import hanabi.model.Salary;
 import hanabi.util.global;
@@ -42,38 +38,25 @@ public class AccountService {
     }
 
     public boolean addStaff(Staff staff, double salary) {
-        // staff init
         staff.setStaffId(UUID.randomUUID());
-        // staffDAO.save(staff);
         Salary sa = new Salary();
-        sa.setStaff(staff);
+        sa.setStaffId(staff.getStaffId());
         sa.setBaseSalary(salary);
         sa.setCommissionRate(global.COMMISSION_RATE);
-        Session session = null;
-        Transaction tx = null;
         try {
-            session = HibernateUtil.getSessionFactory().openSession();
-            tx = session.beginTransaction();
-            session.persist(staff);
-            session.persist(sa);
-            tx.commit();
+            staffDAO.save(staff);
+            salaryDAO.save(sa);
             return true;
         } catch (RuntimeException e) {
-            if (tx != null)
-                tx.rollback();
             throw e;
-        } finally {
-            if (session != null)
-                session.close();
         }
     }
-
 
     public boolean terminateStaff(UUID staffId) {
         Staff staff = staffDAO.findById(staffId);
         if (staff != null) {
             staff.setStatus(false);
-            staffDAO.update(staff);
+            staffDAO.update(staff, staff.getStaffId());
             return true;
         }
         return false;
@@ -92,7 +75,7 @@ public class AccountService {
         if (staff != null) {
             String salt = PasswordUtil.generateSalt();
             staff.setPassword(salt + ":" + PasswordUtil.hash(newPassword, salt));
-            staffDAO.update(staff);
+            staffDAO.update(staff, staff.getStaffId());
             return true;
         }
         return false;

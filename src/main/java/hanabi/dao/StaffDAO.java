@@ -1,16 +1,15 @@
 package hanabi.dao;
 
+import com.mongodb.client.model.Filters;
 import hanabi.model.Staff;
-import hanabi.util.HibernateUtil;
 import hanabi.util.PasswordUtil;
-import jakarta.persistence.NoResultException;
 import java.util.Optional;
-import org.hibernate.Session;
+import java.util.UUID;
 
-public class StaffDAO extends BaseDAO<Staff, java.util.UUID> {
+public class StaffDAO extends BaseDAO<Staff> {
 
     public StaffDAO() {
-        super(Staff.class);
+        super(Staff.class, "staff");
     }
 
     public Optional<Staff> authenticate(String staffName, String password) {
@@ -27,34 +26,21 @@ public class StaffDAO extends BaseDAO<Staff, java.util.UUID> {
         } else if (stored.equals(password)) {
             String salt = PasswordUtil.generateSalt();
             staff.setPassword(salt + ":" + PasswordUtil.hash(password, salt));
-            update(staff);
+            update(staff, staff.getStaffId());
             return Optional.of(staff);
         }
         return Optional.empty();
     }
 
     public Optional<Staff> findByStaffName(String staffName) {
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            Staff staff = session.createQuery(
-                    "FROM Staff WHERE staffName = :name", Staff.class)
-                    .setParameter("name", staffName)
-                    .getSingleResult();
-            return Optional.ofNullable(staff);
-        } catch (NoResultException e) {
-            return Optional.empty();
-        }
+        Staff staff = getCollection().find(Filters.eq("staffName", staffName)).first();
+        return Optional.ofNullable(staff);
     }
 
     public Optional<Staff> findAdmin() {
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            Staff admin = session.createQuery(
-                    "FROM Staff WHERE role = :role AND status = true", Staff.class)
-                    .setParameter("role", "admin")
-                    .setMaxResults(1)
-                    .getSingleResult();
-            return Optional.ofNullable(admin);
-        } catch (jakarta.persistence.NoResultException e) {
-            return Optional.empty();
-        }
+        Staff admin = getCollection().find(
+                Filters.and(Filters.eq("role", "admin"), Filters.eq("status", true))
+        ).first();
+        return Optional.ofNullable(admin);
     }
 }

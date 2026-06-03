@@ -1,34 +1,16 @@
 package hanabi.model;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
 import java.util.UUID;
+import org.bson.codecs.pojo.annotations.BsonId;
 
-@Entity
-@Table(name = "products")
 public class Product {
-    @Id
-    @Column(name = "product_id", columnDefinition = "BINARY(16)")
+    @BsonId
     private UUID productId;
-
-    @Column(name = "product_name", nullable = false, unique = true, length = 50)
     private String productName;
-
-    @Column(length = 100)
     private String category;
-
-    @Column(columnDefinition = "decimal")
     private Double price;
-
-    @Column(columnDefinition = "decimal")
     private Double cost;
-
-    @Column(length = 255)
     private String image;
-
-    @Column(columnDefinition = "tinyint(1) default 1")
     private Boolean status;
 
     public Product() {}

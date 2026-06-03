@@ -1,72 +1,42 @@
 package hanabi.dao;
 
-import hanabi.util.HibernateUtil;
-import jakarta.persistence.criteria.CriteriaQuery;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.model.Filters;
+import hanabi.util.MongoDBUtil;
+import java.util.ArrayList;
 import java.util.List;
-import org.hibernate.Session;
-import org.hibernate.Transaction;
 
-public class BaseDAO<T, ID> {
+public abstract class BaseDAO<T> {
 
     private final Class<T> entityClass;
+    private final String collectionName;
 
-    public BaseDAO(Class<T> entityClass) {
+    public BaseDAO(Class<T> entityClass, String collectionName) {
         this.entityClass = entityClass;
+        this.collectionName = collectionName;
+    }
+
+    protected MongoCollection<T> getCollection() {
+        return MongoDBUtil.getCollection(collectionName, entityClass);
     }
 
     public void save(T entity) {
-        Transaction tx = null;
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            tx = session.beginTransaction();
-            session.persist(entity);
-            tx.commit();
-        } catch (RuntimeException e) {
-            if (tx != null) tx.rollback();
-            throw e;
-        }
+        getCollection().insertOne(entity);
     }
 
-    public void update(T entity) {
-        Transaction tx = null;
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            tx = session.beginTransaction();
-            session.merge(entity);
-            tx.commit();
-        } catch (RuntimeException e) {
-            if (tx != null) tx.rollback();
-            throw e;
-        }
+    public void update(T entity, Object id) {
+        getCollection().replaceOne(Filters.eq("_id", id), entity);
     }
 
-    public void delete(T entity) {
-        Transaction tx = null;
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            tx = session.beginTransaction();
-            session.remove(entity);
-            tx.commit();
-        } catch (RuntimeException e) {
-            if (tx != null) tx.rollback();
-            throw e;
-        }
+    public void delete(Object id) {
+        getCollection().deleteOne(Filters.eq("_id", id));
     }
 
-    public T findById(ID id) {
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            Transaction tx = session.beginTransaction();
-            T result = session.get(entityClass, id);
-            tx.commit();
-            return result;
-        }
+    public T findById(Object id) {
+        return getCollection().find(Filters.eq("_id", id)).first();
     }
 
     public List<T> findAll() {
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            Transaction tx = session.beginTransaction();
-            CriteriaQuery<T> query = session.getCriteriaBuilder().createQuery(entityClass);
-            query.select(query.from(entityClass));
-            List<T> result = session.createQuery(query).list();
-            tx.commit();
-            return result;
-        }
+        return getCollection().find().into(new ArrayList<>());
     }
 }

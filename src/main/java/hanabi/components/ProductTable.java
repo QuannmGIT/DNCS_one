@@ -1,10 +1,8 @@
 package hanabi.components;
 
 import java.lang.reflect.Method;
-import java.sql.Connection;
-import java.sql.DatabaseMetaData;
-import java.sql.ResultSet;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
@@ -14,7 +12,6 @@ import javax.swing.table.DefaultTableModel;
 
 import hanabi.model.Product;
 import hanabi.service.MenuService;
-import hanabi.util.HibernateUtil;
 
 public class ProductTable extends JTable {
 
@@ -24,6 +21,14 @@ public class ProductTable extends JTable {
     private final List<String> dbColumnNames = new ArrayList<>();
     private List<ColumnInfo> columnInfos = new ArrayList<>();
     private Runnable onRefreshListener;
+
+    private static final List<ColumnInfo> DEFAULT_COLUMNS = Arrays.asList(
+        new ColumnInfo("product_name", "Product Name", "productName"),
+        new ColumnInfo("category", "Category", "category"),
+        new ColumnInfo("price", "Price", "price"),
+        new ColumnInfo("cost", "Cost", "cost"),
+        new ColumnInfo("status", "Status", "status")
+    );
 
     public ProductTable() {
         model = new DefaultTableModel() {
@@ -44,7 +49,7 @@ public class ProductTable extends JTable {
             @Override
             protected LoadResult doInBackground() {
                 try {
-                    List<ColumnInfo> columns = fetchColumnMetadata();
+                    List<ColumnInfo> columns = DEFAULT_COLUMNS;
                     List<Product> products = menuService.getAllProducts();
                     return new LoadResult(columns, products);
                 } catch (Exception e) {
@@ -70,57 +75,6 @@ public class ProductTable extends JTable {
                 }
             }
         }.execute();
-    }
-
-    private List<ColumnInfo> fetchColumnMetadata() throws Exception {
-        List<ColumnInfo> columns = new ArrayList<>();
-        try (org.hibernate.Session session = HibernateUtil.getSessionFactory().openSession()) {
-            session.doReturningWork((Connection connection) -> {
-                DatabaseMetaData meta = connection.getMetaData();
-                try (ResultSet rs = meta.getColumns(null, null, "products", null)) {
-                    while (rs.next()) {
-                        String colName = rs.getString("COLUMN_NAME");
-                        int dataType = rs.getInt("DATA_TYPE");
-                        if (colName.equals("product_id")) continue;
-                        if (dataType == java.sql.Types.BINARY || dataType == java.sql.Types.VARBINARY
-                                || dataType == java.sql.Types.LONGVARBINARY) continue;
-                        columns.add(new ColumnInfo(colName, toDisplayName(colName), toFieldName(colName)));
-                    }
-                }
-                return null;
-            });
-        }
-        return columns;
-    }
-
-    private String toDisplayName(String dbName) {
-        StringBuilder sb = new StringBuilder();
-        boolean cap = true;
-        for (int i = 0; i < dbName.length(); i++) {
-            char c = dbName.charAt(i);
-            if (c == '_') {
-                cap = true;
-            } else {
-                sb.append(cap ? Character.toUpperCase(c) : c);
-                cap = false;
-            }
-        }
-        return sb.toString();
-    }
-
-    private String toFieldName(String dbName) {
-        StringBuilder sb = new StringBuilder();
-        boolean underscore = false;
-        for (int i = 0; i < dbName.length(); i++) {
-            char c = dbName.charAt(i);
-            if (c == '_') {
-                underscore = true;
-            } else {
-                sb.append(underscore ? Character.toUpperCase(c) : c);
-                underscore = false;
-            }
-        }
-        return sb.toString();
     }
 
     private void buildModel(List<ColumnInfo> columns) {

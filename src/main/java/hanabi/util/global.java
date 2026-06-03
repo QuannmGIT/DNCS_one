@@ -2,10 +2,8 @@ package hanabi.util;
 
 public class global {
     public static final String assetsPath = "hanabi/";
-    public static final String DB_URL = "jdbc:mysql://localhost:3306/StoreManagement";
+    public static final String MONGO_URI = "mongodb+srv://stevegaming567_db_user:YG8cDUhQ9f1AQsyC@storemanagement.ku4zavy.mongodb.net/?appName=StoreManagement";
     public static final String DB_NAME = "StoreManagement";
-    public static final String USER = "root";
-    public static final String PASSWORD = "";
     public static double COMMISSION_RATE = 0.01;
     public static final String BANKCODE = "MB"; // replace your Bank code
     public static final String ACCOUNTNUMBER = "33669917012007";

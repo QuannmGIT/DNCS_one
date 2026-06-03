@@ -2,10 +2,7 @@ package hanabi.dao;
 
 import hanabi.model.Staff;
 import hanabi.model.User;
-import hanabi.util.HibernateUtil;
-import jakarta.persistence.NoResultException;
 import java.util.Optional;
-import org.hibernate.Session;
 
 public class UserDAO {
 

@@ -1,43 +1,21 @@
 package hanabi.model;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
 import java.sql.Timestamp;
 import java.util.UUID;
+import org.bson.codecs.pojo.annotations.BsonId;
 
-@Entity
-@Table(name = "chat_messages")
 public class ChatMessage {
 
     public enum MessageType {
         TEXT, FILE
     }
 
-    @Id
-    @Column(name = "message_id", columnDefinition = "BINARY(16)")
     private UUID messageId;
-
-    @Column(name = "sender_id", nullable = false, columnDefinition = "BINARY(16)")
     private UUID senderId;
-
-    @Column(name = "receiver_id", nullable = false, columnDefinition = "BINARY(16)")
     private UUID receiverId;
-
-    @Column(nullable = false, columnDefinition = "TEXT")
     private String content;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "message_type", length = 10)
     private MessageType messageType;
-
-    @Column(name = "file_path", length = 500)
     private String filePath;
-
-    @Column(name = "created_at", nullable = false)
     private Timestamp createdAt;
 
     public ChatMessage() {}

@@ -1,45 +1,30 @@
 package hanabi.dao;
 
+import com.mongodb.client.model.Filters;
 import hanabi.model.Product;
-import hanabi.util.HibernateUtil;
-import jakarta.persistence.NoResultException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import org.hibernate.Session;
 
-public class ProductDAO extends BaseDAO<Product, UUID> {
+public class ProductDAO extends BaseDAO<Product> {
 
     public ProductDAO() {
-        super(Product.class);
+        super(Product.class, "products");
     }
 
     public List<Product> findByCategory(String category) {
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            return session.createQuery(
-                    "FROM Product WHERE category = :cat", Product.class)
-                    .setParameter("cat", category)
-                    .list();
-        }
+        return getCollection().find(Filters.eq("category", category))
+                .into(new ArrayList<>());
     }
 
     public Optional<Product> findByName(String name) {
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            Product product = session.createQuery(
-                    "FROM Product WHERE productName = :name", Product.class)
-                    .setParameter("name", name)
-                    .getSingleResult();
-            return Optional.ofNullable(product);
-        } catch (NoResultException e) {
-            return Optional.empty();
-        }
+        Product product = getCollection().find(Filters.eq("productName", name)).first();
+        return Optional.ofNullable(product);
     }
 
     public List<Product> findAvailable() {
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            return session.createQuery(
-                    "FROM Product WHERE status = true", Product.class)
-                    .list();
-        }
+        return getCollection().find(Filters.eq("status", true))
+                .into(new ArrayList<>());
     }
 }

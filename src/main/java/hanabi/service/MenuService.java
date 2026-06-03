@@ -74,7 +74,7 @@ public class MenuService {
 
         Invoice invoice = new Invoice();
         invoice.setInvoiceId(invoiceId);
-        invoice.setStaff(staff);
+        invoice.setStaffId(staff.getStaffId());
         invoice.setInvoiceDate(LocalDate.now());
         invoice.setTotal(total);
         invoice.setStatus(true);
@@ -82,9 +82,9 @@ public class MenuService {
 
         Order order = new Order();
         order.setOrderId(orderId);
-        order.setStaff(staff);
+        order.setStaffId(staff.getStaffId());
         order.setOrderDate(LocalDate.now());
-        order.setInvoice(invoice);
+        order.setInvoiceId(invoiceId);
         order.setTotal(total);
         order.setStatus(true);
         orderDAO.save(order);
@@ -195,7 +195,7 @@ public class MenuService {
         Product product = productDAO.findById(productId);
         if (product != null) {
             product.setStatus(false);
-            productDAO.update(product);
+            productDAO.update(product, productId);
             return true;
         }
         return false;
@@ -204,7 +204,7 @@ public class MenuService {
     public boolean hardDeleteProduct(UUID productId) {
         Product product = productDAO.findById(productId);
         if (product != null) {
-            productDAO.delete(product);
+            productDAO.delete(productId);
             return true;
         }
         return false;
@@ -215,6 +215,6 @@ public class MenuService {
     }
 
     public void updateProduct(Product product) {
-        productDAO.update(product);
+        productDAO.update(product, product.getProductId());
     }
 }

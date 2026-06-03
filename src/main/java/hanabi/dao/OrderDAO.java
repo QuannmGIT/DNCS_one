@@ -1,92 +1,70 @@
 package hanabi.dao;
 
+import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.Sorts;
 import hanabi.model.Order;
-import hanabi.util.HibernateUtil;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import org.hibernate.Session;
+import org.bson.conversions.Bson;
 
-public class OrderDAO extends BaseDAO<Order, UUID> {
+public class OrderDAO extends BaseDAO<Order> {
 
     public OrderDAO() {
-        super(Order.class);
+        super(Order.class, "orders");
     }
 
     public List<Order> findByStaffId(UUID staffId) {
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            return session.createQuery(
-                    "FROM Order WHERE staff.staffId = :sid ORDER BY orderDate DESC", Order.class)
-                    .setParameter("sid", staffId)
-                    .list();
-        }
+        return getCollection().find(Filters.eq("staffId", staffId))
+                .sort(Sorts.descending("orderDate"))
+                .into(new ArrayList<>());
     }
 
     public List<Order> findByDate(LocalDate date) {
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            return session.createQuery(
-                    "FROM Order WHERE orderDate = :d ORDER BY orderDate DESC", Order.class)
-                    .setParameter("d", date)
-                    .list();
-        }
+        return getCollection().find(Filters.eq("orderDate", date))
+                .sort(Sorts.descending("orderDate"))
+                .into(new ArrayList<>());
     }
 
     public List<Order> findRecent(int limit) {
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            return session.createQuery(
-                    "FROM Order ORDER BY orderDate DESC, orderId DESC", Order.class)
-                    .setMaxResults(limit)
-                    .list();
-        }
+        return getCollection().find()
+                .sort(Sorts.descending("orderDate", "orderId"))
+                .limit(limit)
+                .into(new ArrayList<>());
     }
 
     public long countByStaffId(UUID staffId) {
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            return session.createQuery(
-                    "SELECT COUNT(o) FROM Order o WHERE o.staff.staffId = :sid", Long.class)
-                    .setParameter("sid", staffId)
-                    .getSingleResult();
-        }
+        return getCollection().countDocuments(Filters.eq("staffId", staffId));
     }
 
     public long countAll() {
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            return session.createQuery(
-                    "SELECT COUNT(o) FROM Order o", Long.class)
-                    .getSingleResult();
-        }
+        return getCollection().countDocuments();
     }
 
     public List<Order> findFiltered(LocalDate fromDate, LocalDate toDate, UUID staffId, int offset, int limit) {
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            StringBuilder hql = new StringBuilder("FROM Order o WHERE 1=1");
-            if (fromDate != null) hql.append(" AND o.orderDate >= :fromDate");
-            if (toDate != null) hql.append(" AND o.orderDate <= :toDate");
-            if (staffId != null) hql.append(" AND o.staff.staffId = :staffId");
-            hql.append(" ORDER BY o.orderDate DESC, o.orderId DESC");
+        List<Bson> filters = new ArrayList<>();
+        if (fromDate != null) filters.add(Filters.gte("orderDate", fromDate));
+        if (toDate != null) filters.add(Filters.lte("orderDate", toDate));
+        if (staffId != null) filters.add(Filters.eq("staffId", staffId));
 
-            var query = session.createQuery(hql.toString(), Order.class);
-            if (fromDate != null) query.setParameter("fromDate", fromDate);
-            if (toDate != null) query.setParameter("toDate", toDate);
-            if (staffId != null) query.setParameter("staffId", staffId);
-            query.setFirstResult(offset);
-            query.setMaxResults(limit);
-            return query.list();
-        }
+        var find = getCollection().find(
+                filters.isEmpty() ? Filters.empty() : Filters.and(filters)
+        ).sort(Sorts.descending("orderDate", "orderId"))
+         .skip(offset)
+         .limit(limit);
+
+        return find.into(new ArrayList<>());
     }
 
     public long countFiltered(LocalDate fromDate, LocalDate toDate, UUID staffId) {
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            StringBuilder hql = new StringBuilder("SELECT COUNT(o) FROM Order o WHERE 1=1");
-            if (fromDate != null) hql.append(" AND o.orderDate >= :fromDate");
-            if (toDate != null) hql.append(" AND o.orderDate <= :toDate");
-            if (staffId != null) hql.append(" AND o.staff.staffId = :staffId");
+        List<Bson> filters = new ArrayList<>();
+        if (fromDate != null) filters.add(Filters.gte("orderDate", fromDate));
+        if (toDate != null) filters.add(Filters.lte("orderDate", toDate));
+        if (staffId != null) filters.add(Filters.eq("staffId", staffId));
 
-            var query = session.createQuery(hql.toString(), Long.class);
-            if (fromDate != null) query.setParameter("fromDate", fromDate);
-            if (toDate != null) query.setParameter("toDate", toDate);
-            if (staffId != null) query.setParameter("staffId", staffId);
-            return query.getSingleResult();
-        }
+        return getCollection().countDocuments(
+                filters.isEmpty() ? Filters.empty() : Filters.and(filters)
+        );
     }
 }

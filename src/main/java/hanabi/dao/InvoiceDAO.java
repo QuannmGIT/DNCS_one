@@ -1,64 +1,67 @@
 package hanabi.dao;
 
+import com.mongodb.client.model.Accumulators;
+import com.mongodb.client.model.Aggregates;
+import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.Sorts;
 import hanabi.model.Invoice;
-import hanabi.util.HibernateUtil;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
-import org.hibernate.Session;
+import org.bson.Document;
+import org.bson.conversions.Bson;
 
-public class InvoiceDAO extends BaseDAO<Invoice, UUID> {
+public class InvoiceDAO extends BaseDAO<Invoice> {
 
     public InvoiceDAO() {
-        super(Invoice.class);
+        super(Invoice.class, "invoices");
     }
 
     public List<Invoice> findByStaffId(UUID staffId) {
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            return session.createQuery(
-                    "FROM Invoice WHERE staff.staffId = :sid ORDER BY invoiceDate DESC", Invoice.class)
-                    .setParameter("sid", staffId)
-                    .list();
-        }
+        return getCollection().find(Filters.eq("staffId", staffId))
+                .sort(Sorts.descending("invoiceDate"))
+                .into(new ArrayList<>());
     }
 
     public List<Invoice> findByDate(LocalDate date) {
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            return session.createQuery(
-                    "FROM Invoice WHERE invoiceDate = :d", Invoice.class)
-                    .setParameter("d", date)
-                    .list();
-        }
+        return getCollection().find(Filters.eq("invoiceDate", date))
+                .into(new ArrayList<>());
     }
 
     public List<Invoice> findByDateRange(LocalDate start, LocalDate end) {
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            return session.createQuery(
-                    "FROM Invoice WHERE invoiceDate BETWEEN :start AND :end ORDER BY invoiceDate", Invoice.class)
-                    .setParameter("start", start)
-                    .setParameter("end", end)
-                    .list();
-        }
+        return getCollection().find(
+                Filters.and(Filters.gte("invoiceDate", start), Filters.lte("invoiceDate", end))
+        ).sort(Sorts.ascending("invoiceDate")).into(new ArrayList<>());
     }
 
     public long totalRevenueToday() {
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            Long result = session.createQuery(
-                    "SELECT COALESCE(SUM(i.total), 0) FROM Invoice i WHERE i.invoiceDate = :today AND i.status = true", Long.class)
-                    .setParameter("today", LocalDate.now())
-                    .getSingleResult();
-            return result == null ? 0L : result;
-        }
+        List<Document> result = getCollection().withDocumentClass(Document.class).aggregate(Arrays.asList(
+                Aggregates.match(Filters.and(
+                        Filters.eq("invoiceDate", LocalDate.now()),
+                        Filters.eq("status", true)
+                )),
+                Aggregates.group(null, Accumulators.sum("total", "$total"))
+        )).into(new ArrayList<>());
+
+        if (result.isEmpty()) return 0L;
+        Number total = result.get(0).get("total", Number.class);
+        return total == null ? 0L : total.longValue();
     }
 
     public long totalRevenueByDateRange(LocalDate start, LocalDate end) {
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            Long result = session.createQuery(
-                    "SELECT COALESCE(SUM(i.total), 0) FROM Invoice i WHERE i.invoiceDate BETWEEN :start AND :end AND i.status = true", Long.class)
-                    .setParameter("start", start)
-                    .setParameter("end", end)
-                    .getSingleResult();
-            return result == null ? 0L : result;
-        }
+        List<Document> result = getCollection().withDocumentClass(Document.class).aggregate(Arrays.asList(
+                Aggregates.match(Filters.and(
+                        Filters.gte("invoiceDate", start),
+                        Filters.lte("invoiceDate", end),
+                        Filters.eq("status", true)
+                )),
+                Aggregates.group(null, Accumulators.sum("total", "$total"))
+        )).into(new ArrayList<>());
+
+        if (result.isEmpty()) return 0L;
+        Number total = result.get(0).get("total", Number.class);
+        return total == null ? 0L : total.longValue();
     }
 }
