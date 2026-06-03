@@ -114,6 +114,7 @@ src/main/resources/
 ├── library/                    # Local JAR dependencies
 │   ├── swing-toast-notifications-1.0.4.jar
 │   └── swing-crazy-panel-1.0.0.jar
+├── setup.ps1                   # Laragon environment setup script
 └── Fonts/
 ```
 
@@ -237,17 +238,51 @@ Indexes: `idx_chat_sender` on `sender_id`, `idx_chat_receiver` on `receiver_id`
 
 ## Setup & Running
 
+### Option 1 — One-click with Laragon (Windows)
+
+Run the setup script to automatically install Laragon, create the database, and build the project:
+
+```powershell
+.\setup.ps1
+```
+
+To skip the Maven build:
+
+```powershell
+.\setup.ps1 -SkipBuild
+```
+
+### Option 2 — Manual setup
+
 1. **Prerequisites:** Java 21, Maven, MySQL 8+
 2. **Database:** Create a MySQL database named `StoreManagement`
 3. **Configure:** Edit `src/main/resources/hanabi/backend/hibernate.cfg.xml` if your MySQL credentials differ (default: root with no password)
 4. **Build:** `mvn clean install`
 5. **Run:** `mvn exec:java` or run `App.java` from your IDE
 
+### Option 3 — Docker (using GitHub Actions artifact)
+
+The project includes a CI workflow that builds on every push:
+
+1. Go to **Actions** → **Package Application** → select the latest run
+2. Download the `DACN-1-SNAPSHOT` artifact
+3. Run: `java -jar DACN-1-1.0-SNAPSHOT.jar`
+
 ## Build Artifact
 
-The Maven POM is configured to produce an executable JAR with `App` as the main class:
+The Maven POM is configured to produce an executable JAR with `hanabi.App` as the main class:
 
 ```bash
 mvn clean package
 java -jar target/DACN-1-1.0-SNAPSHOT.jar
 ```
+
+## CI/CD
+
+The repository includes a GitHub Actions workflow (`.github/workflows/package.yml`) that:
+
+- Triggers on push/PR to `main` or manually via `workflow_dispatch`
+- Sets up JDK 21 with Maven caching
+- Installs local JAR dependencies to the Maven repository
+- Runs `mvn clean package`
+- Uploads the packaged JAR as a build artifact

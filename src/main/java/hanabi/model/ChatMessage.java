@@ -31,7 +31,7 @@ public class ChatMessage {
     private String content;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "message_type", nullable = false, length = 10)
+    @Column(name = "message_type", length = 10)
     private MessageType messageType;
 
     @Column(name = "file_path", length = 500)

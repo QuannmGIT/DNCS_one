@@ -17,7 +17,7 @@ public class Order {
     private UUID orderId;
 
     @ManyToOne
-    @JoinColumn(name = "invoice_id", referencedColumnName = "invoice_id", columnDefinition = "BINARY(16)")
+    @JoinColumn(name = "invoice_id", referencedColumnName = "invoice_id", nullable = false, columnDefinition = "BINARY(16)")
     private Invoice invoice;
 
     @ManyToOne

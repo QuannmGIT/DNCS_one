@@ -43,7 +43,7 @@ public class TableDBInitializer {
 
             "CREATE TABLE IF NOT EXISTS orders ("
                     + "  order_id BINARY(16) NOT NULL PRIMARY KEY,"
-                    + "  invoice_id BINARY(16) NOT NULL UNIQUE,"
+                    + "  invoice_id BINARY(16) NOT NULL,"
                     + "  staff_id BINARY(16) NOT NULL,"
                     + "  status TINYINT(1) DEFAULT 1,"
                     + "  order_date DATE DEFAULT NULL,"
@@ -87,15 +87,7 @@ public class TableDBInitializer {
                 for (String ddl : CREATE_TABLES) {
                     stmt.executeUpdate(ddl);
                 }
-                String[] fixes = {
-                        "ALTER TABLE products MODIFY image VARCHAR(255) DEFAULT NULL",
-                };
-                for (String fix : fixes) {
-                    try {
-                        stmt.executeUpdate(fix);
-                    } catch (Exception ignored) {
-                    }
-                }
+
             }
         } catch (Exception e) {
             throw new RuntimeException("Cannot create tables", e);
