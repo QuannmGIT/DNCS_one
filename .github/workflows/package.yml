@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
+  build-jar:
     runs-on: ubuntu-latest
 
     steps:
@@ -28,7 +28,7 @@ jobs:
           mvn install:install-file -Dfile=library/swing-crazy-panel-1.0.0.jar \
             -DgroupId=raven.crazy-panel -DartifactId=swing-crazy-panel -Dversion=1.0.0 -Dpackaging=jar
 
-      - name: Build and package
+      - name: Build fat JAR
         run: mvn clean package -DskipTests
 
       - name: Upload JAR artifact
@@ -37,4 +37,64 @@ jobs:
           name: DACN-1-SNAPSHOT
           path: target/*.jar
 
+  build-exe:
+    runs-on: windows-latest
+    needs: build-jar
 
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: 21
+          distribution: temurin
+          cache: maven
+
+      - name: Install local JARs to Maven repo
+        run: |
+          mvn install:install-file -Dfile=library/swing-toast-notifications-1.0.4.jar -DgroupId=raven.toast -DartifactId=swing-toast-notifications -Dversion=1.0.3 -Dpackaging=jar
+          mvn install:install-file -Dfile=library/swing-crazy-panel-1.0.0.jar -DgroupId=raven.crazy-panel -DartifactId=swing-crazy-panel -Dversion=1.0.0 -Dpackaging=jar
+
+      - name: Build fat JAR
+        run: mvn clean package -DskipTests
+
+      - name: Build EXE with Launch4j
+        run: mvn launch4j:launch4j
+
+      - name: Download JRE 21 for Windows x64
+        run: |
+          $jreUrl = "https://api.adoptium.net/v3/binary/latest/21/ga/windows/x64/jre/hotspot/normal/eclipse"
+          $jreZip = "$env:TEMP\jre21.zip"
+          Write-Host "Downloading JRE 21 from Adoptium..."
+          Invoke-WebRequest -Uri $jreUrl -OutFile $jreZip -UseBasicParsing
+          Write-Host "Download complete. Extracting..."
+          Expand-Archive -Path $jreZip -DestinationPath "$env:RUNNER_TEMP\jre-extract" -Force
+          $jreFolder = Get-ChildItem -Path "$env:RUNNER_TEMP\jre-extract" -Directory | Select-Object -First 1
+          Write-Host "JRE extracted: $($jreFolder.FullName)"
+          echo "JRE_FOLDER=$($jreFolder.FullName)" >> $env:GITHUB_ENV
+
+      - name: Assemble distributable folder
+        run: |
+          $dist = "target\dist\HanabiCafe"
+          New-Item -ItemType Directory -Path "$dist" -Force | Out-Null
+
+          Copy-Item "target\HanabiCafe.exe" -Destination "$dist\HanabiCafe.exe"
+          Copy-Item "target\DACN-1-1.0-SNAPSHOT.jar" -Destination "$dist\DACN-1-1.0-SNAPSHOT.jar"
+
+          Copy-Item "$env:JRE_FOLDER" -Destination "$dist\jre" -Recurse
+
+          Write-Host "Distributable folder contents:"
+          Get-ChildItem -Path "$dist" -Recurse -Depth 1 | ForEach-Object { Write-Host "  $($_.FullName.Replace("$dist\", ''))" }
+
+      - name: Create ZIP archive
+        run: |
+          Compress-Archive -Path "target\dist\HanabiCafe\*" -DestinationPath "target\HanabiCafe.zip" -Force
+          $zipSize = (Get-Item "target\HanabiCafe.zip").Length / 1MB
+          Write-Host "ZIP created: $([math]::Round($zipSize, 2)) MB"
+
+      - name: Upload distributable ZIP
+        uses: actions/upload-artifact@v4
+        with:
+          name: HanabiCafe-EXE
+          path: target/HanabiCafe.zip

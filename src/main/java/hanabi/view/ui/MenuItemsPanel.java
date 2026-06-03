@@ -97,6 +97,7 @@ public class MenuItemsPanel extends JPanel {
     public MenuItemsPanel() {
         loadFont();
         initComponents();
+        
     }
 
     private void loadFont() {
@@ -139,7 +140,6 @@ public class MenuItemsPanel extends JPanel {
         body.add(createCartPanel(), BorderLayout.EAST);
 
         add(body, BorderLayout.CENTER);
-        permission();
         rebuildGrid();
     }
 
@@ -670,7 +670,7 @@ public class MenuItemsPanel extends JPanel {
         gridContainer.add(loading, BorderLayout.CENTER);
         gridContainer.revalidate();
         gridContainer.repaint();
-
+        permission();
         new SwingWorker<Void, Void>() {
             @Override
             protected Void doInBackground() {
@@ -710,16 +710,16 @@ public class MenuItemsPanel extends JPanel {
 
     private void permission() {
         User u = hanabi.Main.authService.getCurrentUser();
-        if (u == null)
-            return;
-
-        if (!u.isAdmin()) {
-            modifyBtn.setVisible(false);
-            addBtn.setVisible(false);
-        } else {
-            modifyBtn.setVisible(true);
-            addBtn.setVisible(true);
+        if (u != null) {
+            if (!u.isAdmin()) {
+                modifyBtn.setVisible(false);
+                addBtn.setVisible(false);
+            } else {
+                modifyBtn.setVisible(true);
+                addBtn.setVisible(true);
+            }
         }
+
     }
     // ─── MAIN ─────────────────────────────────────────────────
 

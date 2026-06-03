@@ -120,6 +120,47 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>com.akathist.maven.plugins.launch4j</groupId>
+                <artifactId>launch4j-maven-plugin</artifactId>
+                <version>2.5.0</version>
+                <executions>
+                    <execution>
+                        <id>build-exe</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>launch4j</goal>
+                        </goals>
+                        <configuration>
+                            <headerType>gui</headerType>
+                            <filename>HanabiCafe.exe</filename>
+                            <outDir>${project.build.directory}</outDir>
+                            <jar>${project.build.finalName}.jar</jar>
+                            <icon>src/main/resources/hanabi/assets/appIcon/HanabiCafe.ico</icon>
+                            <jre>
+                                <path>jre</path>
+                                <bundledJre64Bit>true</bundledJre64Bit>
+                                <bundledJreAsFallback>true</bundledJreAsFallback>
+                                <minVersion>21</minVersion>
+                                <jdkPreference>preferJre</jdkPreference>
+                                <runtimeBits>64</runtimeBits>
+                            </jre>
+                            <versionInfo>
+                                <fileVersion>1.0.0.0</fileVersion>
+                                <txtFileVersion>1.0.0</txtFileVersion>
+                                <fileDescription>HANABI CAFE Management System</fileDescription>
+                                <copyright>Copyright 2026</copyright>
+                                <productVersion>1.0.0.0</productVersion>
+                                <txtProductVersion>1.0.0</txtProductVersion>
+                                <productName>HANABI CAFE</productName>
+                                <companyName>HANABI</companyName>
+                                <internalName>HanabiCafe</internalName>
+                                <originalFilename>HanabiCafe.exe</originalFilename>
+                            </versionInfo>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 </project>
