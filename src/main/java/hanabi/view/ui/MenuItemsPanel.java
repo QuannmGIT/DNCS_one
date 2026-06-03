@@ -42,6 +42,7 @@ import hanabi.components.form.AddProductForm;
 import hanabi.components.form.EditProductForm;
 import hanabi.model.Product;
 import hanabi.model.Staff;
+import hanabi.model.User;
 import hanabi.service.MenuService;
 import hanabi.util.FontLoader;
 
@@ -138,7 +139,7 @@ public class MenuItemsPanel extends JPanel {
         body.add(createCartPanel(), BorderLayout.EAST);
 
         add(body, BorderLayout.CENTER);
-
+        permission();
         rebuildGrid();
     }
 
@@ -707,6 +708,19 @@ public class MenuItemsPanel extends JPanel {
         rebuildCart();
     }
 
+    private void permission() {
+        User u = hanabi.Main.authService.getCurrentUser();
+        if (u == null)
+            return;
+
+        if (!u.isAdmin()) {
+            modifyBtn.setVisible(false);
+            addBtn.setVisible(false);
+        } else {
+            modifyBtn.setVisible(true);
+            addBtn.setVisible(true);
+        }
+    }
     // ─── MAIN ─────────────────────────────────────────────────
 
     public static void main(String[] args) {

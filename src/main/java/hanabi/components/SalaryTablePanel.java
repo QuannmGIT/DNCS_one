@@ -74,7 +74,7 @@ public class SalaryTablePanel extends JPanel {
     }
 
     private JScrollPane createScrollPane() {
-        String[] cols = {"STT", "Name", "Role", "Base salary", "Invoice sales", "Total salary"};
+        String[] cols = {"No", "Name", "Role", "Base salary", "Invoice sales", "Total salary"};
 
         salaryModel = new DefaultTableModel(new Object[][]{}, cols) {
             @Override

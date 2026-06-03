@@ -60,13 +60,38 @@ public class DataInitializer {
         try {
             String salt = PasswordUtil.generateSalt();
 
-            Staff staff1 = createStaff(session, "alice", "Alice Nguyen", "staff", "staff123", salt);
-            Staff staff2 = createStaff(session, "bob", "Bob Tran", "staff", "staff123", salt);
-            Staff staff3 = createStaff(session, "carol", "Carol Le", "staff", "staff123", salt);
+            Staff staff1 = createStaff(session, "Nguyen", "Nguyen", "staff", "staff123", salt);
+            Staff staff2 = createStaff(session, "Dat", "Tran Dat", "staff", "staff123", salt);
+            Staff staff3 = createStaff(session, "Le", "Le", "staff", "staff123", salt);
 
             createSalary(session, staff1, 5000000.0, global.COMMISSION_RATE);
             createSalary(session, staff2, 4500000.0, global.COMMISSION_RATE);
             createSalary(session, staff3, 4800000.0, global.COMMISSION_RATE);
+
+            createProduct(session, "Matcha Ice Blended", "Iced", 35000.0, 15000.0,"1");
+            createProduct(session, "Americano", "Hot", 28000.0, 12000.0, "2");
+            createProduct(session, "Croissants", "Bakery", 25000.0, 10000.0, "3");
+            createProduct(session, "Ice Latte", "Iced", 25000.0, 12000.0, "4");
+            createProduct(session, "Ice Black Coffee", "Iced", 35000.0, 15000.0, "5");
+            createProduct(session, "Caramel Machito", "Hot", 40000.0, 18000.0, "6");
+            createProduct(session, "Tiramisu", "Bakery", 45000.0, 20000.0, "7");
+            createProduct(session, "Lemon Tea", "Iced", 19000.0, 8000.0, "8");
+            createProduct(session, "Orange", "Iced", 23000.0, 10000.0, "9");
+            createProduct(session, "Espresso", "Hot", 20000.0, 8000.0, "10");
+            createProduct(session, "Hot Chocolate", "Hot", 35000.0, 15000.0, "11");
+            createProduct(session, "Cappuccino", "Hot", 32000.0, 12000.0, "12");
+            createProduct(session, "Hot Matcha Latte", "Hot", 35000.0, 15000.0, "13");
+            createProduct(session, "Earl Grey Tea", "Hot", 25000.0, 10000.0, "14");
+            createProduct(session, "Iced Mocha", "Iced", 38000.0, 15000.0, "15");
+            createProduct(session, "Peach Tea", "Iced", 25000.0, 10000.0, "16");
+            createProduct(session, "Cold Brew", "Iced", 35000.0, 15000.0, "17");
+            createProduct(session, "Mango Smoothie", "Iced", 40000.0, 18000.0, "18");
+            createProduct(session, "Strawberry Macchiato", "Iced", 42000.0, 18000.0, "19");
+            createProduct(session, "Cheesecake", "Bakery", 40000.0, 18000.0, "20");
+            createProduct(session, "Choco Cookie", "Bakery", 15000.0, 5000.0, "21");
+            createProduct(session, "Red Velvet", "Bakery", 45000.0, 20000.0, "22");
+            createProduct(session, "Macaron (Set 3)", "Bakery", 30000.0, 12000.0, "23");
+            createProduct(session, "Blueberry Muffin", "Bakery", 25000.0, 10000.0, "24");
 
             tx.commit();
             System.out.println("Mock Data init completed");
@@ -96,13 +121,14 @@ public class DataInitializer {
         session.persist(salary);
     }
 
-    private static Product createProduct(Session session, String name, String category, double price, double cost) {
+    private static Product createProduct(Session session, String name, String category, double price, double cost, String image) {
         Product product = new Product();
         product.setProductId(UUID.randomUUID());
         product.setProductName(name);
         product.setCategory(category);
         product.setPrice(price);
         product.setCost(cost);
+        product.setImage(image);
         product.setStatus(true);
         session.persist(product);
         return product;

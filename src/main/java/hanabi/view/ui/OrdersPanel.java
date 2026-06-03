@@ -4,9 +4,11 @@ import com.formdev.flatlaf.FlatClientProperties;
 import hanabi.dao.InvoiceDAO;
 import hanabi.dao.OrderDAO;
 import hanabi.dao.OrderDetailDAO;
+import hanabi.dao.StaffDAO;
 import hanabi.model.Invoice;
 import hanabi.model.Order;
 import hanabi.model.OrderDetail;
+import hanabi.model.Staff;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -25,6 +27,7 @@ import java.util.stream.Collectors;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -37,6 +40,9 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
+import java.awt.event.ItemEvent;
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.JList;
 
 public class OrdersPanel extends JPanel {
 
@@ -50,7 +56,7 @@ public class OrdersPanel extends JPanel {
     private final InvoiceDAO invoiceDAO = new InvoiceDAO();
     private final OrderDAO orderDAO = new OrderDAO();
     private final OrderDetailDAO orderDetailDAO = new OrderDetailDAO();
-
+    private final StaffDAO staffDAO = new StaffDAO();
 
     private int currentPage = 1;
     private int pageSize = 12;
@@ -64,6 +70,7 @@ public class OrdersPanel extends JPanel {
     private DefaultTableModel detailModel;
     private JPanel paginationPanel;
     private List<java.util.UUID> invoiceIdList = new ArrayList<>();
+    private JComboBox<Staff> cmbStaff;
 
     public OrdersPanel() {
         initComponents();
@@ -71,11 +78,36 @@ public class OrdersPanel extends JPanel {
 
     public void loadData() {
         currentPage = 1;
+        loadStaffList();
         applyFilters();
+    }
+
+    private void loadStaffList() {
+        new SwingWorker<Void, Void>() {
+            private List<Staff> staffList;
+
+            @Override
+            protected Void doInBackground() {
+                staffList = staffDAO.findAll();
+                return null;
+            }
+
+            @Override
+            protected void done() {
+                cmbStaff.removeAllItems();
+                cmbStaff.addItem(null);
+                for (Staff s : staffList) {
+                    if (Boolean.TRUE.equals(s.getStatus())) {
+                        cmbStaff.addItem(s);
+                    }
+                }
+            }
+        }.execute();
     }
 
     private void applyFilters() {
         String search = txtSearch.getText().trim();
+        Staff selectedStaff = (Staff) cmbStaff.getSelectedItem();
         int page = currentPage;
         int size = pageSize;
 
@@ -86,23 +118,28 @@ public class OrdersPanel extends JPanel {
 
             @Override
             protected Void doInBackground() {
-                List<Invoice> all;
-                if (search.isEmpty()) {
-                    all = invoiceDAO.findAll();
-                } else {
+                List<Invoice> all = invoiceDAO.findAll();
+                if (selectedStaff != null) {
+                    java.util.UUID sid = selectedStaff.getStaffId();
+                    all = all.stream()
+                            .filter(inv -> inv.getStaff() != null && sid.equals(inv.getStaff().getStaffId()))
+                            .collect(Collectors.toList());
+                }
+                if (!search.isEmpty()) {
                     String upper = search.toUpperCase();
-                    all = invoiceDAO.findAll().stream()
+                    all = all.stream()
                             .filter(inv -> inv.getInvoiceId() != null
                                     && inv.getInvoiceId().toString().toUpperCase().contains(upper))
                             .collect(Collectors.toList());
                 }
                 totalCount = all.size();
                 int totalPages = Math.max(1, (int) Math.ceil((double) totalCount / size));
-                if (resolvedPage > totalPages) resolvedPage = totalPages;
+                if (resolvedPage > totalPages)
+                    resolvedPage = totalPages;
                 int fromIdx = (resolvedPage - 1) * size;
                 int toIdx = Math.min(fromIdx + size, all.size());
                 resultInvoices = (fromIdx < all.size()) ? all.subList(fromIdx, toIdx) : List.of();
-                return null;
+                return null;    
             }
 
             @Override
@@ -254,6 +291,36 @@ public class OrdersPanel extends JPanel {
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.insets = new Insets(0, 8, 0, 0);
 
+        cmbStaff = new JComboBox<>();
+        cmbStaff.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        cmbStaff.setPreferredSize(new Dimension(180, 38));
+        cmbStaff.putClientProperty(FlatClientProperties.STYLE,
+                "arc:15; borderWidth:1; borderColor:#DCD5CE; focusColor:#D3B593;");
+        cmbStaff.addItemListener(e -> {
+            if (e.getStateChange() == ItemEvent.SELECTED) {
+                currentPage = 1;
+                applyFilters();
+            }
+        });
+        cmbStaff.setRenderer(new DefaultListCellRenderer() {
+            @Override
+            public Component getListCellRendererComponent(JList<?> list, Object value,
+                    int index, boolean isSelected, boolean cellHasFocus) {
+                super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+                if (value == null) {
+                    setText("All Staff");
+                } else if (value instanceof Staff) {
+                    Staff s = (Staff) value;
+                    setText(s.getFullName() != null ? s.getFullName() : s.getStaffName());
+                }
+                return this;
+            }
+        });
+
+        gbc.gridx = 0;
+        gbc.weightx = 0;
+        right.add(cmbStaff, gbc);
+
         txtSearch = new JTextField();
         txtSearch.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Search invoice ID...");
         txtSearch.putClientProperty(FlatClientProperties.TEXT_FIELD_SHOW_CLEAR_BUTTON, true);
@@ -266,7 +333,7 @@ public class OrdersPanel extends JPanel {
             applyFilters();
         });
 
-        gbc.gridx = 0;
+        gbc.gridx = 1;
         gbc.weightx = 0;
         right.add(txtSearch, gbc);
 
@@ -283,7 +350,7 @@ public class OrdersPanel extends JPanel {
             applyFilters();
         });
 
-        gbc.gridx = 1;
+        gbc.gridx = 2;
         right.add(btnRefresh, gbc);
 
         header.add(right, BorderLayout.EAST);
@@ -291,7 +358,7 @@ public class OrdersPanel extends JPanel {
     }
 
     private JPanel createCenterPanel() {
-        String[] invCols = {"STT", "ID", "Date", "Staff", "Total", "Status"};
+        String[] invCols = {"No", "ID", "Date", "Staff", "Total", "Status"};
         invoiceModel = new DefaultTableModel(invCols, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
