@@ -66,13 +66,13 @@ jobs:
 
       - name: Verify EXE exists
         run: |
-          if (-not (Test-Path "target\HanabiCafe.exe")) {
-            Write-Host "HanabiCafe.exe not found. Listing target/ contents:"
+          if (-not (Test-Path "target\DACN-1.exe")) {
+            Write-Host "DACN-1.exe not found. Listing target/ contents:"
             Get-ChildItem "target" -Recurse -Depth 1 | ForEach-Object { Write-Host "  $($_.FullName)" }
             exit 1
           }
-          Write-Host "HanabiCafe.exe created successfully."
-          (Get-Item "target\HanabiCafe.exe").Length
+          Write-Host "DACN-1.exe created successfully."
+          (Get-Item "target\DACN-1.exe").Length
 
       - name: Download JRE 21 for Windows x64
         run: |
@@ -91,7 +91,7 @@ jobs:
           $dist = "target\dist\HanabiCafe"
           New-Item -ItemType Directory -Path "$dist" -Force | Out-Null
 
-          Copy-Item "target\HanabiCafe.exe" -Destination "$dist\HanabiCafe.exe"
+          Copy-Item "target\DACN-1.exe" -Destination "$dist\DACN-1.exe"
           Copy-Item "target\DACN-1-1.0-SNAPSHOT.jar" -Destination "$dist\DACN-1-1.0-SNAPSHOT.jar"
 
           Copy-Item "$env:JRE_FOLDER" -Destination "$dist\jre" -Recurse
