@@ -1,10 +1,8 @@
 package hanabi.model;
 
 import java.util.UUID;
-import org.bson.codecs.pojo.annotations.BsonId;
 
 public class Staff {
-    @BsonId
     private UUID staffId;
     private String staffName;
     private String email;

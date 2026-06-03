@@ -2,10 +2,8 @@ package hanabi.model;
 
 import java.time.LocalDate;
 import java.util.UUID;
-import org.bson.codecs.pojo.annotations.BsonId;
 
 public class Invoice {
-    @BsonId
     private UUID invoiceId;
     private UUID staffId;
     private LocalDate invoiceDate;

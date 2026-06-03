@@ -2,7 +2,6 @@ package hanabi.model;
 
 import java.sql.Timestamp;
 import java.util.UUID;
-import org.bson.codecs.pojo.annotations.BsonId;
 
 public class ChatMessage {
 

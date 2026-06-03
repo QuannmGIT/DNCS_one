@@ -2,7 +2,6 @@ package hanabi.model;
 
 import java.util.Objects;
 import java.util.UUID;
-import org.bson.codecs.pojo.annotations.BsonId;
 
 public class OrderDetail {
 

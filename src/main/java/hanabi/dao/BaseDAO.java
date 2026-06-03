@@ -1,42 +1,31 @@
 package hanabi.dao;
 
-import com.mongodb.client.MongoCollection;
-import com.mongodb.client.model.Filters;
-import hanabi.util.MongoDBUtil;
-import java.util.ArrayList;
+import hanabi.util.SupabaseUtil;
+import hanabi.util.SupabaseUtil.RowMapper;
+
 import java.util.List;
 
 public abstract class BaseDAO<T> {
 
-    private final Class<T> entityClass;
-    private final String collectionName;
+    protected abstract String tableName();
+    protected abstract RowMapper<T> rowMapper();
+    protected abstract String idColumn();
 
-    public BaseDAO(Class<T> entityClass, String collectionName) {
-        this.entityClass = entityClass;
-        this.collectionName = collectionName;
-    }
-
-    protected MongoCollection<T> getCollection() {
-        return MongoDBUtil.getCollection(collectionName, entityClass);
-    }
-
-    public void save(T entity) {
-        getCollection().insertOne(entity);
-    }
-
-    public void update(T entity, Object id) {
-        getCollection().replaceOne(Filters.eq("_id", id), entity);
+    public void executeSql(String sql, Object... params) {
+        SupabaseUtil.update(sql, params);
     }
 
     public void delete(Object id) {
-        getCollection().deleteOne(Filters.eq("_id", id));
+        SupabaseUtil.update("DELETE FROM " + tableName() + " WHERE " + idColumn() + " = ?::uuid", id);
     }
 
     public T findById(Object id) {
-        return getCollection().find(Filters.eq("_id", id)).first();
+        return SupabaseUtil.querySingle(
+                "SELECT * FROM " + tableName() + " WHERE " + idColumn() + " = ?::uuid",
+                rowMapper(), id);
     }
 
     public List<T> findAll() {
-        return getCollection().find().into(new ArrayList<>());
+        return SupabaseUtil.queryList("SELECT * FROM " + tableName() + " ORDER BY " + idColumn(), rowMapper());
     }
 }

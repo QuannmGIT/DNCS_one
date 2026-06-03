@@ -1,15 +1,39 @@
 package hanabi.dao;
 
-import com.mongodb.client.model.Filters;
 import hanabi.model.Staff;
 import hanabi.util.PasswordUtil;
+import hanabi.util.SupabaseUtil;
+import hanabi.util.SupabaseUtil.RowMapper;
+
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Optional;
 import java.util.UUID;
 
 public class StaffDAO extends BaseDAO<Staff> {
 
-    public StaffDAO() {
-        super(Staff.class, "staff");
+    @Override
+    protected String tableName() { return "staff"; }
+
+    @Override
+    protected String idColumn() { return "staff_id"; }
+
+    private final RowMapper<Staff> mapper = this::mapRow;
+
+    @Override
+    protected RowMapper<Staff> rowMapper() { return mapper; }
+
+    private Staff mapRow(ResultSet rs) throws SQLException {
+        Staff s = new Staff();
+        s.setStaffId(UUID.fromString(rs.getString("staff_id")));
+        s.setStaffName(rs.getString("staff_name"));
+        s.setEmail(rs.getString("email"));
+        s.setPassword(rs.getString("password"));
+        s.setFullName(rs.getString("full_name"));
+        s.setRole(rs.getString("role"));
+        s.setStatus(rs.getBoolean("status"));
+        if (rs.wasNull()) s.setStatus(null);
+        return s;
     }
 
     public Optional<Staff> authenticate(String staffName, String password) {
@@ -33,14 +57,30 @@ public class StaffDAO extends BaseDAO<Staff> {
     }
 
     public Optional<Staff> findByStaffName(String staffName) {
-        Staff staff = getCollection().find(Filters.eq("staffName", staffName)).first();
-        return Optional.ofNullable(staff);
+        Staff s = SupabaseUtil.querySingle(
+                "SELECT * FROM staff WHERE staff_name = ?",
+                rowMapper(), staffName);
+        return Optional.ofNullable(s);
     }
 
     public Optional<Staff> findAdmin() {
-        Staff admin = getCollection().find(
-                Filters.and(Filters.eq("role", "admin"), Filters.eq("status", true))
-        ).first();
-        return Optional.ofNullable(admin);
+        Staff s = SupabaseUtil.querySingle(
+                "SELECT * FROM staff WHERE role = ? AND status = true",
+                rowMapper(), "admin");
+        return Optional.ofNullable(s);
+    }
+
+    public void save(Staff staff) {
+        SupabaseUtil.update(
+                "INSERT INTO staff (staff_id, staff_name, email, password, full_name, role, status) VALUES (?::uuid, ?, ?, ?, ?, ?, ?)",
+                staff.getStaffId(), staff.getStaffName(), staff.getEmail(),
+                staff.getPassword(), staff.getFullName(), staff.getRole(), staff.getStatus());
+    }
+
+    public void update(Staff staff, UUID id) {
+        SupabaseUtil.update(
+                "UPDATE staff SET staff_name=?, email=?, password=?, full_name=?, role=?, status=? WHERE staff_id=?::uuid",
+                staff.getStaffName(), staff.getEmail(), staff.getPassword(),
+                staff.getFullName(), staff.getRole(), staff.getStatus(), id);
     }
 }

@@ -1,10 +1,8 @@
 package hanabi.model;
 
 import java.util.UUID;
-import org.bson.codecs.pojo.annotations.BsonId;
 
 public class Product {
-    @BsonId
     private UUID productId;
     private String productName;
     private String category;
