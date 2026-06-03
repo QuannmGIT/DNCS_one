@@ -62,6 +62,16 @@ jobs:
       - name: Build EXE with Launch4j
         run: mvn launch4j:launch4j
 
+      - name: Verify EXE exists
+        run: |
+          if (-not (Test-Path "target\HanabiCafe.exe")) {
+            Write-Host "HanabiCafe.exe not found. Listing target/ contents:"
+            Get-ChildItem "target" -Recurse -Depth 1 | ForEach-Object { Write-Host "  $($_.FullName)" }
+            exit 1
+          }
+          Write-Host "HanabiCafe.exe created successfully."
+          (Get-Item "target\HanabiCafe.exe").Length
+
       - name: Download JRE 21 for Windows x64
         run: |
           $jreUrl = "https://api.adoptium.net/v3/binary/latest/21/ga/windows/x64/jre/hotspot/normal/eclipse"
