@@ -53,8 +53,8 @@ jobs:
 
       - name: Install local JARs to Maven repo
         run: |
-          mvn install:install-file -Dfile=library/swing-toast-notifications-1.0.4.jar -DgroupId=raven.toast -DartifactId=swing-toast-notifications -Dversion=1.0.3 -Dpackaging=jar
-          mvn install:install-file -Dfile=library/swing-crazy-panel-1.0.0.jar -DgroupId=raven.crazy-panel -DartifactId=swing-crazy-panel -Dversion=1.0.0 -Dpackaging=jar
+          mvn install:install-file "-Dfile=library/swing-toast-notifications-1.0.4.jar" "-DgroupId=raven.toast" "-DartifactId=swing-toast-notifications" "-Dversion=1.0.3" "-Dpackaging=jar"
+          mvn install:install-file "-Dfile=library/swing-crazy-panel-1.0.0.jar" "-DgroupId=raven.crazy-panel" "-DartifactId=swing-crazy-panel" "-Dversion=1.0.0" "-Dpackaging=jar"
 
       - name: Build fat JAR
         run: mvn clean package -DskipTests
