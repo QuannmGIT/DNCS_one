@@ -198,7 +198,12 @@ if ($jarFiles) {
     $jar = $jarFiles[0].FullName
     Write-Success "Packaged JAR: $jar"
     Write-Host "`nTo run the application:"
-    Write-Host "  java -jar `"$jar`"" -ForegroundColor Green
+    $fatJar = $jar -replace '\.jar$', '-jar-with-dependencies.jar'
+    if (Test-Path $fatJar) {
+        Write-Host "  java -jar `"$fatJar`"" -ForegroundColor Green
+    } else {
+        Write-Host "  java -jar `"$jar`"" -ForegroundColor Green
+    }
 } else {
     Write-Host "`nTo run the application from your IDE, open the project and run App.java" -ForegroundColor Yellow
 }

@@ -36,3 +36,17 @@ jobs:
         with:
           name: DACN-1-SNAPSHOT
           path: target/*.jar
+
+      - name: Create Release
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ github.run_number }}
+          name: Release v${{ github.run_number }}
+          body: |
+            Automated build from commit ${{ github.sha }}
+
+            ## Changes
+            ${{ github.event.head_commit.message }}
+          files: target/DACN-1-1.0-SNAPSHOT.jar
+          generate_release_notes: true

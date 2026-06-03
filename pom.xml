@@ -43,15 +43,11 @@
             <groupId>raven.toast</groupId>
             <artifactId>swing-toast-notifications</artifactId>
             <version>1.0.3</version>
-            <scope>system</scope>
-            <systemPath>${basedir}/library/swing-toast-notifications-1.0.4.jar</systemPath>
         </dependency>
         <dependency>
             <groupId>raven.crazy-panel</groupId>
             <artifactId>swing-crazy-panel</artifactId>
             <version>1.0.0</version>
-            <scope>system</scope>
-            <systemPath>${basedir}/library/swing-crazy-panel-1.0.0.jar</systemPath>
         </dependency>
         <dependency>
             <groupId>com.miglayout</groupId>
@@ -102,6 +98,27 @@
                         </manifest>
                     </archive>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>3.6.0</version>
+                <configuration>
+                    <createDependencyReducedPom>false</createDependencyReducedPom>
+                    <transformers>
+                        <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                            <mainClass>hanabi.App</mainClass>
+                        </transformer>
+                    </transformers>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>

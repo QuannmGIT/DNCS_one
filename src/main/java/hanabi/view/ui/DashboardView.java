@@ -6,9 +6,8 @@ import java.awt.Color;
 
 import javax.swing.JPanel;
 
-import raven.crazypanel.CrazyPanel;
 
-public class DashboardView extends CrazyPanel {
+public class DashboardView extends JPanel {
 
     private static final Color LIGHT_BG = new Color(250, 248, 245);
 
@@ -95,6 +94,5 @@ public class DashboardView extends CrazyPanel {
         add(content);
         setVisible(true);
     }
-
 
 }
