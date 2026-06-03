@@ -135,8 +135,7 @@
                             <headerType>gui</headerType>
                             <filename>HanabiCafe.exe</filename>
                             <outDir>${project.build.directory}</outDir>
-                            <jar>${project.build.finalName}.jar</jar>
-                            <icon>src/main/resources/hanabi/assets/appIcon/HanabiCafe.ico</icon>
+                            <jar>${project.build.directory}/${project.build.finalName}.jar</jar>
                             <jre>
                                 <path>jre</path>
                                 <bundledJre64Bit>true</bundledJre64Bit>
