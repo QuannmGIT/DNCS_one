@@ -134,8 +134,8 @@
                         <configuration>
                             <headerType>gui</headerType>
                             <filename>HanabiCafe.exe</filename>
-                            <outDir>target/HanabiCafe.exe</outDir>
-                            <jar>target/DACN-1-1.0-SNAPSHOT.jar.jar</jar>
+                            <outDir>${project.build.directory}</outDir>
+                            <jar>${project.build.finalName}.jar</jar>
                             <icon>src/main/resources/hanabi/assets/appIcon/HanabiCafe.ico</icon>
                             <jre>
                                 <path>jre</path>
