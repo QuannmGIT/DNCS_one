@@ -32,6 +32,7 @@ public class CategoryPanel extends JPanel {
     public static final int PAGE_REVENUE = 2;
     public static final int PAGE_ORDERS = 3;
     public static final int PAGE_CHAT = 4;
+    public static final int PAGE_CREATE_CAFE = 5;
 
     private static final Color SIDEBAR_BG = new Color(211, 181, 147);
     private static final Color DARK_BROWN = new Color(90, 70, 61);
@@ -43,6 +44,7 @@ public class CategoryPanel extends JPanel {
     private JButton buttonLogOut;
     private JButton buttonOrders;
     private JButton buttonChat;
+    private JButton buttonCreateCafe;
 
     private Icon menuIcon, menuIconLight;
     private Icon accountIcon, accountIconLight;
@@ -62,10 +64,27 @@ public class CategoryPanel extends JPanel {
     }
 
     public void setActivePage(int page) {
-        JButton[] buttons = { buttonMenuItems, buttonAccounts, buttonRevenue, buttonOrders, buttonChat };
-        for (int i = 0; i < buttons.length; i++) {
-            applyButtonAppearance(buttons[i], i == page);
+        boolean isDev = Main.authService.isDevUser();
+        JButton[] buttons;
+        if (isDev) {
+            buttons = new JButton[]{ buttonCreateCafe };
+        } else {
+            buttons = new JButton[]{ buttonMenuItems, buttonAccounts, buttonRevenue, buttonOrders, buttonChat };
         }
+        for (int i = 0; i < buttons.length; i++) {
+            applyButtonAppearance(buttons[i], i == 0);
+        }
+    }
+
+    public void refreshForUser() {
+        boolean isDev = Main.authService.isDevUser();
+        buttonMenuItems.setVisible(!isDev);
+        buttonAccounts.setVisible(!isDev);
+        buttonRevenue.setVisible(!isDev);
+        buttonOrders.setVisible(!isDev);
+        buttonChat.setVisible(!isDev);
+        buttonCreateCafe.setVisible(isDev);
+        setActivePage(isDev ? PAGE_CREATE_CAFE : PAGE_MENU_ITEMS);
     }
 
     private void initComponents() {
@@ -98,16 +117,24 @@ public class CategoryPanel extends JPanel {
         buttonRevenue = createNavBtn("Revenue");
         buttonOrders = createNavBtn("Orders");
         buttonChat = createNavBtn("Messages");
-        // buttonSalary = createNavBtn("Salary");
+
+        boolean isDev = Main.authService.isDevUser();
+
+        buttonMenuItems.setVisible(!isDev);
+        buttonAccounts.setVisible(!isDev);
+        buttonRevenue.setVisible(!isDev);
+        buttonOrders.setVisible(!isDev);
+        buttonChat.setVisible(!isDev);
+
+        buttonCreateCafe = createNavBtn("Create Cafe");
+        buttonCreateCafe.setVisible(isDev);
 
         buttonMenuItems.addActionListener(this::onMenuItems);
         buttonAccounts.addActionListener(this::onAccounts);
         buttonRevenue.addActionListener(this::onRevenue);
         buttonOrders.addActionListener(this::onOrders);
         buttonChat.addActionListener(this::onChat);
-        // buttonSalary.addActionListener(this::onSalary);
-
-        setActivePage(PAGE_MENU_ITEMS);
+        buttonCreateCafe.addActionListener(this::onCreateCafe);
 
         buttonLogOut = new JButton("Log Out");
         buttonLogOut.addActionListener(e -> {
@@ -153,8 +180,10 @@ public class CategoryPanel extends JPanel {
         add(buttonOrders, gbc);
         gbc.gridy = 6;
         add(buttonChat, gbc);
-
         gbc.gridy = 7;
+        add(buttonCreateCafe, gbc);
+
+        gbc.gridy = 8;
         gbc.weighty = 1.0;
         gbc.anchor = GridBagConstraints.SOUTH;
         gbc.insets = new Insets(10, 20, 30, 20);
@@ -229,6 +258,12 @@ public class CategoryPanel extends JPanel {
         setActivePage(PAGE_CHAT);
         if (onNavigate != null)
             onNavigate.accept(PAGE_CHAT);
+    }
+
+    private void onCreateCafe(ActionEvent evt) {
+        setActivePage(PAGE_CREATE_CAFE);
+        if (onNavigate != null)
+            onNavigate.accept(PAGE_CREATE_CAFE);
     }
     // private void onSalary(ActionEvent evt) {
     // setActivePage(PAGE_SALARY);

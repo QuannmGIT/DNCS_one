@@ -6,18 +6,19 @@ import com.mongodb.client.model.Filters;
 import hanabi.model.Product;
 import hanabi.model.Salary;
 import hanabi.model.Staff;
+import hanabi.model.Tenant;
 import java.util.UUID;
 
 public class DatabaseInitializer {
 
     public static void initialize() {
         MongoDatabase db = MongoDBUtil.getDatabase();
-        initializeCollections(db);
-        seedData(db);
+        initializeGlobalCollections(db);
+        seedGlobalData(db);
     }
 
-    private static void initializeCollections(MongoDatabase db) {
-        for (String col : new String[]{"staff", "products", "invoices", "orders", "orders_details", "salaries", "chat_messages"}) {
+    private static void initializeGlobalCollections(MongoDatabase db) {
+        for (String col : new String[]{"tenants"}) {
             if (!collectionExists(db, col)) {
                 db.createCollection(col);
             }
@@ -31,44 +32,75 @@ public class DatabaseInitializer {
         return false;
     }
 
-    private static void seedData(MongoDatabase db) {
-        MongoCollection<Staff> staffCol = db.getCollection("staff", Staff.class);
-        if (staffCol.countDocuments(Filters.eq("role", "admin")) == 0) {
-            createAdminAccount(staffCol, db);
-        }
-
-        MongoCollection<Product> productCol = db.getCollection("products", Product.class);
-        if (productCol.countDocuments() == 0) {
-            createMockData(db);
+    private static void seedGlobalData(MongoDatabase db) {
+        MongoCollection<Tenant> tenantCol = db.getCollection("tenants", Tenant.class);
+        if (tenantCol.countDocuments() == 0) {
+            createDefaultTenant(tenantCol, db);
         }
     }
 
-    private static void createAdminAccount(MongoCollection<Staff> staffCol, MongoDatabase db) {
+    private static void createDefaultTenant(MongoCollection<Tenant> tenantCol, MongoDatabase db) {
+        UUID tenantId = UUID.randomUUID();
         String salt = PasswordUtil.generateSalt();
-        Staff admin = new Staff();
-        admin.setStaffId(UUID.randomUUID());
-        admin.setStaffName("admin");
-        admin.setFullName("System Admin");
-        admin.setPassword(salt + ":" + PasswordUtil.hash("admin", salt));
-        admin.setRole("admin");
-        admin.setStatus(true);
+        Tenant tenant = new Tenant();
+        tenant.setTenantId(tenantId);
+        tenant.setTenantName("hanabi");
+        tenant.setCafeName("HANABI CAFE");
+        tenant.setFullName("System Admin");
+        tenant.setPassword(salt + ":" + PasswordUtil.hash("admin", salt));
+        tenant.setStatus(true);
+        tenantCol.insertOne(tenant);
 
-        Salary salary = new Salary();
-        salary.setStaffId(admin.getStaffId());
-        salary.setBaseSalary(0.0);
-        salary.setCommissionRate(0.0);
-
-        staffCol.insertOne(admin);
-        db.getCollection("salaries", Salary.class).insertOne(salary);
-        System.out.println("DatabaseInitializer: default admin account created (admin/admin)");
+        UUID oldTenantId = TenantContext.getCurrentTenantId();
+        TenantContext.setCurrentTenantId(tenantId);
+        try {
+            initializeTenantCollections(db, tenantId);
+            seedTenantData(db, tenantId);
+        } finally {
+            if (oldTenantId != null) {
+                TenantContext.setCurrentTenantId(oldTenantId);
+            } else {
+                TenantContext.clear();
+            }
+        }
+        System.out.println("DatabaseInitializer: default tenant created (hanabi / admin)");
     }
 
-    private static void createMockData(MongoDatabase db) {
-        MongoCollection<Staff> staffCol = db.getCollection("staff", Staff.class);
-        MongoCollection<Salary> salaryCol = db.getCollection("salaries", Salary.class);
-        MongoCollection<Product> productCol = db.getCollection("products", Product.class);
+    private static void initializeTenantCollections(MongoDatabase db, UUID tenantId) {
+        String prefix = MongoDBUtil.tenantPrefix(tenantId);
+        for (String col : new String[]{"staff", "products", "invoices", "orders", "orders_details", "salaries", "chat_messages"}) {
+            String fullName = prefix + col;
+            if (!collectionExists(db, fullName)) {
+                db.createCollection(fullName);
+            }
+        }
+    }
+
+    private static void seedTenantData(MongoDatabase db, UUID tenantId) {
+        String prefix = MongoDBUtil.tenantPrefix(tenantId);
+        MongoCollection<Staff> staffCol = db.getCollection(prefix + "staff", Staff.class);
+        MongoCollection<Salary> salaryCol = db.getCollection(prefix + "salaries", Salary.class);
+        MongoCollection<Product> productCol = db.getCollection(prefix + "products", Product.class);
+
+        if (staffCol.countDocuments(Filters.eq("role", "admin")) > 0) return;
+        if (productCol.countDocuments() > 0) return;
 
         String salt = PasswordUtil.generateSalt();
+
+        Staff adminStaff = new Staff();
+        adminStaff.setStaffId(tenantId);
+        adminStaff.setStaffName("admin");
+        adminStaff.setFullName("System Admin");
+        adminStaff.setPassword(salt + ":" + PasswordUtil.hash("admin", salt));
+        adminStaff.setRole("admin");
+        adminStaff.setStatus(true);
+        staffCol.insertOne(adminStaff);
+
+        Salary adminSalary = new Salary();
+        adminSalary.setStaffId(tenantId);
+        adminSalary.setBaseSalary(0.0);
+        adminSalary.setCommissionRate(0.0);
+        salaryCol.insertOne(adminSalary);
 
         Staff staff1 = createStaff(staffCol, "Nguyen", "Nguyen", "staff", "staff123", salt);
         Staff staff2 = createStaff(staffCol, "Dat", "Tran Dat", "staff", "staff123", salt);
@@ -103,7 +135,7 @@ public class DatabaseInitializer {
         createProduct(productCol, "Macaron (Set 3)", "Bakery", 30000.0, 12000.0, "23");
         createProduct(productCol, "Blueberry Muffin", "Bakery", 25000.0, 10000.0, "24");
 
-        System.out.println("DatabaseInitializer: Mock data created");
+        System.out.println("DatabaseInitializer: Tenant data created");
     }
 
     private static Staff createStaff(MongoCollection<Staff> col, String username, String fullName, String role, String password, String salt) {

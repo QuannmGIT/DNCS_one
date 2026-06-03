@@ -6,6 +6,8 @@ import java.awt.Color;
 
 import javax.swing.JPanel;
 
+import hanabi.Main;
+import hanabi.service.CreateTenantForm;
 
 public class DashboardView extends JPanel {
 
@@ -16,12 +18,15 @@ public class DashboardView extends JPanel {
     private static final String PANEL_REVENUE = "revenue";
     private static final String PANEL_ORDERS = "orders";
     private static final String PANEL_CHAT = "chat";
+    private static final String PANEL_CREATE_CAFE = "createCafe";
 
     private MenuItemsPanel menuItemsPanel;
     private AccountPanel accountPanel;
     private RevenuePanel revenuePanel;
     private OrdersPanel ordersPanel;
     private ChatPanel chatPanel;
+    private CreateCafePanel createCafePanel;
+    private CategoryPanel categoryPanel;
     private final JPanel centerPanel;
     private final CardLayout cardLayout;
 
@@ -34,9 +39,23 @@ public class DashboardView extends JPanel {
     }
 
     public void refreshData() {
+        if (Main.authService.isDevUser()) return;
         menuItemsPanel.loadMenuItems();
         accountPanel.loadUser();
         revenuePanel.loadData();
+    }
+
+    public void refreshSidebar() {
+        if (categoryPanel != null) {
+            categoryPanel.refreshForUser();
+        }
+        if (Main.authService.isDevUser()) {
+            cardLayout.show(centerPanel, PANEL_CREATE_CAFE);
+            createCafePanel.refresh();
+        } else {
+            cardLayout.show(centerPanel, PANEL_MENU);
+            refreshData();
+        }
     }
 
     private void init() {
@@ -50,13 +69,20 @@ public class DashboardView extends JPanel {
 
         chatPanel = new ChatPanel();
 
+        createCafePanel = new CreateCafePanel(() -> {
+            CreateTenantForm.show(() -> {
+                createCafePanel.refresh();
+            });
+        });
+
         centerPanel.add(menuItemsPanel, PANEL_MENU);
         centerPanel.add(accountPanel, PANEL_ACCOUNTS);
         centerPanel.add(revenuePanel, PANEL_REVENUE);
         centerPanel.add(ordersPanel, PANEL_ORDERS);
         centerPanel.add(chatPanel, PANEL_CHAT);
+        centerPanel.add(createCafePanel, PANEL_CREATE_CAFE);
 
-        CategoryPanel categoryPanel = new CategoryPanel(page -> {
+        categoryPanel = new CategoryPanel(page -> {
             String target;
             switch (page) {
                 case CategoryPanel.PAGE_MENU_ITEMS:
@@ -79,12 +105,15 @@ public class DashboardView extends JPanel {
                     target = PANEL_CHAT;
                     chatPanel.loadContacts();
                     break;
+                case CategoryPanel.PAGE_CREATE_CAFE:
+                    target = PANEL_CREATE_CAFE;
+                    createCafePanel.refresh();
+                    break;
                 default:
                     return;
             }
             cardLayout.show(centerPanel, target);
         });
-        categoryPanel.setActivePage(CategoryPanel.PAGE_MENU_ITEMS);
 
         JPanel content = new JPanel(new BorderLayout());
         content.setBackground(LIGHT_BG);

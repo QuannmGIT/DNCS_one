@@ -7,6 +7,7 @@ import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import hanabi.model.*;
+import java.util.UUID;
 import org.bson.UuidRepresentation;
 import org.bson.codecs.configuration.CodecRegistries;
 import org.bson.codecs.configuration.CodecRegistry;
@@ -39,11 +40,23 @@ public class MongoDBUtil {
     }
 
     public static <T> MongoCollection<T> getCollection(String name, Class<T> clazz) {
+        UUID tenantId = TenantContext.getCurrentTenantId();
+        if (tenantId != null) {
+            return database.getCollection(tenantPrefix(tenantId) + name, clazz);
+        }
         return database.getCollection(name, clazz);
     }
 
     public static MongoCollection<org.bson.Document> getCollection(String name) {
+        UUID tenantId = TenantContext.getCurrentTenantId();
+        if (tenantId != null) {
+            return database.getCollection(tenantPrefix(tenantId) + name);
+        }
         return database.getCollection(name);
+    }
+
+    public static String tenantPrefix(UUID tenantId) {
+        return tenantId.toString().replace("-", "_") + "_";
     }
 
     public static void shutdown() {

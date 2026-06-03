@@ -35,7 +35,7 @@ public class Banner extends JPanel {
 
     private void initComponents() {
         JPanel textPanel = new JPanel();
-        lblMainTitle = new JLabel("HANABI CAFE");
+        lblMainTitle = new JLabel("HANABI CAFE SYSTEM");
         lblSlogan = new JLabel("FIND THE PERFECT COFFEE");
         Color textColor = new Color(54, 38, 28);
         // txtLabel1 = new JLabel("Những bậc thầy về cà phê của chúng tôi đã đúc kết

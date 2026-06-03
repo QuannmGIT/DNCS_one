@@ -51,24 +51,35 @@ public class LoginPanel extends JPanel {
                 loginImageLabel = new JLabel();
                 titleLabel = new JLabel("Please login to access the Dashboard");
                 welcomeTitle = new JLabel("Welcome to Cafe Management system!");
-                accountLabel = new JLabel("Account");
+                tenantLabel = new JLabel("Cafe / Tenant *");
+                tenantTextField = new JTextField();
+                accountLabel = new JLabel("Account *");
                 accountTextField = new JTextField();
-                passwordLabel = new JLabel("Password");
+                passwordLabel = new JLabel("Password *");
                 passwordTextField = new JPasswordField();
                 LoginButt = new JButton("Login");
                 LoginButt.addActionListener(this::LoginButtActionPerformed);
+                devModeBtn = new JButton("<html><a href=\"#\">Dev Mode</a></html>");
+                devModeBtn.setContentAreaFilled(false);
+                devModeBtn.setCursor(new Cursor(Cursor.HAND_CURSOR));
+                devModeBtn.setBorder(null);
+                devModeBtn.addActionListener(e -> toggleDevMode());
+                isDevMode = false;
         }
 
         private void initLayout() {
                 add(loginImageLabel, "center, gapbottom 12");
                 add(titleLabel, "center, gapbottom 4");
                 add(welcomeTitle, "center, gapbottom 24");
+                add(tenantLabel, "gapy 8");
+                add(tenantTextField, "h 38!, w 350!");
                 add(accountLabel, "gapy 8");
                 add(accountTextField, "h 38!, w 350!");
                 add(passwordLabel, "gapy 8");
                 add(passwordTextField, "h 38!, w 350!");
                 add(createUserAgreement(), "center");
-                add(LoginButt, "h 42!, w 350!, gapy 8 25, center");
+                add(LoginButt, "h 42!, w 350!, gapy 8 5, center");
+                add(devModeBtn, "center, gapy 0 10");
         }
 
         private void applyCustomStyles() {
@@ -77,6 +88,8 @@ public class LoginPanel extends JPanel {
                 titleLabel.setForeground(Color.decode("#9E9E9E"));
                 welcomeTitle.setFont(new Font("Segoe UI", Font.BOLD, 16));
                 welcomeTitle.setForeground(Color.decode("#212121"));
+                tenantLabel.setFont(new Font("Segoe UI", Font.BOLD, 13));
+                tenantLabel.setForeground(Color.decode("#424242"));
                 accountLabel.setFont(new Font("Segoe UI", Font.BOLD, 13));
                 accountLabel.setForeground(Color.decode("#424242"));
                 passwordLabel.setFont(new Font("Segoe UI", Font.BOLD, 13));
@@ -97,6 +110,8 @@ public class LoginPanel extends JPanel {
                         loginImageLabel.setText("👤");
                         loginImageLabel.setFont(new Font("Segoe UI", Font.PLAIN, 48));
                 }
+
+                devModeBtn.setFont(new Font("Segoe UI", Font.PLAIN, 12));
 
                 // load icon checkbox
                 try {
@@ -123,6 +138,14 @@ public class LoginPanel extends JPanel {
         }
 
         private void addProps() {
+                tenantTextField.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT,
+                                "Your cafe name");
+                tenantTextField.putClientProperty(FlatClientProperties.STYLE, "" +
+                                "arc:10;" +
+                                "borderWidth:1;" +
+                                "borderColor:#E0E0E0;" +
+                                "focusWidth:1;" +
+                                "innerFocusWidth:0");
                 accountTextField.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT,
                                 "Please fill username or email");
                 accountTextField.putClientProperty(FlatClientProperties.STYLE, "" +
@@ -235,12 +258,73 @@ public class LoginPanel extends JPanel {
                 return popUp;
         }
 
+        private void toggleDevMode() {
+                isDevMode = !isDevMode;
+                if (isDevMode) {
+                        tenantLabel.setVisible(false);
+                        tenantTextField.setVisible(false);
+                        accountLabel.setText("Dev Account");
+                        accountTextField.setText("");
+                        accountTextField.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT,
+                                        "Enter your Dev account");
+                        passwordTextField.setText("");
+                        passwordTextField.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT,
+                                        "Enter your password");
+                        LoginButt.setText("Login as Developer");
+                        devModeBtn.setText("<html><a href=\"#\">User Mode</a></html>");
+                } else {
+                        tenantLabel.setVisible(true);
+                        tenantTextField.setVisible(true);
+                        tenantTextField.setText("");
+                        accountLabel.setText("Account *");
+                        accountTextField.setText("");
+                        accountTextField.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT,
+                                        "Please fill your account");
+                        accountTextField.setEditable(true);
+                        passwordTextField.setText("");
+                        LoginButt.setText("Login");
+                        devModeBtn.setText("<html><a href=\"#\">Dev Mode</a></html>");
+                }
+        }
+
         private void LoginButtActionPerformed(java.awt.event.ActionEvent evt) {
+                if (isDevMode) {
+                        String username = accountTextField.getText().trim();
+                        String pass = new String(passwordTextField.getPassword()).trim();
+
+                        if (username.isEmpty() || pass.isEmpty()) {
+                                Notifications.getInstance().show(Notifications.Type.ERROR,
+                                                Notifications.Location.TOP_CENTER,
+                                                "Please fill all fields!");
+                                return;
+                        }
+
+                        if (!"dev".equals(username) || !"dev123".equals(pass)) {
+                                Notifications.getInstance().show(Notifications.Type.ERROR,
+                                                Notifications.Location.TOP_CENTER,
+                                                "Invalid dev account or password!");
+                                return;
+                        }
+
+                        AuthService auth = Main.authService;
+                        Optional<User> result = auth.devLogin();
+                        if (result.isPresent()) {
+                                Main.login();
+                        } else {
+                                Notifications.getInstance().show(Notifications.Type.ERROR,
+                                                Notifications.Location.TOP_CENTER,
+                                                "Dev login failed!");
+                        }
+                        return;
+                }
+
+                String tenant = tenantTextField.getText().trim();
                 String username = accountTextField.getText().trim();
                 String pass = new String(passwordTextField.getPassword()).trim();
 
-                if (username.isEmpty() || pass.isEmpty()) {
-                        Notifications.getInstance().show(Notifications.Type.ERROR, Notifications.Location.TOP_CENTER , "Please fill all fields!");                                        
+                if (tenant.isEmpty() || username.isEmpty() || pass.isEmpty()) {
+                        Notifications.getInstance().show(Notifications.Type.ERROR, Notifications.Location.TOP_CENTER,
+                                        "Please fill all fields!");
                         return;
                 }
 
@@ -251,19 +335,20 @@ public class LoginPanel extends JPanel {
                 }
 
                 AuthService auth = Main.authService;
-                Optional<User> result = auth.login(username, pass);
+                Optional<User> result = auth.login(tenant, username, pass);
                 if (result.isPresent()) {
                         Main.login();
                 } else {
                         Notifications.getInstance().show(Notifications.Type.ERROR, Notifications.Location.TOP_CENTER,
-                                        "Invalid username or password!");
+                                        "Invalid tenant, username or password!");
                 }
         }
 
         private JFrame loginFrame;
-        private JLabel accountLabel, loginImageLabel, passwordLabel, titleLabel, welcomeTitle;
-        private JTextField accountTextField;
-        private JButton LoginButt;
+        private JLabel accountLabel, loginImageLabel, passwordLabel, titleLabel, welcomeTitle, tenantLabel;
+        private JTextField accountTextField, tenantTextField;
+        private JButton LoginButt, devModeBtn;
         private JCheckBox UACCheckBox;
         private JPasswordField passwordTextField;
+        private boolean isDevMode;
 }

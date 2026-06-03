@@ -14,6 +14,7 @@ import hanabi.view.Auth.Banner;
 import hanabi.view.Auth.LoginPanel;
 import hanabi.view.ui.DashboardView;
 import hanabi.service.AuthService;
+import hanabi.util.TenantContext;
 
 public class Main extends JFrame {
     private static Main app;
@@ -67,9 +68,10 @@ public class Main extends JFrame {
 
     public static void login() {
         FlatAnimatedLafChange.showSnapshot();
+        app.Dash.refreshSidebar();
         app.Dash.refreshData();
         app.setContentPane(app.Dash);
-        app.setTitle("HANABI CAFE");
+        app.setTitle(authService.isDevUser() ? "HANABI CAFE - Developer Mode" : "HANABI CAFE");
         app.setExtendedState(JFrame.MAXIMIZED_BOTH);
         app.Dash.applyComponentOrientation(app.getComponentOrientation());
         SwingUtilities.updateComponentTreeUI(app.Dash);
