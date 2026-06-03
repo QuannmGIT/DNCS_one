@@ -15,6 +15,7 @@ public class HibernateUtil {
 
     private static SessionFactory buildSessionFactory() {
         try {
+            LaragonManager.ensureMySQLRunning();
             DBInitializer.initialize();
             TableDBInitializer.initialize();
 
