@@ -103,10 +103,9 @@ public class CategoryPanel extends JPanel {
         buttonMenuItems.addActionListener(this::onMenuItems);
         buttonAccounts.addActionListener(this::onAccounts);
         buttonRevenue.addActionListener(this::onRevenue);
+        buttonOrders.addActionListener(this::onOrders);
         buttonChat.addActionListener(this::onChat);
         // buttonSalary.addActionListener(this::onSalary);
-
-        buttonOrders.addActionListener(this::onOrders);
 
         setActivePage(PAGE_MENU_ITEMS);
 
@@ -155,6 +154,7 @@ public class CategoryPanel extends JPanel {
         gbc.gridy = 6;
         add(buttonChat, gbc);
 
+        gbc.gridy = 7;
         gbc.weighty = 1.0;
         gbc.anchor = GridBagConstraints.SOUTH;
         gbc.insets = new Insets(10, 20, 30, 20);

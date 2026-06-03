@@ -26,7 +26,7 @@ public class LaragonManager {
     private static final int RETRY_DELAY_MS = 2000;
 
     private static final String INSTALLER_URL =
-        "https://github.com/leokhoa/laragon/releases/latest/download/laragon.exe";
+        "https://github.com/leokhoa/laragon/releases/latest/download/laragon-wamp.exe";
 
     private static String laragonPath = null;
 
