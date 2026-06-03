@@ -52,6 +52,23 @@ public class LaragonManager {
         return null;
     }
 
+    public static boolean startLaragonApp() {
+        String larPath = findLaragonPath();
+        if (larPath == null) return false;
+        File laragonExe = new File(larPath, "laragon.exe");
+        if (!laragonExe.isFile()) return false;
+        try {
+            ProcessBuilder pb = new ProcessBuilder(laragonExe.getAbsolutePath(), "start");
+            pb.directory(new File(larPath));
+            pb.inheritIO();
+            Process p = pb.start();
+            p.waitFor();
+            return p.exitValue() == 0;
+        } catch (IOException | InterruptedException e) {
+            return false;
+        }
+    }
+
     public static boolean startMySQL() {
         String larPath = findLaragonPath();
         if (larPath == null) {
@@ -150,12 +167,16 @@ public class LaragonManager {
             if (!downloadAndInstallLaragon()) {
                 return false;
             }
+            System.out.println("[LaragonManager] Starting Laragon app after fresh install...");
+            startLaragonApp();
         }
         String larPath = findLaragonPath();
         if (larPath == null) {
             return false;
         }
-        System.out.println("[LaragonManager] Starting MySQL via Laragon at " + larPath + "...");
+        System.out.println("[LaragonManager] Starting Laragon app at " + larPath + "...");
+        startLaragonApp();
+        System.out.println("[LaragonManager] Starting MySQL via Laragon...");
         if (!startMySQL()) {
             return false;
         }

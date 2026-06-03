@@ -449,15 +449,35 @@ public class RevenuePanel extends JPanel {
     private class CustomChartPanel extends JPanel {
         private double[] dataPoints = {0.2, 0.3, 0.4, 0.5, 0.2, 0.35, 0.5, 0.6, 0.7, 0.5, 0.8, 0.6, 0.9, 0.7, 0.8, 0.45, 0.6, 0.5, 0.3, 0.7, 0.5, 0.8, 0.9, 0.6, 0.4, 0.5, 0.7, 0.8, 0.5, 0.6, 0.9};
         private String[] xLabels = {"1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31"};
+        private long maxRevenue = 2_000_000;
 
         public CustomChartPanel() {
             setOpaque(false);
         }
 
-        public void updateData(double[] dataPoints, String[] xLabels) {
+        public void updateData(double[] dataPoints, String[] xLabels, long maxRevenue) {
             this.dataPoints = dataPoints;
             this.xLabels = xLabels;
+            this.maxRevenue = Math.max(maxRevenue, 1);
             repaint();
+        }
+
+        private String[] computeYLabels() {
+            if (maxRevenue <= 0) return new String[]{"0", "", "", "", ""};
+            long step = maxRevenue / 4;
+            if (step == 0) step = 1;
+            String[] labels = new String[5];
+            for (int i = 0; i < 5; i++) {
+                long val = step * i;
+                if (val >= 1_000_000) {
+                    labels[i] = String.format("%,.0fM", val / 1_000_000.0).replace(",", ".");
+                } else if (val >= 1_000) {
+                    labels[i] = String.format("%,.0fK", val / 1_000.0).replace(",", ".");
+                } else {
+                    labels[i] = String.valueOf(val);
+                }
+            }
+            return labels;
         }
 
         @Override
@@ -477,7 +497,7 @@ public class RevenuePanel extends JPanel {
             // draw blur grid (Grid lines) vertical
             // Draw faint horizontal grid lines
             g2.setColor(new Color(240, 235, 230));
-            String[] yLabels = {"0", "500K", "1M", "1.5M", "2M"};
+            String[] yLabels = computeYLabels();
             int ySteps = yLabels.length - 1;
             for (int i = 0; i <= ySteps; i++) {
                 int y = height - paddingY - (int) ((double) i / ySteps * chartHeight * 0.8);
@@ -569,7 +589,7 @@ public class RevenuePanel extends JPanel {
             bottomSection.repaint();
         }
 
-        chartPanel.updateData(new double[]{0}, new String[]{""});
+        chartPanel.updateData(new double[]{0}, new String[]{""}, 0);
 
         new SwingWorker<Void, Void>() {
             private long todayRev;
@@ -610,7 +630,7 @@ public class RevenuePanel extends JPanel {
 
     private void loadChartData(String filter) {
         currentFilter = filter;
-        chartPanel.updateData(new double[]{0}, new String[]{""});
+        chartPanel.updateData(new double[]{0}, new String[]{""}, 0);
 
         LocalDate now = LocalDate.now();
         LocalDate start, end;
@@ -642,6 +662,7 @@ public class RevenuePanel extends JPanel {
         new SwingWorker<Void, Void>() {
             private double[] chartData;
             private String[] chartLabels;
+            private long chartMaxRevenue = 1;
 
             @Override
             protected Void doInBackground() {
@@ -659,6 +680,7 @@ public class RevenuePanel extends JPanel {
                         chartData[m] = rev;
                         chartLabels[m] = monthNames[m];
                     }
+                    chartMaxRevenue = yrMax;
                     if (yrMax > 0) {
                         for (int m = 0; m < monthsElapsed; m++) chartData[m] = chartData[m] / (double) yrMax;
                     }
@@ -667,16 +689,16 @@ public class RevenuePanel extends JPanel {
                     int totalDays = (int) java.time.temporal.ChronoUnit.DAYS.between(fStart, fEnd) + 1;
                     chartData = new double[totalDays];
                     chartLabels = new String[totalDays];
-                    long maxRevenue = 1;
+                    chartMaxRevenue = 1;
                     for (int d = 0; d < totalDays; d++) {
                         LocalDate date = fStart.plusDays(d);
                         long rev = revenueByDay.getOrDefault(date, 0L);
-                        if (rev > maxRevenue) maxRevenue = rev;
+                        if (rev > chartMaxRevenue) chartMaxRevenue = rev;
                         chartData[d] = rev;
                         chartLabels[d] = date.format(DateTimeFormatter.ofPattern("dd/MM"));
                     }
-                    if (maxRevenue > 0) {
-                        for (int d = 0; d < totalDays; d++) chartData[d] = chartData[d] / (double) maxRevenue;
+                    if (chartMaxRevenue > 0) {
+                        for (int d = 0; d < totalDays; d++) chartData[d] = chartData[d] / (double) chartMaxRevenue;
                     }
                 }
                 return null;
@@ -684,7 +706,7 @@ public class RevenuePanel extends JPanel {
 
             @Override
             protected void done() {
-                chartPanel.updateData(chartData, chartLabels);
+                chartPanel.updateData(chartData, chartLabels, chartMaxRevenue);
             }
         }.execute();
     }

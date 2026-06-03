@@ -50,12 +50,102 @@ if (-not $LaragonBin) {
     Write-Warn "Laragon not found. Downloading and installing Laragon..."
     $installer = "$env:TEMP\laragon.exe"
     Invoke-WebRequest -Uri "https://github.com/leokhoa/laragon/releases/latest/download/laragon.exe" -OutFile $installer
-    Start-Process -FilePath $installer -ArgumentList "/silent" -Wait
+
+    Add-Type -AssemblyName System.Windows.Forms
+    Add-Type -AssemblyName System.Drawing
+
+    $form = New-Object System.Windows.Forms.Form
+    $form.Text = "HANABI CAFE - Setup"
+    $form.Size = New-Object System.Drawing.Size(420, 150)
+    $form.StartPosition = "CenterScreen"
+    $form.FormBorderStyle = "FixedDialog"
+    $form.MaximizeBox = $false
+    $form.MinimizeBox = $false
+    $form.BackColor = [System.Drawing.Color]::White
+
+    $icon = New-Object System.Windows.Forms.Label
+    $icon.Text = [char]::ConvertFromUtf32(0x1F4E6)
+    $icon.Font = New-Object System.Drawing.Font("Segoe UI Emoji", 24)
+    $icon.Location = New-Object System.Drawing.Point(20, 25)
+    $icon.Size = New-Object System.Drawing.Size(50, 40)
+    $form.Controls.Add($icon)
+
+    $titleLabel = New-Object System.Windows.Forms.Label
+    $titleLabel.Text = "Installing Laragon..."
+    $titleLabel.Font = New-Object System.Drawing.Font("Segoe UI", 12, [System.Drawing.FontStyle]::Bold)
+    $titleLabel.ForeColor = [System.Drawing.Color]::FromArgb(90, 70, 61)
+    $titleLabel.Location = New-Object System.Drawing.Point(80, 15)
+    $titleLabel.Size = New-Object System.Drawing.Size(300, 25)
+    $form.Controls.Add($titleLabel)
+
+    $statusLabel = New-Object System.Windows.Forms.Label
+    $statusLabel.Text = "Please wait while Laragon is being installed."
+    $statusLabel.Font = New-Object System.Drawing.Font("Segoe UI", 9)
+    $statusLabel.ForeColor = [System.Drawing.Color]::Gray
+    $statusLabel.Location = New-Object System.Drawing.Point(80, 42)
+    $statusLabel.Size = New-Object System.Drawing.Size(300, 20)
+    $form.Controls.Add($statusLabel)
+
+    $progressBar = New-Object System.Windows.Forms.ProgressBar
+    $progressBar.Style = "Marquee"
+    $progressBar.MarqueeAnimationSpeed = 25
+    $progressBar.Location = New-Object System.Drawing.Point(20, 75)
+    $progressBar.Size = New-Object System.Drawing.Size(370, 25)
+    $form.Controls.Add($progressBar)
+
+    $process = Start-Process -FilePath $installer -ArgumentList "/silent" -PassThru
+
+    $timer = New-Object System.Windows.Forms.Timer
+    $timer.Interval = 500
+    $timer.Add_Tick({
+        if ($process.HasExited) {
+            $timer.Stop()
+            $timer.Dispose()
+            $form.Close()
+        }
+    })
+    $timer.Start()
+
+    $form.Add_Shown({ $form.Activate() })
+    [void]$form.ShowDialog()
+
+    $timer.Dispose()
+    $form.Dispose()
+
     $LaragonBin = "$env:ProgramFiles\Laragon\usr\bin"
     if (-not (Test-Path $LaragonBin)) {
         $LaragonBin = "C:\Laragon\usr\bin"
     }
+
+    # Start Laragon app after fresh install
+    $laragonExe = Resolve-Path "$LaragonBin\..\..\laragon.exe" -ErrorAction SilentlyContinue
+    if ($laragonExe) {
+        Write-Info "Starting Laragon..."
+        Start-Process -FilePath $laragonExe -WindowStyle Minimized
+        Start-Sleep -Seconds 3
+    }
+
     Write-Success "Laragon installed."
+}
+
+# ---------------------------------------------------------------
+# 1b. Start Laragon if it's already installed (not running yet)
+# ---------------------------------------------------------------
+Write-Step "1b. Enabling Laragon"
+
+$laragonExe = Resolve-Path "$LaragonBin\..\..\laragon.exe" -ErrorAction SilentlyContinue
+if ($laragonExe) {
+    $laragonRunning = Get-Process -Name "laragon" -ErrorAction SilentlyContinue
+    if (-not $laragonRunning) {
+        Write-Info "Starting Laragon application..."
+        Start-Process -FilePath $laragonExe -WindowStyle Minimized
+        Start-Sleep -Seconds 3
+        Write-Success "Laragon started."
+    } else {
+        Write-Success "Laragon is already running."
+    }
+} else {
+    Write-Warn "Cannot find laragon.exe. Skipping Laragon start."
 }
 
 # ---------------------------------------------------------------
@@ -63,9 +153,8 @@ if (-not $LaragonBin) {
 # ---------------------------------------------------------------
 Write-Step "2. Starting MySQL service"
 
-$laragonExe = Resolve-Path "$LaragonBin\..\..\laragon.exe" -ErrorAction SilentlyContinue
 if ($laragonExe) {
-    Start-Process -FilePath $laragonExe -ArgumentList "start mysql" -NoNewWindow -Wait
+    Start-Process -FilePath $laragonExe -ArgumentList "start mysql" -WindowStyle Hidden -Wait
     Write-Success "MySQL started via Laragon."
 } else {
     Write-Warn "Cannot find laragon.exe. Attempting to start mysqld directly..."
