@@ -566,7 +566,7 @@ public class RevenuePanel extends JPanel {
         }
     }
 
-    private String fmtRevenue(long v) {
+    private String formatRevenue(long v) {
         if (v >= 1_000_000) {
             return String.format("%,.0fMđ", v / 1_000_000.0).replace(",", ".");
         }
@@ -610,7 +610,7 @@ public class RevenuePanel extends JPanel {
 
             @Override
             protected void done() {
-                todayValue.setText(fmtRevenue(todayRev));
+                todayValue.setText(formatRevenue(todayRev));
                 ordersValue.setText(String.valueOf(totalOrders));
                 productValue.setText(best.isEmpty() ? "..." : best);
 
@@ -752,7 +752,7 @@ public class RevenuePanel extends JPanel {
             row.add(new JLabel("#" + o.getOrderId().toString().substring(0, 8)));
             row.add(new JLabel(o.getOrderDate() != null ? o.getOrderDate().format(DateTimeFormatter.ofPattern("dd/MM")) : ""));
             row.add(new JLabel(o.getOrderDate() != null ? o.getOrderDate().format(DateTimeFormatter.ofPattern("EEE")) : ""));
-            row.add(new JLabel(o.getTotal() != null ? fmtRevenue(o.getTotal()) : "0đ"));
+            row.add(new JLabel(o.getTotal() != null ? formatRevenue(o.getTotal()) : "0đ"));
             for (java.awt.Component c : row.getComponents()) {
                 ((JLabel) c).setFont(new Font("Segoe UI", Font.PLAIN, 13));
                 ((JLabel) c).setForeground(DARK_BROWN);

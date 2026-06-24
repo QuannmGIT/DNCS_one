@@ -26,7 +26,7 @@ public class SalaryDAO extends BaseDAO<Salary> {
         List<Object[]> result = new ArrayList<>();
 
         for (Staff s : allStaff) {
-            Salary sa = salaryCol.find(Filters.eq("staffId", s.getStaffId())).first();
+            Salary sa = salaryCol.find(Filters.eq("_id", s.getStaffId())).first();
             result.add(new Object[]{
                 s.getStaffId(),
                 s.getFullName(),
@@ -47,7 +47,7 @@ public class SalaryDAO extends BaseDAO<Salary> {
         List<Object[]> result = new ArrayList<>();
 
         for (Staff s : allStaff) {
-            Salary sa = salaryCol.find(Filters.eq("staffId", s.getStaffId())).first();
+            Salary sa = salaryCol.find(Filters.eq("_id", s.getStaffId())).first();
 
             List<Document> invoiceAgg = invoiceCol.aggregate(List.of(
                     Aggregates.match(Filters.and(

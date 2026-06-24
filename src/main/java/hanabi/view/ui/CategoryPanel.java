@@ -72,7 +72,7 @@ public class CategoryPanel extends JPanel {
             buttons = new JButton[]{ buttonMenuItems, buttonAccounts, buttonRevenue, buttonOrders, buttonChat };
         }
         for (int i = 0; i < buttons.length; i++) {
-            applyButtonAppearance(buttons[i], i == 0);
+            applyButtonAppearance(buttons[i], page == i);
         }
     }
 

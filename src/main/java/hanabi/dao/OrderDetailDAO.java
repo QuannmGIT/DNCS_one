@@ -7,6 +7,8 @@ import com.mongodb.client.model.Sorts;
 import hanabi.model.OrderDetail;
 import hanabi.model.Product;
 import hanabi.util.MongoDBUtil;
+import hanabi.util.TenantContext;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -25,8 +27,11 @@ public class OrderDetailDAO extends BaseDAO<OrderDetail> {
     }
 
     public List<Object[]> findTopSelling(int limit) {
+        UUID tenantId = TenantContext.getCurrentTenantId();
+        String p = tenantId != null ? MongoDBUtil.tenantPrefix(tenantId) : "";
+       
         List<Document> results = getCollection().withDocumentClass(Document.class).aggregate(List.of(
-                Aggregates.lookup("products", "productId", "productId", "product"),
+                Aggregates.lookup(p + "products", "productId", "_id", "product"),
                 Aggregates.unwind("$product"),
                 Aggregates.group("$product.productName", Accumulators.sum("totalQty", "$quantity")),
                 Aggregates.sort(Sorts.descending("totalQty")),
@@ -44,12 +49,15 @@ public class OrderDetailDAO extends BaseDAO<OrderDetail> {
     }
 
     public List<Object[]> findInvoiceDetails(UUID invoiceId) {
+        UUID tenantId = TenantContext.getCurrentTenantId();
+        String p = tenantId != null ? MongoDBUtil.tenantPrefix(tenantId) : "";
+        
         List<Document> results = MongoDBUtil.getCollection("orders").withDocumentClass(Document.class)
                 .aggregate(List.of(
                         Aggregates.match(Filters.eq("invoiceId", invoiceId)),
-                        Aggregates.lookup("orders_details", "orderId", "orderId", "details"),
+                        Aggregates.lookup(p + "orders_details", "_id", "orderId", "details"),
                         Aggregates.unwind("$details"),
-                        Aggregates.lookup("products", "details.productId", "productId", "product"),
+                        Aggregates.lookup(p + "products", "details.productId", "_id", "product"),
                         Aggregates.unwind("$product"),
                         Aggregates.project(
                                 com.mongodb.client.model.Projections.fields(
@@ -68,8 +76,8 @@ public class OrderDetailDAO extends BaseDAO<OrderDetail> {
             Document det = doc.get("details", Document.class);
             String productName = product != null ? product.getString("productName") : "N/A";
             int qty = det != null ? det.getInteger("quantity", 0) : 0;
-            double price = product != null ? product.getDouble("price") : 0.0;
-            double subtotal = qty * price;
+            double price = doc.getDouble("price") != null ? doc.getDouble("price") : 0.0;
+            double subtotal = doc.getDouble("subtotal") != null ? doc.getDouble("subtotal") : 0.0;
             details.add(new Object[]{productName, qty, price, subtotal});
         }
         return details;

@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RDM — DNCS_one-mongoDB</title>
+<script>
+(function(){
+  var theme = localStorage.getItem('theme');
+  if (!theme) {
+    theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  }
+  if (theme === 'dark') document.documentElement.classList.add('dark');
+})();
+</script>
+<style>
+:root {
+  --bg: #f8f9fa;
+  --surface: #ffffff;
+  --surface2: #f1f3f5;
+  --border: #dee2e6;
+  --text: #212529;
+  --text2: #495057;
+  --text3: #868e96;
+  --accent: #4263eb;
+  --accent2: #dbe4ff;
+  --green: #2b8a3e;
+  --green-bg: #d3f9d8;
+  --orange: #e8590c;
+  --orange-bg: #fff3e0;
+  --purple: #7048e8;
+  --purple-bg: #e5dbff;
+  --red: #c92a2a;
+  --red-bg: #ffe0e0;
+  --teal: #0c8599;
+  --teal-bg: #c5f6fa;
+  --pink: #c2255c;
+  --pink-bg: #fcc2d7;
+  --indigo: #364fc7;
+  --indigo-bg: #dbe4ff;
+  --gray: #495057;
+  --gray-bg: #e9ecef;
+  --radius: 10px;
+  --shadow: 0 1px 3px rgba(0,0,0,.08);
+  --font: 'Segoe UI','SF Pro Text',system-ui,sans-serif;
+  --mono: 'Cascadia Code','JetBrains Mono','Fira Code',monospace;
+}
+html.dark {
+  --bg: #1a1b1e;
+  --surface: #25262b;
+  --surface2: #2c2e33;
+  --border: #373a40;
+  --text: #e9ecef;
+  --text2: #adb5bd;
+  --text3: #6c757d;
+  --accent: #5c7cfa;
+  --accent2: #25262b;
+  --green-bg: #1e3a2a;
+  --orange-bg: #3d2a1a;
+  --purple-bg: #2a1e3d;
+  --red-bg: #3d1a1a;
+  --teal-bg: #1a2e33;
+  --pink-bg: #3d1a2e;
+  --indigo-bg: #1e223d;
+  --gray-bg: #2c2e33;
+  --shadow: 0 1px 3px rgba(0,0,0,.3);
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family:var(--font);
+  background:var(--bg);
+  color:var(--text);
+  line-height:1.5;
+  padding:0;
+}
+.theme-toggle {
+  position:fixed;
+  top:16px;
+  right:16px;
+  z-index:100;
+  width:36px;
+  height:36px;
+  border-radius:8px;
+  border:1px solid var(--border);
+  background:var(--surface);
+  color:var(--text2);
+  cursor:pointer;
+  font-size:16px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  box-shadow:var(--shadow);
+  transition:.15s;
+}
+.theme-toggle:hover { background:var(--surface2); }
+.theme-toggle:active { transform:scale(.95); }
+
+.container { max-width:1280px; margin:0 auto; padding:24px 20px 60px; }
+
+/* header */
+.header {
+  margin-bottom:32px;
+  padding-bottom:24px;
+  border-bottom:1px solid var(--border);
+}
+.header h1 {
+  font-size:28px;
+  font-weight:700;
+  letter-spacing:-.3px;
+}
+.header .sub {
+  display:flex;
+  gap:12px;
+  flex-wrap:wrap;
+  margin-top:6px;
+  color:var(--text3);
+  font-size:14px;
+}
+.header .sub span { background:var(--surface2); padding:2px 10px; border-radius:20px; border:1px solid var(--border); }
+
+/* legend */
+.legend {
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  margin-bottom:28px;
+}
+.legend-item {
+  font-size:12px;
+  padding:4px 10px;
+  border-radius:6px;
+  border:1px solid var(--border);
+  background:var(--surface);
+  color:var(--text2);
+  display:flex;
+  align-items:center;
+  gap:6px;
+}
+.legend-dot {
+  width:10px;
+  height:10px;
+  border-radius:50%;
+  display:inline-block;
+}
+
+/* collection grid */
+.collections {
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(320px,1fr));
+  gap:16px;
+  margin-bottom:36px;
+}
+.card {
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  box-shadow:var(--shadow);
+  overflow:hidden;
+  transition:box-shadow .15s;
+}
+.card:hover { box-shadow:0 4px 12px rgba(0,0,0,.12); }
+.card-header {
+  padding:12px 16px;
+  font-weight:600;
+  font-size:15px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  border-bottom:1px solid var(--border);
+  cursor:default;
+}
+.card-header .badge {
+  font-size:10px;
+  font-weight:600;
+  padding:2px 8px;
+  border-radius:20px;
+  background:var(--accent2);
+  color:var(--accent);
+  letter-spacing:.3px;
+}
+.card-body { padding:8px 0; }
+
+/* field rows */
+.field {
+  display:grid;
+  grid-template-columns:1fr auto auto;
+  gap:8px;
+  padding:6px 16px;
+  font-size:13px;
+  align-items:start;
+  transition:background .1s;
+}
+.field:hover { background:var(--surface2); }
+.field-name {
+  font-weight:500;
+  font-family:var(--mono);
+  font-size:12.5px;
+  word-break:break-all;
+}
+.field-detail {
+  display:flex;
+  gap:4px;
+  flex-wrap:wrap;
+  justify-content:flex-end;
+}
+.field-type {
+  font-size:11px;
+  padding:1px 6px;
+  border-radius:4px;
+  background:var(--gray-bg);
+  color:var(--text2);
+  font-family:var(--mono);
+}
+.field-pk, .field-fk {
+  font-size:9px;
+  font-weight:700;
+  padding:1px 5px;
+  border-radius:3px;
+  letter-spacing:.4px;
+}
+.field-pk { background:var(--orange-bg); color:var(--orange); }
+.field-fk { background:var(--purple-bg); color:var(--purple); }
+
+/* tenant isolation banner */
+.tenant-banner {
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:20px 24px;
+  margin-bottom:28px;
+  box-shadow:var(--shadow);
+}
+.tenant-banner h2 {
+  font-size:18px;
+  margin-bottom:8px;
+}
+.tenant-banner p { color:var(--text2); font-size:14px; line-height:1.7; }
+.tenant-banner code {
+  background:var(--surface2);
+  padding:2px 8px;
+  border-radius:4px;
+  font-family:var(--mono);
+  font-size:12px;
+}
+
+/* relationship section */
+.relations {
+  margin-top:8px;
+}
+.relations h3 {
+  font-size:16px;
+  margin-bottom:14px;
+  color:var(--text);
+}
+.rel-grid {
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(280px,1fr));
+  gap:10px;
+}
+.rel-card {
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:8px;
+  padding:12px 16px;
+  font-size:13px;
+  box-shadow:var(--shadow);
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+.rel-card .arrow {
+  color:var(--text3);
+  font-size:16px;
+  flex-shrink:0;
+}
+.rel-card .from, .rel-card .to {
+  font-family:var(--mono);
+  font-size:12px;
+  font-weight:500;
+}
+.rel-card .type {
+  font-size:11px;
+  color:var(--text3);
+  margin-top:2px;
+}
+
+/* scope tag */
+.scope-global { background:var(--teal-bg); color:var(--teal); }
+.scope-tenant { background:var(--gray-bg); color:var(--gray); }
+.badge.scope-global, .badge.scope-tenant { font-size:9px; padding:2px 8px; border-radius:20px; }
+
+.footer {
+  margin-top:40px;
+  padding-top:16px;
+  border-top:1px solid var(--border);
+  text-align:center;
+  font-size:12px;
+  color:var(--text3);
+}
+
+/* responsive */
+@media(max-width:640px){
+  .collections { grid-template-columns:1fr; }
+  .rel-grid { grid-template-columns:1fr; }
+  .header h1 { font-size:22px; }
+  .field { grid-template-columns:1fr; gap:2px; }
+  .field-detail { justify-content:flex-start; }
+}
+</style>
+</head>
+<body>
+
+<button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">🌙</button>
+
+<div class="container">
+
+<div class="header">
+  <h1>RDM — DNCS_one-mongoDB</h1>
+  <div class="sub">
+    <span>MongoDB</span>
+    <span>Multi-Tenant</span>
+    <span>8 Collections</span>
+    <span>Java / Swing</span>
+  </div>
+</div>
+
+<div class="legend">
+  <span class="legend-item"><span class="legend-dot" style="background:var(--orange)"></span> Primary Key</span>
+  <span class="legend-item"><span class="legend-dot" style="background:var(--purple)"></span> Foreign Key</span>
+  <span class="legend-item"><span class="legend-dot" style="background:var(--teal)"></span> Global</span>
+  <span class="legend-item"><span class="legend-dot" style="background:var(--gray)"></span> Tenant-Scoped</span>
+</div>
+
+<div class="tenant-banner">
+  <h2>Multi-Tenant Architecture</h2>
+  <p>
+    Each cafe tenant gets a UUID. All tenant-scoped collections are prefixed 
+    <code>&lt;uuid&gt;_&lt;collection&gt;</code> (e.g. <code>550e8400_e29b_staff</code>).<br>
+    The <code>tenants</code> collection is <strong>global</strong>; everything else lives under 
+    the tenant's namespace. Logical references between collections use plain UUID fields, 
+    resolved via <code>$lookup</code> aggregations or application-level joins.
+  </p>
+</div>
+
+<div class="collections">
+  <!-- tenants (global) -->
+  <div class="card">
+    <div class="card-header">
+      <span>tenants</span>
+      <span class="badge scope-global">GLOBAL</span>
+    </div>
+    <div class="card-body">
+      <div class="field"><span class="field-name">tenantId</span><div class="field-detail"><span class="field-type">UUID</span><span class="field-pk">PK</span></div></div>
+      <div class="field"><span class="field-name">tenantName</span><div class="field-detail"><span class="field-type">String</span><span class="field-fk">unique</span></div></div>
+      <div class="field"><span class="field-name">password</span><div class="field-detail"><span class="field-type">String</span></div></div>
+      <div class="field"><span class="field-name">cafeName</span><div class="field-detail"><span class="field-type">String</span></div></div>
+      <div class="field"><span class="field-name">fullName</span><div class="field-detail"><span class="field-type">String</span></div></div>
+      <div class="field"><span class="field-name">email</span><div class="field-detail"><span class="field-type">String</span></div></div>
+      <div class="field"><span class="field-name">status</span><div class="field-detail"><span class="field-type">Boolean</span></div></div>
+    </div>
+  </div>
+
+  <!-- staff -->
+  <div class="card">
+    <div class="card-header">
+      <span>staff</span>
+      <span class="badge scope-tenant">TENANT</span>
+    </div>
+    <div class="card-body">
+      <div class="field"><span class="field-name">staffId</span><div class="field-detail"><span class="field-type">UUID</span><span class="field-pk">PK</span></div></div>
+      <div class="field"><span class="field-name">staffName</span><div class="field-detail"><span class="field-type">String</span><span class="field-fk">unique</span></div></div>
+      <div class="field"><span class="field-name">email</span><div class="field-detail"><span class="field-type">String</span></div></div>
+      <div class="field"><span class="field-name">password</span><div class="field-detail"><span class="field-type">String</span></div></div>
+      <div class="field"><span class="field-name">fullName</span><div class="field-detail"><span class="field-type">String</span></div></div>
+      <div class="field"><span class="field-name">role</span><div class="field-detail"><span class="field-type">String</span><span class="field-fk" style="background:var(--green-bg);color:var(--green)">admin|staff</span></div></div>
+      <div class="field"><span class="field-name">status</span><div class="field-detail"><span class="field-type">Boolean</span></div></div>
+    </div>
+  </div>
+
+  <!-- salaries -->
+  <div class="card">
+    <div class="card-header">
+      <span>salaries</span>
+      <span class="badge scope-tenant">TENANT</span>
+    </div>
+    <div class="card-body">
+      <div class="field"><span class="field-name">staffId</span><div class="field-detail"><span class="field-type">UUID</span><span class="field-pk">PK</span><span class="field-fk">FK→staff</span></div></div>
+      <div class="field"><span class="field-name">baseSalary</span><div class="field-detail"><span class="field-type">Double</span></div></div>
+      <div class="field"><span class="field-name">commissionRate</span><div class="field-detail"><span class="field-type">Double</span></div></div>
+    </div>
+  </div>
+
+  <!-- products -->
+  <div class="card">
+    <div class="card-header">
+      <span>products</span>
+      <span class="badge scope-tenant">TENANT</span>
+    </div>
+    <div class="card-body">
+      <div class="field"><span class="field-name">productId</span><div class="field-detail"><span class="field-type">UUID</span><span class="field-pk">PK</span></div></div>
+      <div class="field"><span class="field-name">productName</span><div class="field-detail"><span class="field-type">String</span><span class="field-fk">unique</span></div></div>
+      <div class="field"><span class="field-name">category</span><div class="field-detail"><span class="field-type">String</span><span class="field-fk" style="background:var(--green-bg);color:var(--green)">Hot|Iced|Bakery</span></div></div>
+      <div class="field"><span class="field-name">price</span><div class="field-detail"><span class="field-type">Double</span></div></div>
+      <div class="field"><span class="field-name">cost</span><div class="field-detail"><span class="field-type">Double</span></div></div>
+      <div class="field"><span class="field-name">image</span><div class="field-detail"><span class="field-type">String</span></div></div>
+      <div class="field"><span class="field-name">status</span><div class="field-detail"><span class="field-type">Boolean</span></div></div>
+    </div>
+  </div>
+
+  <!-- invoices -->
+  <div class="card">
+    <div class="card-header">
+      <span>invoices</span>
+      <span class="badge scope-tenant">TENANT</span>
+    </div>
+    <div class="card-body">
+      <div class="field"><span class="field-name">invoiceId</span><div class="field-detail"><span class="field-type">UUID</span><span class="field-pk">PK</span></div></div>
+      <div class="field"><span class="field-name">staffId</span><div class="field-detail"><span class="field-type">UUID</span><span class="field-fk">FK→staff</span></div></div>
+      <div class="field"><span class="field-name">invoiceDate</span><div class="field-detail"><span class="field-type">LocalDate</span></div></div>
+      <div class="field"><span class="field-name">total</span><div class="field-detail"><span class="field-type">Integer</span></div></div>
+      <div class="field"><span class="field-name">status</span><div class="field-detail"><span class="field-type">Boolean</span></div></div>
+    </div>
+  </div>
+
+  <!-- orders -->
+  <div class="card">
+    <div class="card-header">
+      <span>orders</span>
+      <span class="badge scope-tenant">TENANT</span>
+    </div>
+    <div class="card-body">
+      <div class="field"><span class="field-name">orderId</span><div class="field-detail"><span class="field-type">UUID</span><span class="field-pk">PK</span></div></div>
+      <div class="field"><span class="field-name">invoiceId</span><div class="field-detail"><span class="field-type">UUID</span><span class="field-fk">FK→invoices</span></div></div>
+      <div class="field"><span class="field-name">staffId</span><div class="field-detail"><span class="field-type">UUID</span><span class="field-fk">FK→staff</span></div></div>
+      <div class="field"><span class="field-name">status</span><div class="field-detail"><span class="field-type">Boolean</span></div></div>
+      <div class="field"><span class="field-name">orderDate</span><div class="field-detail"><span class="field-type">LocalDate</span></div></div>
+      <div class="field"><span class="field-name">total</span><div class="field-detail"><span class="field-type">Integer</span></div></div>
+    </div>
+  </div>
+
+  <!-- orders_details -->
+  <div class="card">
+    <div class="card-header">
+      <span>orders_details</span>
+      <span class="badge scope-tenant">TENANT</span>
+    </div>
+    <div class="card-body">
+      <div class="field"><span class="field-name">orderId</span><div class="field-detail"><span class="field-type">UUID</span><span class="field-pk">PK</span><span class="field-fk">FK→orders</span></div></div>
+      <div class="field"><span class="field-name">productId</span><div class="field-detail"><span class="field-type">UUID</span><span class="field-pk">PK</span><span class="field-fk">FK→products</span></div></div>
+      <div class="field"><span class="field-name">quantity</span><div class="field-detail"><span class="field-type">Integer</span></div></div>
+    </div>
+  </div>
+
+  <!-- chat_messages -->
+  <div class="card">
+    <div class="card-header">
+      <span>chat_messages</span>
+      <span class="badge scope-tenant">TENANT</span>
+    </div>
+    <div class="card-body">
+      <div class="field"><span class="field-name">messageId</span><div class="field-detail"><span class="field-type">UUID</span><span class="field-pk">PK</span></div></div>
+      <div class="field"><span class="field-name">senderId</span><div class="field-detail"><span class="field-type">UUID</span><span class="field-fk">FK→staff</span></div></div>
+      <div class="field"><span class="field-name">receiverId</span><div class="field-detail"><span class="field-type">UUID</span><span class="field-fk">FK→staff</span></div></div>
+      <div class="field"><span class="field-name">content</span><div class="field-detail"><span class="field-type">String</span></div></div>
+      <div class="field"><span class="field-name">messageType</span><div class="field-detail"><span class="field-type">String</span><span class="field-fk" style="background:var(--green-bg);color:var(--green)">TEXT|FILE</span></div></div>
+      <div class="field"><span class="field-name">filePath</span><div class="field-detail"><span class="field-type">String</span></div></div>
+      <div class="field"><span class="field-name">createdAt</span><div class="field-detail"><span class="field-type">Timestamp</span></div></div>
+    </div>
+  </div>
+</div>
+
+<div class="relations">
+  <h3>Relationships</h3>
+  <div class="rel-grid">
+    <div class="rel-card"><span style="background:var(--pink-bg);color:var(--pink);padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;">1:1</span><span class="from">staff</span><span class="arrow">→</span><span class="to">salaries</span></div>
+    <div class="rel-card"><span style="background:var(--orange-bg);color:var(--orange);padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;">1:N</span><span class="from">staff</span><span class="arrow">→</span><span class="to">invoices</span></div>
+    <div class="rel-card"><span style="background:var(--orange-bg);color:var(--orange);padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;">1:N</span><span class="from">staff</span><span class="arrow">→</span><span class="to">orders</span></div>
+    <div class="rel-card"><span style="background:var(--orange-bg);color:var(--orange);padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;">1:N</span><span class="from">staff</span><span class="arrow">→</span><span class="to">chat_messages</span><div class="type">senderId / receiverId</div></div>
+    <div class="rel-card"><span style="background:var(--purple-bg);color:var(--purple);padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;">1:N</span><span class="from">invoices</span><span class="arrow">→</span><span class="to">orders</span></div>
+    <div class="rel-card"><span style="background:var(--green-bg);color:var(--green);padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;">M:N</span><span class="from">orders</span><span class="arrow">↔</span><span class="to">products</span><div class="type">via orders_details</div></div>
+    <div class="rel-card"><span style="background:var(--indigo-bg);color:var(--indigo);padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;">1:N</span><span class="from">tenants</span><span class="arrow">→</span><span class="to" style="color:var(--text3)">(all tenant collections)</span><div class="type">via prefix isolation</div></div>
+  </div>
+</div>
+
+<div class="footer">
+  DNCS_one-mongoDB — Hanabi Cafe Coffee Shop Management System
+</div>
+
+</div>
+
+<script>
+(function(){
+  var btn = document.getElementById('themeToggle');
+  var html = document.documentElement;
+  function setIcon(){
+    btn.textContent = html.classList.contains('dark') ? '\u2600\uFE0F' : '\uD83C\uDF19';
+  }
+  setIcon();
+  btn.addEventListener('click', function(){
+    html.classList.toggle('dark');
+    localStorage.setItem('theme', html.classList.contains('dark') ? 'dark' : 'light');
+    setIcon();
+  });
+})();
+</script>
+
+</body>
+</html>
