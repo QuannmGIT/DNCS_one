@@ -94,10 +94,11 @@ public class AddProductForm extends JPanel {
         cmdCreate = new JButton("Add Product") {
             @Override
             public boolean isDefaultButton() {
-                return true;
+                return false;
             }
         };
-        cmdCreate.putClientProperty(FlatClientProperties.STYLE, "foreground:#FFFFFF;");
+        cmdCreate.putClientProperty(FlatClientProperties.STYLE,
+                "background: #02a10f; arc: 20; foreground: #ffff; font: bold;");
         add(cmdCreate);
 
         cmdCreate.addActionListener(e -> submitForm());

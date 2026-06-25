@@ -43,6 +43,7 @@ public class EditProductForm extends Menu {
     private JPanel tablePanel;
     private JScrollPane scrollPane;
     private ProductTable productTable = new ProductTable();
+    private JButton btnRefresh;
     private JButton btnEdit;
     private JButton btnDelete;
     private final MenuService menuService = new MenuService();
@@ -103,6 +104,7 @@ public class EditProductForm extends Menu {
         add(tablePanel);
         JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 12, 4));
         bottomPanel.setBorder(BorderFactory.createEmptyBorder(0, 10, 10, 10));
+        bottomPanel.add(RefreshBut());
         bottomPanel.add(EditBut());
         bottomPanel.add(DeleteBut());
         add(bottomPanel, BorderLayout.SOUTH);
@@ -110,8 +112,20 @@ public class EditProductForm extends Menu {
         repaint();
     }
 
+    private Component RefreshBut() {
+        btnRefresh = new JButton("Refresh");
+        btnRefresh.putClientProperty(FlatClientProperties.STYLE,
+                "font: bold; arc: 15;");
+        btnRefresh.addActionListener(e -> {
+            productTable.refresh();
+        });
+        return btnRefresh;
+    }
+
     private Component EditBut() {
         btnEdit = new JButton("Edit Product");
+        btnEdit.putClientProperty(FlatClientProperties.STYLE,
+                "background: #0398fc; foreground: #ffff; font: bold; arc: 15;");
         btnEdit.addActionListener(e -> {
             int row = productTable.getSelectedRow();
             if (row >= 0) {
@@ -126,6 +140,8 @@ public class EditProductForm extends Menu {
 
     private Component DeleteBut() {
         btnDelete = new JButton("Delete Product");
+        btnDelete.putClientProperty(FlatClientProperties.STYLE,
+                "background: #fc0317; foreground: #ffff; font: bold; arc: 15;");
         btnDelete.addActionListener(e -> {
             int row = productTable.getSelectedRow();
             if (row < 0) {

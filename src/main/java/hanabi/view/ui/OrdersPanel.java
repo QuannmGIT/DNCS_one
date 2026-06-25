@@ -1,6 +1,8 @@
 package hanabi.view.ui;
 
 import com.formdev.flatlaf.FlatClientProperties;
+import com.formdev.flatlaf.extras.FlatSVGIcon;
+
 import hanabi.dao.InvoiceDAO;
 import hanabi.dao.OrderDAO;
 import hanabi.dao.OrderDetailDAO;
@@ -191,7 +193,7 @@ public class OrdersPanel extends JPanel {
 
         if (totalPages > 1) {
             JButton btnPrev = createPageBtn("");
-            btnPrev.setIcon(new javax.swing.ImageIcon(getClass().getResource("/hanabi/assets/icon/LeftArrow.svg")));
+            btnPrev.setIcon(new FlatSVGIcon("hanabi/assets/icon/LeftArrow.svg"));
             btnPrev.setEnabled(currentPage > 1);
             btnPrev.addActionListener(e -> {
                 if (currentPage > 1) {
@@ -239,7 +241,7 @@ public class OrdersPanel extends JPanel {
             }
 
             JButton btnNext = createPageBtn("");
-            btnNext.setIcon(new javax.swing.ImageIcon(getClass().getResource("/hanabi/assets/icon/RightArrow.svg")));
+            btnNext.setIcon(new FlatSVGIcon("hanabi/assets/icon/RightArrow.svg"));
             btnNext.setEnabled(currentPage < totalPages);
             btnNext.addActionListener(e -> {
                 if (currentPage < totalPages) {

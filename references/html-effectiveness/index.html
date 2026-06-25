@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hanabi Cafe — System Visualization</title>
+<script>
+(function(){
+  var theme = localStorage.getItem('theme');
+  if (!theme) {
+    theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  }
+  if (theme === 'dark') document.documentElement.classList.add('dark');
+})();
+</script>
+<style>
+:root {
+  --bg: #f4f5f7;
+  --surface: #ffffff;
+  --surface2: #eef0f2;
+  --surface3: #e2e5e9;
+  --border: #d0d4da;
+  --text: #1a1c20;
+  --text2: #4a4e57;
+  --text3: #8a8f99;
+  --accent: #4361ee;
+  --accent2: #dce3ff;
+  --accent-dim: #3b52d4;
+  --green: #2d8a4e;
+  --green-bg: #d8f5e6;
+  --orange: #d95f0e;
+  --orange-bg: #fef0e0;
+  --purple: #7c3aed;
+  --purple-bg: #ede5ff;
+  --red: #d63939;
+  --red-bg: #fce8e8;
+  --teal: #0f8b9d;
+  --teal-bg: #d4f4f8;
+  --pink: #c2255c;
+  --pink-bg: #fce4ee;
+  --indigo: #3a57d0;
+  --indigo-bg: #e0e6ff;
+  --amber: #b8860b;
+  --amber-bg: #fef7e0;
+  --cyan: #0b8a8f;
+  --cyan-bg: #d6f6f8;
+  --radius: 10px;
+  --radius-sm: 7px;
+  --shadow: 0 1px 3px rgba(0,0,0,.07);
+  --shadow-md: 0 4px 14px rgba(0,0,0,.08);
+  --font: 'Segoe UI','SF Pro Text',system-ui,-apple-system,sans-serif;
+  --mono: 'Cascadia Code','JetBrains Mono','Fira Code','Consolas',monospace;
+}
+html.dark {
+  --bg: #131416;
+  --surface: #1c1e22;
+  --surface2: #24272c;
+  --surface3: #2d3036;
+  --border: #353940;
+  --text: #e2e5ea;
+  --text2: #9ba0a9;
+  --text3: #646a75;
+  --accent: #6b87f5;
+  --accent2: #262b3d;
+  --accent-dim: #4f6ade;
+  --green: #44b86a;
+  --green-bg: #1d3528;
+  --orange: #e06f23;
+  --orange-bg: #38271a;
+  --purple: #a16df5;
+  --purple-bg: #2a1f3d;
+  --red: #e05555;
+  --red-bg: #381e1e;
+  --teal: #28b5c9;
+  --teal-bg: #1a2e33;
+  --pink: #d44a7a;
+  --pink-bg: #351f2b;
+  --indigo: #6b87f5;
+  --indigo-bg: #1e223d;
+  --amber: #c99f2e;
+  --amber-bg: #332a18;
+  --cyan: #28bcc2;
+  --cyan-bg: #1a2f30;
+  --shadow: 0 1px 3px rgba(0,0,0,.3);
+  --shadow-md: 0 4px 14px rgba(0,0,0,.35);
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family:var(--font);
+  background:var(--bg);
+  color:var(--text);
+  line-height:1.55;
+}
+.theme-toggle {
+  position:fixed; top:16px; right:16px; z-index:100;
+  width:36px; height:36px; border-radius:8px;
+  border:1px solid var(--border); background:var(--surface);
+  color:var(--text2); cursor:pointer; font-size:16px;
+  display:flex; align-items:center; justify-content:center;
+  box-shadow:var(--shadow); transition:.15s;
+}
+.theme-toggle:hover { background:var(--surface2); }
+.theme-toggle:active { transform:scale(.95); }
+
+.container { max-width:1320px; margin:0 auto; padding:28px 24px 60px; }
+
+/* header */
+.header {
+  margin-bottom:36px; padding-bottom:24px;
+  border-bottom:1px solid var(--border);
+  display:flex; align-items:flex-start; justify-content:space-between; flex-wrap:wrap; gap:12px;
+}
+.header-left h1 {
+  font-size:30px; font-weight:700; letter-spacing:-.4px;
+}
+.header-left .sub {
+  display:flex; gap:10px; flex-wrap:wrap; margin-top:6px; color:var(--text3); font-size:13px;
+}
+.header-left .sub span {
+  background:var(--surface2); padding:3px 12px; border-radius:20px; border:1px solid var(--border);
+}
+.header-badge {
+  display:flex; gap:8px; flex-wrap:wrap;
+}
+.badge {
+  font-size:11px; font-weight:600; padding:4px 12px; border-radius:20px;
+  letter-spacing:.2px; white-space:nowrap;
+}
+.badge-gray { background:var(--surface2); color:var(--text2); border:1px solid var(--border); }
+.badge-accent { background:var(--accent2); color:var(--accent); border:1px solid transparent; }
+.badge-green { background:var(--green-bg); color:var(--green); border:1px solid transparent; }
+.badge-orange { background:var(--orange-bg); color:var(--orange); border:1px solid transparent; }
+.badge-purple { background:var(--purple-bg); color:var(--purple); border:1px solid transparent; }
+.badge-teal { background:var(--teal-bg); color:var(--teal); border:1px solid transparent; }
+.badge-pink { background:var(--pink-bg); color:var(--pink); border:1px solid transparent; }
+
+/* sections */
+.section { margin-bottom:40px; }
+.section-title {
+  font-size:20px; font-weight:600; margin-bottom:18px;
+  display:flex; align-items:center; gap:10px;
+}
+.section-title::after {
+  content:''; flex:1; height:1px; background:var(--border);
+}
+
+/* architecture diagram */
+.arch-grid {
+  display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
+  gap:12px; margin-bottom:16px;
+}
+.arch-layer {
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:var(--radius); padding:16px;
+  text-align:center; box-shadow:var(--shadow);
+  transition:transform .12s, box-shadow .12s;
+}
+.arch-layer:hover { transform:translateY(-2px); box-shadow:var(--shadow-md); }
+.arch-layer .layer-icon {
+  font-size:22px; margin-bottom:6px;
+}
+.arch-layer .layer-name {
+  font-weight:600; font-size:13px; margin-bottom:4px;
+}
+.arch-layer .layer-desc {
+  font-size:11px; color:var(--text3); line-height:1.4;
+}
+.arch-layer.entry { border-top:3px solid var(--teal); }
+.arch-layer.ui { border-top:3px solid var(--purple); }
+.arch-layer.service { border-top:3px solid var(--accent); }
+.arch-layer.dao { border-top:3px solid var(--orange); }
+.arch-layer.model { border-top:3px solid var(--green); }
+.arch-layer.util { border-top:3px solid var(--pink); }
+.arch-layer.infra { border-top:3px solid var(--amber); }
+
+/* arrow connector */
+.arch-flow {
+  display:flex; align-items:center; justify-content:center;
+  gap:8px; margin:4px 0 12px; font-size:12px; color:var(--text3);
+}
+.arch-flow .step {
+  padding:3px 10px; border-radius:20px; background:var(--surface2);
+  border:1px solid var(--border); font-size:11px;
+}
+.arch-flow .step.active { background:var(--accent2); color:var(--accent); border-color:var(--accent); }
+
+/* tech stack */
+.tech-grid {
+  display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr));
+  gap:10px;
+}
+.tech-card {
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:var(--radius-sm); padding:12px 14px;
+  display:flex; align-items:center; gap:10px; box-shadow:var(--shadow);
+}
+.tech-dot {
+  width:8px; height:8px; border-radius:50%; flex-shrink:0;
+}
+.tech-card .tech-name {
+  font-weight:600; font-size:12.5px;
+}
+.tech-card .tech-detail {
+  font-size:11px; color:var(--text3);
+}
+
+/* entity cards */
+.entity-grid {
+  display:grid; grid-template-columns:repeat(auto-fill,minmax(290px,1fr));
+  gap:14px; margin-bottom:20px;
+}
+.entity-card {
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:var(--radius); box-shadow:var(--shadow);
+  overflow:hidden; transition:box-shadow .15s;
+}
+.entity-card:hover { box-shadow:var(--shadow-md); }
+.entity-card .ec-header {
+  padding:11px 14px; font-weight:600; font-size:14px;
+  display:flex; align-items:center; justify-content:space-between;
+  border-bottom:1px solid var(--border); cursor:default;
+}
+.entity-card .ec-header .scope {
+  font-size:9px; font-weight:700; padding:2px 8px; border-radius:20px; letter-spacing:.3px;
+}
+.entity-card .ec-body { padding:4px 0; }
+.entity-field {
+  display:grid; grid-template-columns:1fr auto; gap:6px;
+  padding:5px 14px; font-size:12.5px; align-items:center;
+  transition:background .1s;
+}
+.entity-field:hover { background:var(--surface2); }
+.entity-field .ef-name {
+  font-weight:500; font-family:var(--mono); font-size:12px; word-break:break-all;
+}
+.entity-field .ef-tags {
+  display:flex; gap:4px; flex-wrap:wrap; justify-content:flex-end;
+}
+.ef-tag {
+  font-size:9px; font-weight:600; padding:1px 6px; border-radius:3px;
+  font-family:var(--mono); letter-spacing:.2px;
+}
+.ef-tag.type { background:var(--surface3); color:var(--text2); }
+.ef-tag.pk { background:var(--orange-bg); color:var(--orange); }
+.ef-tag.fk { background:var(--purple-bg); color:var(--purple); }
+.ef-tag.unique { background:var(--teal-bg); color:var(--teal); }
+.ef-tag.enum { background:var(--green-bg); color:var(--green); }
+
+/* relationships */
+.rel-table {
+  width:100%; border-collapse:collapse; font-size:13px;
+  background:var(--surface); border-radius:var(--radius); overflow:hidden;
+  box-shadow:var(--shadow);
+}
+.rel-table th {
+  background:var(--surface2); padding:10px 14px; text-align:left;
+  font-weight:600; font-size:12px; color:var(--text2);
+  border-bottom:1px solid var(--border);
+}
+.rel-table td {
+  padding:8px 14px; border-bottom:1px solid var(--border);
+}
+.rel-table tr:last-child td { border-bottom:none; }
+.rel-table tr:hover td { background:var(--surface2); }
+.rel-table .rel-cardinality {
+  display:inline-block; padding:1px 8px; border-radius:4px;
+  font-size:11px; font-weight:600;
+}
+.rel-table .rel-from, .rel-table .rel-to {
+  font-family:var(--mono); font-size:12px;
+}
+
+/* ui flow */
+.ui-grid {
+  display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr));
+  gap:10px;
+}
+.ui-card {
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:var(--radius-sm); padding:12px 14px;
+  box-shadow:var(--shadow); display:flex; align-items:center; gap:10px;
+}
+.ui-card .ui-icon {
+  width:32px; height:32px; border-radius:7px; display:flex;
+  align-items:center; justify-content:center; font-size:16px; flex-shrink:0;
+}
+.ui-card .ui-info { flex:1; min-width:0; }
+.ui-card .ui-name { font-weight:600; font-size:12.5px; }
+.ui-card .ui-pkg { font-size:10px; color:var(--text3); font-family:var(--mono); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+
+/* multi-tenant */
+.tenant-diagram {
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:var(--radius); padding:20px 24px;
+  box-shadow:var(--shadow); margin-bottom:16px;
+}
+.tenant-diagram h3 { font-size:16px; margin-bottom:12px; }
+.tenant-diagram p { color:var(--text2); font-size:13px; line-height:1.7; margin-bottom:12px; }
+.tenant-flow {
+  display:flex; gap:8px; flex-wrap:wrap; align-items:center;
+}
+.tenant-flow .tf-box {
+  padding:6px 14px; border-radius:6px; font-size:12px;
+  font-weight:500; border:1px solid var(--border);
+  background:var(--surface2);
+}
+.tenant-flow .tf-box.global { background:var(--teal-bg); border-color:var(--teal); color:var(--teal); }
+.tenant-flow .tf-box.tenant { background:var(--orange-bg); border-color:var(--orange); color:var(--orange); }
+.tenant-flow .tf-arrow { color:var(--text3); font-size:16px; }
+
+/* stats */
+.stat-row {
+  display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr));
+  gap:12px; margin-bottom:16px;
+}
+.stat-card {
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:var(--radius-sm); padding:14px 16px;
+  box-shadow:var(--shadow); text-align:center;
+}
+.stat-card .stat-value {
+  font-size:24px; font-weight:700; letter-spacing:-.5px;
+}
+.stat-card .stat-label {
+  font-size:11px; color:var(--text3); margin-top:2px;
+}
+
+/* feature list */
+.feature-list {
+  display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr));
+  gap:8px; list-style:none;
+}
+.feature-list li {
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:var(--radius-sm); padding:10px 14px; font-size:13px;
+  box-shadow:var(--shadow); display:flex; align-items:center; gap:8px;
+}
+.feature-list li .fl-dot {
+  width:6px; height:6px; border-radius:50%; flex-shrink:0;
+}
+
+/* footer */
+.footer {
+  margin-top:44px; padding-top:18px;
+  border-top:1px solid var(--border);
+  text-align:center; font-size:12px; color:var(--text3);
+}
+
+@media(max-width:700px){
+  .container { padding:20px 14px 40px; }
+  .header-left h1 { font-size:24px; }
+  .arch-grid { grid-template-columns:repeat(2,1fr); }
+  .tech-grid { grid-template-columns:repeat(2,1fr); }
+  .entity-grid { grid-template-columns:1fr; }
+  .ui-grid { grid-template-columns:repeat(2,1fr); }
+  .stat-row { grid-template-columns:repeat(2,1fr); }
+  .feature-list { grid-template-columns:1fr; }
+  .rel-table { font-size:12px; }
+  .rel-table th, .rel-table td { padding:6px 8px; }
+  .tenant-flow .tf-box { font-size:11px; padding:4px 10px; }
+}
+@media(max-width:450px){
+  .arch-grid { grid-template-columns:1fr; }
+  .tech-grid { grid-template-columns:1fr; }
+  .ui-grid { grid-template-columns:1fr; }
+  .stat-row { grid-template-columns:1fr; }
+}
+</style>
+</head>
+<body>
+
+<button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">&#9790;</button>
+
+<div class="container">
+
+<!-- header -->
+<div class="header">
+  <div class="header-left">
+    <h1>Hanabi Cafe</h1>
+    <div class="sub">
+      <span>Java 21</span>
+      <span>Swing / FlatLaf</span>
+      <span>MongoDB</span>
+      <span>Multi-Tenant</span>
+      <span>v1.0-SNAPSHOT</span>
+    </div>
+  </div>
+  <div class="header-badge">
+    <span class="badge badge-accent">Desktop App</span>
+    <span class="badge badge-purple">31 Java Classes</span>
+    <span class="badge badge-green">9 DAOs</span>
+    <span class="badge badge-orange">9 Entities</span>
+  </div>
+</div>
+
+<!-- stats -->
+<div class="stat-row">
+  <div class="stat-card"><div class="stat-value" style="color:var(--accent)">58</div><div class="stat-label">Java Sources</div></div>
+  <div class="stat-card"><div class="stat-value" style="color:var(--green)">9</div><div class="stat-label">Entities</div></div>
+  <div class="stat-card"><div class="stat-value" style="color:var(--orange)">9</div><div class="stat-label">DAO Classes</div></div>
+  <div class="stat-card"><div class="stat-value" style="color:var(--purple)">11</div><div class="stat-label">UI Panels</div></div>
+  <div class="stat-card"><div class="stat-value" style="color:var(--teal)">7</div><div class="stat-label">Services</div></div>
+  <div class="stat-card"><div class="stat-value" style="color:var(--pink)">14</div><div class="stat-label">Utilities</div></div>
+</div>
+
+<!-- architecture layers -->
+<div class="section">
+  <div class="section-title">Architecture</div>
+  <div class="arch-grid">
+    <div class="arch-layer entry">
+      <div class="layer-icon">&#9654;</div>
+      <div class="layer-name">Entry Point</div>
+      <div class="layer-desc">App.java &#8594; Main.java<br>JFrame orchestrator</div>
+    </div>
+    <div class="arch-layer ui">
+      <div class="layer-icon">&#9632;</div>
+      <div class="layer-name">View Layer</div>
+      <div class="layer-desc">11 Swing panels<br>Auth + Dashboard views</div>
+    </div>
+    <div class="arch-layer service">
+      <div class="layer-icon">&#9881;</div>
+      <div class="layer-name">Service Layer</div>
+      <div class="layer-desc">Business logic<br>Auth, Menu, Revenue</div>
+    </div>
+    <div class="arch-layer dao">
+      <div class="layer-icon">&#128451;</div>
+      <div class="layer-name">DAO Layer</div>
+      <div class="layer-desc">BaseDAO + 8 concrete<br>MongoDB CRUD</div>
+    </div>
+    <div class="arch-layer model">
+      <div class="layer-icon">&#128196;</div>
+      <div class="layer-name">Model Layer</div>
+      <div class="layer-desc">9 POJOs with @BsonId<br>MongoDB documents</div>
+    </div>
+    <div class="arch-layer util">
+      <div class="layer-icon">&#128295;</div>
+      <div class="layer-name">Utilities</div>
+      <div class="layer-desc">MongoDB, Auth, Fonts<br>TenantContext, Charts</div>
+    </div>
+    <div class="arch-layer infra">
+      <div class="layer-icon">&#9729;</div>
+      <div class="layer-name">Infrastructure</div>
+      <div class="layer-desc">MongoDB Atlas<br>Maven + Launch4j</div>
+    </div>
+  </div>
+  <div class="arch-flow">
+    <span class="step active">App.java</span>
+    <span>&#8594;</span>
+    <span class="step">Main.java</span>
+    <span>&#8594;</span>
+    <span class="step">Service</span>
+    <span>&#8594;</span>
+    <span class="step">DAO</span>
+    <span>&#8594;</span>
+    <span class="step">MongoDB</span>
+  </div>
+</div>
+
+<!-- tech stack -->
+<div class="section">
+  <div class="section-title">Technology Stack</div>
+  <div class="tech-grid">
+    <div class="tech-card"><span class="tech-dot" style="background:var(--accent)"></span><div><div class="tech-name">Java 21</div><div class="tech-detail">Language</div></div></div>
+    <div class="tech-card"><span class="tech-dot" style="background:var(--purple)"></span><div><div class="tech-name">Swing + FlatLaf 3.7.1</div><div class="tech-detail">UI Framework / Look &amp; Feel</div></div></div>
+    <div class="tech-card"><span class="tech-dot" style="background:var(--green)"></span><div><div class="tech-name">MongoDB 5.1.4</div><div class="tech-detail">Database Driver (Sync)</div></div></div>
+    <div class="tech-card"><span class="tech-dot" style="background:var(--orange)"></span><div><div class="tech-name">Maven</div><div class="tech-detail">Build Tool</div></div></div>
+    <div class="tech-card"><span class="tech-dot" style="background:var(--teal)"></span><div><div class="tech-name">MigLayout 11.4.3</div><div class="tech-detail">Layout Manager</div></div></div>
+    <div class="tech-card"><span class="tech-dot" style="background:var(--pink)"></span><div><div class="tech-name">JSVG 2.1.0</div><div class="tech-detail">SVG Rendering</div></div></div>
+    <div class="tech-card"><span class="tech-dot" style="background:var(--red)"></span><div><div class="tech-name">iTextPDF 5.5.13.5</div><div class="tech-detail">PDF Generation</div></div></div>
+    <div class="tech-card"><span class="tech-dot" style="background:var(--indigo)"></span><div><div class="tech-name">Launch4j 2.5.0</div><div class="tech-detail">EXE Wrapper</div></div></div>
+    <div class="tech-card"><span class="tech-dot" style="background:var(--amber)"></span><div><div class="tech-name">MongoDB Atlas</div><div class="tech-detail">Cloud Database</div></div></div>
+    <div class="tech-card"><span class="tech-dot" style="background:var(--cyan)"></span><div><div class="tech-name">Swing Toast</div><div class="tech-detail">Notifications</div></div></div>
+  </div>
+</div>
+
+<!-- multi-tenant -->
+<div class="section">
+  <div class="section-title">Multi-Tenant Architecture</div>
+  <div class="tenant-diagram">
+    <p>Each cafe is a tenant with a UUID. The global <strong>tenants</strong> collection stores cafe metadata; all other collections are prefixed with <code>{uuid}_</code> for isolation. Logical entity references use plain UUID fields resolved via application-level joins.</p>
+    <div class="tenant-flow">
+      <span class="tf-box global">tenants (global)</span>
+      <span class="tf-arrow">&#8594;</span>
+      <span class="tf-box tenant">550e8400_staff</span>
+      <span class="tf-box tenant">550e8400_products</span>
+      <span class="tf-box tenant">550e8400_orders</span>
+      <span class="tf-box tenant">550e8400_invoices</span>
+      <span class="tf-box tenant">550e8400_chat_messages</span>
+      <span class="tf-box tenant">550e8400_salaries</span>
+      <span class="tf-box tenant">550e8400_orders_details</span>
+    </div>
+  </div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;">
+    <span class="badge badge-teal" style="font-size:11px;">&#9679; Global: tenants</span>
+    <span class="badge badge-orange" style="font-size:11px;">&#9679; Tenant-Scoped: 7 collections</span>
+    <span class="badge badge-purple" style="font-size:11px;">&#9679; Isolation: UUID prefix</span>
+    <span class="badge badge-green" style="font-size:11px;">&#9679; Dev Mode: bypass tenant scope</span>
+  </div>
+</div>
+
+<!-- entities -->
+<div class="section">
+  <div class="section-title">Entity Model</div>
+  <div class="entity-grid">
+    <div class="entity-card">
+      <div class="ec-header">tenants <span class="scope" style="background:var(--teal-bg);color:var(--teal);">GLOBAL</span></div>
+      <div class="ec-body">
+        <div class="entity-field"><span class="ef-name">tenantId</span><div class="ef-tags"><span class="ef-tag type">UUID</span><span class="ef-tag pk">PK</span></div></div>
+        <div class="entity-field"><span class="ef-name">tenantName</span><div class="ef-tags"><span class="ef-tag type">String</span><span class="ef-tag unique">unique</span></div></div>
+        <div class="entity-field"><span class="ef-name">password</span><div class="ef-tags"><span class="ef-tag type">String</span></div></div>
+        <div class="entity-field"><span class="ef-name">cafeName</span><div class="ef-tags"><span class="ef-tag type">String</span></div></div>
+        <div class="entity-field"><span class="ef-name">fullName</span><div class="ef-tags"><span class="ef-tag type">String</span></div></div>
+        <div class="entity-field"><span class="ef-name">email</span><div class="ef-tags"><span class="ef-tag type">String</span></div></div>
+        <div class="entity-field"><span class="ef-name">status</span><div class="ef-tags"><span class="ef-tag type">Boolean</span></div></div>
+      </div>
+    </div>
+    <div class="entity-card">
+      <div class="ec-header">staff <span class="scope" style="background:var(--orange-bg);color:var(--orange);">TENANT</span></div>
+      <div class="ec-body">
+        <div class="entity-field"><span class="ef-name">staffId</span><div class="ef-tags"><span class="ef-tag type">UUID</span><span class="ef-tag pk">PK</span></div></div>
+        <div class="entity-field"><span class="ef-name">staffName</span><div class="ef-tags"><span class="ef-tag type">String</span><span class="ef-tag unique">unique</span></div></div>
+        <div class="entity-field"><span class="ef-name">email</span><div class="ef-tags"><span class="ef-tag type">String</span></div></div>
+        <div class="entity-field"><span class="ef-name">password</span><div class="ef-tags"><span class="ef-tag type">String</span></div></div>
+        <div class="entity-field"><span class="ef-name">fullName</span><div class="ef-tags"><span class="ef-tag type">String</span></div></div>
+        <div class="entity-field"><span class="ef-name">role</span><div class="ef-tags"><span class="ef-tag type">String</span><span class="ef-tag enum">admin|staff</span></div></div>
+        <div class="entity-field"><span class="ef-name">status</span><div class="ef-tags"><span class="ef-tag type">Boolean</span></div></div>
+      </div>
+    </div>
+    <div class="entity-card">
+      <div class="ec-header">salaries <span class="scope" style="background:var(--orange-bg);color:var(--orange);">TENANT</span></div>
+      <div class="ec-body">
+        <div class="entity-field"><span class="ef-name">staffId</span><div class="ef-tags"><span class="ef-tag type">UUID</span><span class="ef-tag pk">PK</span><span class="ef-tag fk">FK</span></div></div>
+        <div class="entity-field"><span class="ef-name">baseSalary</span><div class="ef-tags"><span class="ef-tag type">Double</span></div></div>
+        <div class="entity-field"><span class="ef-name">commissionRate</span><div class="ef-tags"><span class="ef-tag type">Double</span></div></div>
+      </div>
+    </div>
+    <div class="entity-card">
+      <div class="ec-header">products <span class="scope" style="background:var(--orange-bg);color:var(--orange);">TENANT</span></div>
+      <div class="ec-body">
+        <div class="entity-field"><span class="ef-name">productId</span><div class="ef-tags"><span class="ef-tag type">UUID</span><span class="ef-tag pk">PK</span></div></div>
+        <div class="entity-field"><span class="ef-name">productName</span><div class="ef-tags"><span class="ef-tag type">String</span><span class="ef-tag unique">unique</span></div></div>
+        <div class="entity-field"><span class="ef-name">category</span><div class="ef-tags"><span class="ef-tag type">String</span><span class="ef-tag enum">Hot|Iced|Bakery</span></div></div>
+        <div class="entity-field"><span class="ef-name">price</span><div class="ef-tags"><span class="ef-tag type">Double</span></div></div>
+        <div class="entity-field"><span class="ef-name">cost</span><div class="ef-tags"><span class="ef-tag type">Double</span></div></div>
+        <div class="entity-field"><span class="ef-name">image</span><div class="ef-tags"><span class="ef-tag type">String</span></div></div>
+        <div class="entity-field"><span class="ef-name">status</span><div class="ef-tags"><span class="ef-tag type">Boolean</span></div></div>
+      </div>
+    </div>
+    <div class="entity-card">
+      <div class="ec-header">invoices <span class="scope" style="background:var(--orange-bg);color:var(--orange);">TENANT</span></div>
+      <div class="ec-body">
+        <div class="entity-field"><span class="ef-name">invoiceId</span><div class="ef-tags"><span class="ef-tag type">UUID</span><span class="ef-tag pk">PK</span></div></div>
+        <div class="entity-field"><span class="ef-name">staffId</span><div class="ef-tags"><span class="ef-tag type">UUID</span><span class="ef-tag fk">FK</span></div></div>
+        <div class="entity-field"><span class="ef-name">invoiceDate</span><div class="ef-tags"><span class="ef-tag type">LocalDate</span></div></div>
+        <div class="entity-field"><span class="ef-name">total</span><div class="ef-tags"><span class="ef-tag type">Integer</span></div></div>
+        <div class="entity-field"><span class="ef-name">status</span><div class="ef-tags"><span class="ef-tag type">Boolean</span></div></div>
+      </div>
+    </div>
+    <div class="entity-card">
+      <div class="ec-header">orders <span class="scope" style="background:var(--orange-bg);color:var(--orange);">TENANT</span></div>
+      <div class="ec-body">
+        <div class="entity-field"><span class="ef-name">orderId</span><div class="ef-tags"><span class="ef-tag type">UUID</span><span class="ef-tag pk">PK</span></div></div>
+        <div class="entity-field"><span class="ef-name">invoiceId</span><div class="ef-tags"><span class="ef-tag type">UUID</span><span class="ef-tag fk">FK</span></div></div>
+        <div class="entity-field"><span class="ef-name">staffId</span><div class="ef-tags"><span class="ef-tag type">UUID</span><span class="ef-tag fk">FK</span></div></div>
+        <div class="entity-field"><span class="ef-name">status</span><div class="ef-tags"><span class="ef-tag type">Boolean</span></div></div>
+        <div class="entity-field"><span class="ef-name">orderDate</span><div class="ef-tags"><span class="ef-tag type">LocalDate</span></div></div>
+        <div class="entity-field"><span class="ef-name">total</span><div class="ef-tags"><span class="ef-tag type">Integer</span></div></div>
+      </div>
+    </div>
+    <div class="entity-card">
+      <div class="ec-header">orders_details <span class="scope" style="background:var(--orange-bg);color:var(--orange);">TENANT</span></div>
+      <div class="ec-body">
+        <div class="entity-field"><span class="ef-name">orderId</span><div class="ef-tags"><span class="ef-tag type">UUID</span><span class="ef-tag pk">PK</span><span class="ef-tag fk">FK</span></div></div>
+        <div class="entity-field"><span class="ef-name">productId</span><div class="ef-tags"><span class="ef-tag type">UUID</span><span class="ef-tag pk">PK</span><span class="ef-tag fk">FK</span></div></div>
+        <div class="entity-field"><span class="ef-name">quantity</span><div class="ef-tags"><span class="ef-tag type">Integer</span></div></div>
+      </div>
+    </div>
+    <div class="entity-card">
+      <div class="ec-header">chat_messages <span class="scope" style="background:var(--orange-bg);color:var(--orange);">TENANT</span></div>
+      <div class="ec-body">
+        <div class="entity-field"><span class="ef-name">messageId</span><div class="ef-tags"><span class="ef-tag type">UUID</span><span class="ef-tag pk">PK</span></div></div>
+        <div class="entity-field"><span class="ef-name">senderId</span><div class="ef-tags"><span class="ef-tag type">UUID</span><span class="ef-tag fk">FK</span></div></div>
+        <div class="entity-field"><span class="ef-name">receiverId</span><div class="ef-tags"><span class="ef-tag type">UUID</span><span class="ef-tag fk">FK</span></div></div>
+        <div class="entity-field"><span class="ef-name">content</span><div class="ef-tags"><span class="ef-tag type">String</span></div></div>
+        <div class="entity-field"><span class="ef-name">messageType</span><div class="ef-tags"><span class="ef-tag type">String</span><span class="ef-tag enum">TEXT|FILE</span></div></div>
+        <div class="entity-field"><span class="ef-name">filePath</span><div class="ef-tags"><span class="ef-tag type">String</span></div></div>
+        <div class="entity-field"><span class="ef-name">createdAt</span><div class="ef-tags"><span class="ef-tag type">Timestamp</span></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- relationships -->
+<div class="section">
+  <div class="section-title">Relationships</div>
+  <table class="rel-table">
+    <thead>
+      <tr><th>From</th><th>Type</th><th>To</th><th>Via</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><span class="rel-from">tenants</span></td><td><span class="rel-cardinality" style="background:var(--indigo-bg);color:var(--indigo);">1 &#8594; N</span></td><td><span class="rel-to" style="color:var(--text3)">(all tenant collections)</span></td><td>UUID prefix isolation</td></tr>
+      <tr><td><span class="rel-from">staff</span></td><td><span class="rel-cardinality" style="background:var(--pink-bg);color:var(--pink);">1 : 1</span></td><td><span class="rel-to">salaries</span></td><td>shared staffId PK</td></tr>
+      <tr><td><span class="rel-from">staff</span></td><td><span class="rel-cardinality" style="background:var(--orange-bg);color:var(--orange);">1 &#8594; N</span></td><td><span class="rel-to">invoices</span></td><td>invoices.staffId</td></tr>
+      <tr><td><span class="rel-from">staff</span></td><td><span class="rel-cardinality" style="background:var(--orange-bg);color:var(--orange);">1 &#8594; N</span></td><td><span class="rel-to">orders</span></td><td>orders.staffId</td></tr>
+      <tr><td><span class="rel-from">staff</span></td><td><span class="rel-cardinality" style="background:var(--orange-bg);color:var(--orange);">1 &#8594; N</span></td><td><span class="rel-to">chat_messages</span></td><td>senderId / receiverId</td></tr>
+      <tr><td><span class="rel-from">invoices</span></td><td><span class="rel-cardinality" style="background:var(--purple-bg);color:var(--purple);">1 &#8594; N</span></td><td><span class="rel-to">orders</span></td><td>orders.invoiceId</td></tr>
+      <tr><td><span class="rel-from">orders</span></td><td><span class="rel-cardinality" style="background:var(--green-bg);color:var(--green);">N : M</span></td><td><span class="rel-to">products</span></td><td>orders_details (junction)</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- features -->
+<div class="section">
+  <div class="section-title">Features</div>
+  <ul class="feature-list">
+    <li><span class="fl-dot" style="background:var(--accent)"></span> Role-Based Auth (admin/staff)</li>
+    <li><span class="fl-dot" style="background:var(--green)"></span> Dashboard with Revenue Charts</li>
+    <li><span class="fl-dot" style="background:var(--orange)"></span> Menu &amp; Product CRUD</li>
+    <li><span class="fl-dot" style="background:var(--purple)"></span> Order Management with Cart</li>
+    <li><span class="fl-dot" style="background:var(--teal)"></span> Invoice &amp; PDF Export</li>
+    <li><span class="fl-dot" style="background:var(--pink)"></span> Staff &amp; Salary Management</li>
+    <li><span class="fl-dot" style="background:var(--red)"></span> Real-Time Chat (polling)</li>
+    <li><span class="fl-dot" style="background:var(--indigo)"></span> VietQR Payment Integration</li>
+    <li><span class="fl-dot" style="background:var(--amber)"></span> Revenue Analytics &amp; Charts</li>
+    <li><span class="fl-dot" style="background:var(--cyan)"></span> Multi-Tenant Cafe Isolation</li>
+    <li><span class="fl-dot" style="background:var(--green)"></span> Developer Mode (tenant mgmt)</li>
+    <li><span class="fl-dot" style="background:var(--orange)"></span> Soft-Delete (status flag)</li>
+  </ul>
+</div>
+
+<!-- ui panels -->
+<div class="section">
+  <div class="section-title">UI Panels</div>
+  <div class="ui-grid">
+    <div class="ui-card"><div class="ui-icon" style="background:var(--accent2);color:var(--accent)">&#128274;</div><div class="ui-info"><div class="ui-name">LoginPanel</div><div class="ui-pkg">view.Auth</div></div></div>
+    <div class="ui-card"><div class="ui-icon" style="background:var(--green-bg);color:var(--green)">&#128200;</div><div class="ui-info"><div class="ui-name">DashboardView</div><div class="ui-pkg">view.ui</div></div></div>
+    <div class="ui-card"><div class="ui-icon" style="background:var(--orange-bg);color:var(--orange)">&#9776;</div><div class="ui-info"><div class="ui-name">CategoryPanel</div><div class="ui-pkg">view.ui (sidebar)</div></div></div>
+    <div class="ui-card"><div class="ui-icon" style="background:var(--purple-bg);color:var(--purple)">&#127869;</div><div class="ui-info"><div class="ui-name">MenuItemsPanel</div><div class="ui-pkg">view.ui</div></div></div>
+    <div class="ui-card"><div class="ui-icon" style="background:var(--teal-bg);color:var(--teal)">&#128100;</div><div class="ui-info"><div class="ui-name">AccountPanel</div><div class="ui-pkg">view.ui</div></div></div>
+    <div class="ui-card"><div class="ui-icon" style="background:var(--pink-bg);color:var(--pink)">&#128179;</div><div class="ui-info"><div class="ui-name">RevenuePanel</div><div class="ui-pkg">view.ui</div></div></div>
+    <div class="ui-card"><div class="ui-icon" style="background:var(--red-bg);color:var(--red)">&#128230;</div><div class="ui-info"><div class="ui-name">OrdersPanel</div><div class="ui-pkg">view.ui</div></div></div>
+    <div class="ui-card"><div class="ui-icon" style="background:var(--indigo-bg);color:var(--indigo)">&#128172;</div><div class="ui-info"><div class="ui-name">ChatPanel</div><div class="ui-pkg">view.ui</div></div></div>
+    <div class="ui-card"><div class="ui-icon" style="background:var(--amber-bg);color:var(--amber)">&#127960;</div><div class="ui-info"><div class="ui-name">CreateCafePanel</div><div class="ui-pkg">dev only</div></div></div>
+    <div class="ui-card"><div class="ui-icon" style="background:var(--cyan-bg);color:var(--cyan)">&#128203;</div><div class="ui-info"><div class="ui-name">AddProductForm</div><div class="ui-pkg">components.form</div></div></div>
+    <div class="ui-card"><div class="ui-icon" style="background:var(--green-bg);color:var(--green)">&#9998;</div><div class="ui-info"><div class="ui-name">EditProductForm</div><div class="ui-pkg">components.form</div></div></div>
+  </div>
+</div>
+
+<!-- build -->
+<div class="section">
+  <div class="section-title">Build &amp; Deploy</div>
+  <div class="tenant-diagram">
+    <p>The project builds via <strong>Maven</strong> into a fat JAR using <code>maven-shade-plugin</code>, then wraps into a Windows <strong>.EXE</strong> via <code>launch4j-maven-plugin</code>. The EXE expects a bundled JRE 21+ in a <code>jre/</code> directory alongside it.</p>
+    <div class="tenant-flow">
+      <span class="tf-box">mvn clean package</span>
+      <span class="tf-arrow">&#8594;</span>
+      <span class="tf-box">shade (fat JAR)</span>
+      <span class="tf-arrow">&#8594;</span>
+      <span class="tf-box">launch4j (EXE)</span>
+      <span class="tf-arrow">&#8594;</span>
+      <span class="tf-box">HanabiCafe.exe</span>
+      <span class="tf-arrow">&#8594;</span>
+      <span class="tf-box">+ jre/</span>
+    </div>
+  </div>
+</div>
+
+<!-- data flow -->
+<div class="section">
+  <div class="section-title">Data Flow</div>
+  <div class="tenant-diagram">
+    <div class="tenant-flow">
+      <span class="tf-box" style="background:var(--accent2);border-color:var(--accent);color:var(--accent);">Swing UI</span>
+      <span class="tf-arrow">&#8594;</span>
+      <span class="tf-box" style="background:var(--purple-bg);border-color:var(--purple);color:var(--purple);">Service</span>
+      <span class="tf-arrow">&#8594;</span>
+      <span class="tf-box" style="background:var(--orange-bg);border-color:var(--orange);color:var(--orange);">DAO</span>
+      <span class="tf-arrow">&#8594;</span>
+      <span class="tf-box" style="background:var(--green-bg);border-color:var(--green);color:var(--green);">MongoDB</span>
+      <span class="tf-arrow">&#8594;</span>
+      <span class="tf-box" style="background:var(--teal-bg);border-color:var(--teal);color:var(--teal);">POJO Codec</span>
+    </div>
+    <div style="margin-top:12px;font-size:12px;color:var(--text2);line-height:1.6;">
+      <strong>Login:</strong> LoginPanel &#8594; AuthService &#8594; UserDAO &#8594; tenants collection<br>
+      <strong>Order:</strong> MenuItemsPanel &#8594; MenuService &#8594; OrderDAO / OrderDetailDAO / InvoiceDAO<br>
+      <strong>Chat:</strong> ChatConversationPanel &#8594; ChatMessageDAO (polls every 2.5s)<br>
+      <strong>Revenue:</strong> RevenuePanel &#8594; RevenueService &#8594; OrderDAO / InvoiceDAO (aggregations)
+    </div>
+  </div>
+</div>
+
+<div class="footer">
+  DNCS_one-mongoDB &mdash; Hanabi Cafe Coffee Shop Management System &mdash; Built with Java Swing + MongoDB
+</div>
+
+</div>
+
+<script>
+(function(){
+  var btn = document.getElementById('themeToggle');
+  var html = document.documentElement;
+  function setIcon(){
+    btn.textContent = html.classList.contains('dark') ? '\u2600\uFE0F' : '\uD83C\uDF19';
+  }
+  setIcon();
+  btn.addEventListener('click', function(){
+    html.classList.toggle('dark');
+    localStorage.setItem('theme', html.classList.contains('dark') ? 'dark' : 'light');
+    setIcon();
+  });
+})();
+</script>
+
+</body>
+</html>
